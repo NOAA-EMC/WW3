@@ -51,6 +51,7 @@ MODULE W3IOPOMD
   !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
   !/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
   !/                  (R. Padilla-Hernandez & J.H. Alves)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -87,6 +88,8 @@ MODULE W3IOPOMD
   !      W3SETW    Subr. W3WDATMD Data structure management.
   !      W3DMO2    Subr. W3ODATMD Data structure management.
   !      STRACE    Subr. W3SERVMD Subroutine tracing.
+  !      EXTIOF    Subr. W3SERVMD Abort if error when I/O file.
+  !      EXTOPN    Subr. W3SERVMD Abort if error when opening file.
   !      EXTCDE    Subr. W3SERVMD Program abort with exit code.
   !      MPI_STARTALL, MPIWAITALL
   !                Subr.          MPI persistent communication routines.
@@ -354,7 +357,7 @@ CONTAINS
     USE W3ODATMD, ONLY: W3DMO2, FNMPRE
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
          NOPTS, PTLOC, PTNME, GRDID, IPTINT, PTIFAC
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTOPN, EXTIOF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -975,7 +978,6 @@ CONTAINS
 #ifdef W3_MPI
     USE W3ODATMD, ONLY: IRQPO2
 #endif
-    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -2219,7 +2221,7 @@ CONTAINS
     USE W3ODATMD, ONLY: ZET_SETO
 #endif
     !/
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -2310,14 +2312,17 @@ CONTAINS
 #endif
       IF ( WRITE ) THEN
         OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
-             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOPO','',20)
 #ifdef W3_ASCII
         OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
-             form='FORMATTED', ERR=800,IOSTAT=IERR)
+             form='FORMATTED',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOPO','',20)
 #endif
       ELSE
         OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
-             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR,STATUS='OLD')
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOPO','',20)
       END IF
       !
       REWIND ( NDSOP )
@@ -2334,8 +2339,9 @@ CONTAINS
              IDSTR, VEROPT, NK, NTH, NOPTS
 #endif
       ELSE
-        READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                &
+        READ (NDSOP,IOSTAT=IERR)                &
              IDTST, VERTST, MK, MTH, NOPTS
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
         !
         IF ( IDTST .NE. IDSTR ) THEN
           WRITE (NDSE,902) IDTST, IDSTR
@@ -2369,8 +2375,9 @@ CONTAINS
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
 #endif
       ELSE
-        READ  (NDSOP,END=801,ERR=802,IOSTAT=IERR)               &
+        READ  (NDSOP,IOSTAT=IERR)               &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
       END IF
       !
 #ifdef W3_T
@@ -2408,10 +2415,12 @@ CONTAINS
 #endif
       IF ( WRITE ) THEN
         OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
-             //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+             //FILEXT(:I),form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOPO','',20)
 #ifdef W3_ASCII
         OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
-             //FILEXT(:I)//'.txt',form='FORMATTED', ERR=800,IOSTAT=IERR)
+             //FILEXT(:I)//'.txt',form='FORMATTED',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOPO','',20)
 #endif
       END IF
       !
@@ -2430,8 +2439,9 @@ CONTAINS
              IDSTR, VEROPT, NK, NTH, NOPTS
 #endif
       ELSE
-        READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                &
+        READ (NDSOP,IOSTAT=IERR)                &
              IDTST, VERTST, MK, MTH, NOPTS
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
         !
         IF ( IDTST .NE. IDSTR ) THEN
           WRITE (NDSE,902) IDTST, IDSTR
@@ -2465,8 +2475,9 @@ CONTAINS
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
 #endif
       ELSE
-        READ  (NDSOP,END=801,ERR=802,IOSTAT=IERR)               &
+        READ  (NDSOP,IOSTAT=IERR)               &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
       END IF
       !
 #ifdef W3_T
@@ -2487,7 +2498,16 @@ CONTAINS
       WRITE (NDSOA,*) 'TIME:',                   TIME
 #endif
     ELSE
-      READ (NDSOP,END=803,ERR=802,IOSTAT=IERR) TIME
+      READ (NDSOP,IOSTAT=IERR) TIME
+      IF (IERR.LT.0) THEN
+        IOTST  = -1
+#ifdef W3_T
+        WRITE (NDST,9011)
+#endif
+        RETURN
+      ELSE IF (IERR.GT.0) THEN
+        CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
+      END IF
     END IF
     !
 #ifdef W3_T
@@ -2533,7 +2553,7 @@ CONTAINS
              ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
 #endif
       ELSE
-        READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
+        READ (NDSOP,IOSTAT=IERR)                 &
              IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
 #ifdef W3_FLX5
              TAUAO(I), TAUDO(I), DAIRO(I),                     &
@@ -2543,32 +2563,12 @@ CONTAINS
 #endif
              ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
              ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
       END IF
       !
     END DO
     IF (OFILES(2) .EQ. 1)  CLOSE (NDSOP)
     !
-    RETURN
-    !
-    ! Escape locations read errors
-    !
-800 CONTINUE
-    WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 20 )
-    !
-801 CONTINUE
-    WRITE (NDSE,1001)
-    CALL EXTCDE ( 21 )
-    !
-802 CONTINUE
-    WRITE (NDSE,1002) IERR
-    CALL EXTCDE ( 22 )
-    !
-803 CONTINUE
-    IOTST  = -1
-#ifdef W3_T
-    WRITE (NDST,9011)
-#endif
     RETURN
     !
     ! Formats
@@ -2587,9 +2587,6 @@ CONTAINS
          '     ERROR IN SPECTRA, MK, MTH : ',2I8/               &
          '              ARRAY DIMENSIONS : ',2I8/)
     !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO : '/               &
-         '     ERROR IN OPENING FILE'/                          &
-         '     IOSTAT =',I5/)
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO : '/               &
          '     PREMATURE END OF FILE'/)
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO : '/               &

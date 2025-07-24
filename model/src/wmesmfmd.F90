@@ -2011,6 +2011,7 @@ contains
     !/                  +-----------------------------------+
     !/
     !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -2138,71 +2139,72 @@ contains
     !
     ! If not all import dependencies are satisfied, then return
     !
-    if (.not.allUpdated) goto 1
-    !
-    ! -------------------------------------------------------------------- /
-    ! 2.  All import dependencies are satisfied, so finish initialization
-    !
-    ! 2.a Report all import dependencies are satisfied
-    !
-    write(msg,'(a)') trim(cname)// &
-         ': all inter-model data dependencies SATISFIED'
-    if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-    if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
-    !
-    ! 2.b Setup background blending mask for each import field
-    !
-    do i = 1,numImpFields
-      if (.not.impFieldActive(i)) cycle
-      if (.not.mbgFieldActive(i)) cycle
-      call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
+    if (allUpdated) then
+      !
+      ! -------------------------------------------------------------------- /
+      ! 2.  All import dependencies are satisfied, so finish initialization
+      !
+      ! 2.a Report all import dependencies are satisfied
+      !
+      write(msg,'(a)') trim(cname)// &
+           ': all inter-model data dependencies SATISFIED'
+      if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+      !
+      ! 2.b Setup background blending mask for each import field
+      !
+      do i = 1,numImpFields
+        if (.not.impFieldActive(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
+        call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+      !
+      ! 2.c Get import fields
+      !
+      call GetImport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    enddo
-    !
-    ! 2.c Get import fields
-    !
-    call GetImport(gcomp, rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    !
-    ! 2.d Finish initialization (compute initial state), if not restart
-    !
-    do imod = 1,nrgrd
-      call w3setg ( imod, mdse, mdst )
-      call w3setw ( imod, mdse, mdst )
-      call w3seta ( imod, mdse, mdst )
-      call w3seti ( imod, mdse, mdst )
-      call w3seto ( imod, mdse, mdst )
-      call wmsetm ( imod, mdse, mdst )
-      local = iaproc .gt. 0 .and. iaproc .le. naproc
-      if ( local .and. flcold .and. fliwnd ) call w3uini( va )
-    enddo
-    !
-    ! 2.e Set export fields
-    !
-    call SetExport(gcomp, rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    !
-    ! 2.f Set Updated Field Attribute to "true", indicating to the
-    !     generic code to set the timestamp for these fields
-    !
-    do i = 1,numExpFields
-      if (.not.expFieldActive(i)) cycle
-      call NUOPC_SetAttribute(expField(i), name="Updated", &
+      !
+      ! 2.d Finish initialization (compute initial state), if not restart
+      !
+      do imod = 1,nrgrd
+        call w3setg ( imod, mdse, mdst )
+        call w3setw ( imod, mdse, mdst )
+        call w3seta ( imod, mdse, mdst )
+        call w3seti ( imod, mdse, mdst )
+        call w3seto ( imod, mdse, mdst )
+        call wmsetm ( imod, mdse, mdst )
+        local = iaproc .gt. 0 .and. iaproc .le. naproc
+        if ( local .and. flcold .and. fliwnd ) call w3uini( va )
+      enddo
+      !
+      ! 2.e Set export fields
+      !
+      call SetExport(gcomp, rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      !
+      ! 2.f Set Updated Field Attribute to "true", indicating to the
+      !     generic code to set the timestamp for these fields
+      !
+      do i = 1,numExpFields
+        if (.not.expFieldActive(i)) cycle
+        call NUOPC_SetAttribute(expField(i), name="Updated", &
+             value="true", rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+      !
+      ! 2.g Set InitializeDataComplete Attribute to "true", indicating to the
+      !     generic code that all inter-model data dependencies are satisfied
+      !
+      call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
            value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    enddo
-    !
-    ! 2.g Set InitializeDataComplete Attribute to "true", indicating to the
-    !     generic code that all inter-model data dependencies are satisfied
-    !
-    call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
-         value="true", rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
+    end if
     !
     ! -------------------------------------------------------------------- /
     ! Post
     !
-1   rc = ESMF_SUCCESS
+    rc = ESMF_SUCCESS
     call ESMF_VMWtime(wftime)
     wtime(iwt) = wtime(iwt) + wftime - wstime
     wtcnt(iwt) = wtcnt(iwt) + 1

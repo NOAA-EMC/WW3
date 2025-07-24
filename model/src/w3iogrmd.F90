@@ -66,6 +66,7 @@ MODULE W3IOGRMD
   !      INSNL5    Subr. W3SNL5MD Initialization of GKE.
   !      INSNLS    Subr. W3SNLSMD Initialization of nonlinear `smoother'.
   !      STRACE    Subr. W3SERVMD Subroutine tracing.
+  !      EXTIOF    Subr. W3SERVMD Abort if error when I/O file.
   !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
   !     ----------------------------------------------------------------
   !
@@ -190,6 +191,7 @@ CONTAINS
     !/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
     !/    07-07-2021  : S_{nl} GKE NL5 (Q. Liu)             ( version 7.12 )
     !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -302,7 +304,7 @@ CONTAINS
     USE W3SIS2MD, ONLY: INSIS2
 #endif
     USE W3TIMEMD, ONLY: CALTYPE
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -570,14 +572,17 @@ CONTAINS
     !AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT)
     IF ( WRITE ) THEN
       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
-           form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+           form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),50)
 #ifdef W3_ASCII
       OPEN (NDSA,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT)//'.txt',   &
-           form='FORMATTED',ERR=800,IOSTAT=IERR)
+           form='FORMATTED',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),50)
 #endif
     ELSE
       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
-           form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
+           form='UNFORMATTED', convert=file_endian,STATUS='OLD',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),50)
     ENDIF
     !
     REWIND ( NDSM )
@@ -631,17 +636,20 @@ CONTAINS
       WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
+      READ (NDSM,IOSTAT=IERR)                                    &
            IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
            NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
            FNAMEF, FNAMEI
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       !
 #ifdef W3_SMC
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
+      READ (NDSM,IOSTAT=IERR)                    &
            NCel, NUFc, NVFc, NRLv, MRFct
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+      READ (NDSM,IOSTAT=IERR)                    &
            NGLO, NARC, NBGL, NBAC, NBSMC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
       !
       NK     = MK
@@ -734,8 +742,9 @@ CONTAINS
         CALL EXTCDE ( 24 )
       END IF
       !
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                   &
+      READ (NDSM,IOSTAT=IERR)                   &
            (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #ifdef W3_T
       WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
       WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
@@ -945,8 +954,8 @@ CONTAINS
     ELSE
       call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 4')
 
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                      &
-           GTYPE, FLAGLL, ICLOSE
+      READ (NDSM,IOSTAT=IERR) GTYPE, FLAGLL, ICLOSE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
       IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
 #ifdef W3_SMC
@@ -960,8 +969,8 @@ CONTAINS
       SELECT CASE ( GTYPE )
         !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
       CASE ( RLGTYPE, SMCTYPE )
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-             SX, SY, X0, Y0
+        READ (NDSM,IOSTAT=IERR) SX, SY, X0, Y0
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         DO IX=1,NX
           XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
         END DO
@@ -970,8 +979,8 @@ CONTAINS
         END DO
       CASE ( CLGTYPE )
         ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0.
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-             XGRD4, YGRD4
+        READ (NDSM,IOSTAT=IERR) XGRD4, YGRD4
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         XGRD = XGRD4
         YGRD = YGRD4
         DEALLOCATE(XGRD4, YGRD4)
@@ -979,7 +988,7 @@ CONTAINS
         X0 = HUGE(X0); Y0 = HUGE(Y0)
         SX = HUGE(SX); SY = HUGE(SY)
       CASE (UNGTYPE)
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+        READ (NDSM,IOSTAT=IERR)                               &
              FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,   &
              FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,    &
              DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,      &
@@ -996,30 +1005,33 @@ CONTAINS
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
              B_JGS_SOURCE_NONLINEAR
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
         END IF
         call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 5')
 
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+        READ (NDSM,IOSTAT=IERR)                               &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
              DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
              POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 6')
 
       END SELECT !GTYPE
       !
       IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST )
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)   &
+      READ (NDSM,IOSTAT=IERR)   &
            ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       !
 #ifdef W3_SMC
       IF( GTYPE .EQ. SMCTYPE ) THEN
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-             NLvCel, NLvUFc, NLvVFc
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-             IJKCel, IJKUFc, IJKVFc, ISMCBP
+        READ (NDSM,IOSTAT=IERR) NLvCel, NLvUFc, NLvVFc
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+        READ (NDSM,IOSTAT=IERR) IJKCel, IJKUFc, IJKVFc, ISMCBP
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         DO J=lbound(IJKCel,2), ubound(IJKCel,2)
           IJKCel3(J) = IJKCel(3,J)
           IJKCel4(J) = IJKCel(4,J)
@@ -1032,12 +1044,12 @@ CONTAINS
           IJKUFc5(J) = IJKUFc(5,J)
           IJKUFc6(J) = IJKUFc(6,J)
         END DO
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-             ICLBAC
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-             ANGARC
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-             CTRNX,  CTRNY,  CLATF
+        READ (NDSM,IOSTAT=IERR) ICLBAC
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+        READ (NDSM,IOSTAT=IERR) ANGARC
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+        READ (NDSM,IOSTAT=IERR) CTRNX,  CTRNY,  CLATF
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       ENDIF
 #endif
       !
@@ -1045,7 +1057,8 @@ CONTAINS
       MAPST2 = (MAPTMP-MAPSTA) / 8
       MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
       IF ( TRFLAG .NE. 0 ) THEN
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
+        READ (NDSM,IOSTAT=IERR) TRNX, TRNY
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       END IF
 #ifdef W3_UOST
       ! UOST (Unresolved Obstacles Source Term) is enabled.
@@ -1054,7 +1067,7 @@ CONTAINS
       TRNY = 1
 #endif
 
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+      READ (NDSM,IOSTAT=IERR)                                     &
            DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
            FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
            FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
@@ -1062,15 +1075,19 @@ CONTAINS
            IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
            IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,IC_NUMERICS,   &
            AAIRCMIN, AAIRGB
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 
-      READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
+      READ(NDSM,IOSTAT=IERR)GRIDSHIFT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #ifdef W3_SEC1
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITERSEC1
+      READ (NDSM,IOSTAT=IERR) NITERSEC1
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
       !
 #ifdef W3_RTD
       !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) PoLat, PoLon, AnglD, FLAGUNR
+      READ (NDSM,IOSTAT=IERR) PoLat, PoLon, AnglD, FLAGUNR
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 
 #endif
       !
@@ -1134,10 +1151,11 @@ CONTAINS
 #endif
     ELSE
       IF (.NOT.SINIT) CALL W3DIMS ( IGRD, NK, NTH, NDSE, NDST )
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                       &
+      READ (NDSM,IOSTAT=IERR)                                       &
            MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,        &
            XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,       &
            FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 
     !
@@ -1160,8 +1178,8 @@ CONTAINS
            E3DF, P2MSF, US3DF,USSPF, USSP_WN
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-           E3DF, P2MSF, US3DF,USSPF, USSP_WN
+      READ (NDSM,IOSTAT=IERR) E3DF, P2MSF, US3DF,USSPF, USSP_WN
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 
     IF ( INXOUT .EQ. 'GRID' ) THEN
@@ -1182,8 +1200,8 @@ CONTAINS
 #endif
     ELSE
       CALL W3DMO5 ( IGRD, NDSE, NDST, 2 )
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
-           XBPO, YBPO, RDBPO, IPBPO, ISBPO
+      READ (NDSM,IOSTAT=IERR) XBPO, YBPO, RDBPO, IPBPO, ISBPO
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
 #ifdef W3_T
@@ -1213,9 +1231,10 @@ CONTAINS
            PTMETH, PTFCUT
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
+      READ (NDSM,IOSTAT=IERR)                                    &
            IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
            PTMETH, PTFCUT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
 #ifdef W3_T
@@ -1309,40 +1328,41 @@ CONTAINS
 #endif
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
+      READ (NDSM,IOSTAT=IERR)                                    &
            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
            FFACBERG, DELAB, FWTABLE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #ifdef W3_RWND
-      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
-           RWINDC
+      READ  (NDSM,IOSTAT=IERR) RWINDC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_WCOR
-      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
-           WWCOR
+      READ  (NDSM,,IOSTAT=IERR) WWCOR
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_REF1
-      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
-           RREF, REFPARS, REFLC, REFLD
+      READ  (NDSM,IOSTAT=IERR) RREF, REFPARS, REFLC, REFLD
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_IG1
-      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IGPARS(1:12)
+      READ   (NDSM,IOSTAT=IERR) IGPARS(1:12)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_IC2
-      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IC2PARS(1:8)
+      READ   (NDSM,IOSTAT=IERR) IC2PARS(1:8)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_IC3
-      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IC3PARS
+      READ   (NDSM,IOSTAT=IERR) IC3PARS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_IC4
-      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
+      READ   (NDSM,IOSTAT=IERR) IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
 #ifdef W3_IC5
-      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IC5PARS
+      READ   (NDSM,IOSTAT=IERR) IC5PARS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
 #endif
     END IF
     !
@@ -1366,7 +1386,8 @@ CONTAINS
                                               NITTIN, CINXSI
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
+      READ (NDSM,IOSTAT=IERR) NITTIN, CINXSI
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CINXSI
 #endif
@@ -1381,8 +1402,8 @@ CONTAINS
            NITTIN, CINXSI, CD_MAX, CAP_ID
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-           NITTIN, CINXSI, CD_MAX, CAP_ID
+      READ (NDSM,IOSTAT=IERR) NITTIN, CINXSI, CD_MAX, CAP_ID
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
 #endif
@@ -1395,7 +1416,8 @@ CONTAINS
                                               FLX4A0
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
+      READ (NDSM,IOSTAT=IERR) FLX4A0
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
     !
@@ -1408,7 +1430,8 @@ CONTAINS
                                               SLNC1, FSPM, FSHF
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
+      READ (NDSM,IOSTAT=IERR) SLNC1, FSPM, FSHF
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9049) SLNC1, FSPM, FSHF
 #endif
@@ -1421,7 +1444,8 @@ CONTAINS
                                               SINC1, SDSC1
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
+      READ (NDSM,IOSTAT=IERR) SINC1, SDSC1
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9050) SINC1, SDSC1
 #endif
@@ -1445,11 +1469,12 @@ CONTAINS
            CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                  &
+      READ (NDSM,IOSTAT=IERR)                                  &
            ZWIND, FSWELL,                                      &
            SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,             &
            CDSA0, CDSA1, CDSA2, SDSALN,                        &
            CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       IF ( .NOT. FLINP ) CALL INPTAB
       FLINP  = .TRUE.
     END IF
@@ -1481,12 +1506,13 @@ CONTAINS
            FFXPM, FFXFM
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                  &
+      READ (NDSM,IOSTAT=IERR)                                  &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,       &
            SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,   &
            SSTXFTFTAIL, SSTXFTWN,                              &
            DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,                &
            FFXPM, FFXFM
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       IF ( .NOT. FLINP ) THEN
         CALL INSIN3
         FLINP  = .TRUE.
@@ -1547,7 +1573,7 @@ CONTAINS
 #endif
       END IF
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+      READ (NDSM,IOSTAT=IERR)                                &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
            TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,        &
            ZZ0RAT, SSDSC,                                    &
@@ -1559,12 +1585,17 @@ CONTAINS
            SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
            DIKCUMUL, CUMULW, SINTAILPAR, CAPCHNK
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       IF (SINTAILPAR(1).GT.0.5) THEN
         CALL INSIN4(.FALSE.)
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
+        READ (NDSM,IOSTAT=IERR)                       &
              DELUST, DELTAIL, DELTAUW, DELU, DELALP,  &
              TAUT, TAUHFT
-        IF (TTAUWSHELTER.GT.0) READ(NDSM,END=801,ERR=802,IOSTAT=IERR) TAUHFT2
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+        IF (TTAUWSHELTER.GT.0) THEN
+          READ(NDSM,IOSTAT=IERR) TAUHFT2
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
+        END IF
       END IF
     END IF
 #endif
@@ -1583,10 +1614,11 @@ CONTAINS
            SIN6WS, SIN6FC
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+      READ (NDSM,IOSTAT=IERR)                                &
            SIN6A0, SDS6ET, SDS6A1, SDS6A2,                   &
            SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,        &
            SIN6WS, SIN6FC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
     !
@@ -1608,10 +1640,11 @@ CONTAINS
            GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
+      READ (NDSM,IOSTAT=IERR)                              &
            SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
            IQTPE, NLTAIL, GQNF1, GQNT1,                    &
            GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,            &
          KDCON, KDMN, SNLS1, SNLS2, SNLS3,                 &
@@ -1630,12 +1663,13 @@ CONTAINS
                    DPTHNL
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           IQTPE, NLTAIL, NDPTHS
+      READ (NDSM,IOSTAT=IERR) IQTPE, NLTAIL, NDPTHS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
       DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
       PINIT  = .TRUE.
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
+      READ (NDSM,IOSTAT=IERR) DPTHNL
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
     IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
@@ -1658,8 +1692,9 @@ CONTAINS
            SNLCS(1:SNLNQ)
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
+      READ (NDSM,IOSTAT=IERR)              &
            SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),            &
            MPARS(IGRD)%SNLPS%SNLM(SNLNQ),                  &
            MPARS(IGRD)%SNLPS%SNLT(SNLNQ),                  &
@@ -1671,8 +1706,8 @@ CONTAINS
       SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
       SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
       PINIT  = .TRUE.
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           SNLL, SNLM, SNLT, SNLCD, SNLCS
+      READ (NDSM,IOSTAT=IERR) SNLL, SNLM, SNLT, SNLCD, SNLCS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC, &
          SNLSFD, SNLSFS
@@ -1692,8 +1727,8 @@ CONTAINS
                    ITSA, IALT
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           ITSA, IALT
+      READ (NDSM,IOSTAT=IERR) ITSA, IALT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
 #endif
@@ -1711,9 +1746,10 @@ CONTAINS
            QI5NNZ, QI5IPL, QI5PMX
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+      READ (NDSM,IOSTAT=IERR)                               &
            QR5DPT, QR5OML, QI5DIS, QI5KEV,                  &
            QI5NNZ, QI5IPL, QI5PMX
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) QR5DPT, QR5OML, QI5DIS, &
          QI5KEV, QI5NNZ, QI5IPL,                            &
@@ -1730,8 +1766,9 @@ CONTAINS
            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+      READ (NDSM,IOSTAT=IERR)               &
            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9251)                         &
          CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
@@ -1782,7 +1819,8 @@ CONTAINS
       WRITE (NDSA,*) 'SBTC1:',                SBTC1
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
+      READ (NDSM,IOSTAT=IERR) SBTC1
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     IF ( FLTEST ) WRITE (NDST,9052) SBTC1
 #endif
@@ -1798,8 +1836,8 @@ CONTAINS
            SBTCX, SED_D50, SED_PSIC
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-           SBTCX, SED_D50, SED_PSIC
+      READ (NDSM,IOSTAT=IERR) SBTCX, SED_D50, SED_PSIC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
     !
@@ -1816,8 +1854,8 @@ CONTAINS
            SDBC1, SDBC2, FDONLY
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-           SDBC1, SDBC2, FDONLY
+      READ (NDSM,IOSTAT=IERR) SDBC1, SDBC2, FDONLY
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
     IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
@@ -1834,9 +1872,10 @@ CONTAINS
            UOSTFACTORLOCAL, UOSTFACTORSHADOW
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+      READ (NDSM,IOSTAT=IERR)                                 &
            UOSTFILELOCAL, UOSTFILESHADOW,                     &
            UOSTFACTORLOCAL, UOSTFACTORSHADOW
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       CALL UOST_INITGRID(IGRD, UOSTFILELOCAL, UOSTFILESHADOW, &
            UOSTFACTORLOCAL, UOSTFACTORSHADOW)
 #endif
@@ -1853,7 +1892,8 @@ CONTAINS
       WRITE (NDSA,*) 'IS1C1, IS1C2:',         IS1C1, IS1C2
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
+      READ (NDSM,IOSTAT=IERR) IS1C1, IS1C2
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
     !
@@ -1864,7 +1904,8 @@ CONTAINS
       WRITE (NDSA,*) 'IS3PARS:',              IS2PARS
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
+      READ (NDSM,IOSTAT=IERR) IS2PARS
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
       IF ( .NOT. FLIS ) THEN
         CALL INSIS2
         FLIS  = .TRUE.
@@ -1882,8 +1923,8 @@ CONTAINS
       WRITE (NDSA,*) 'DTME, CLATMN:', DTME, CLATMN
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-           DTME, CLATMN
+      READ (NDSM,IOSTAT=IERR) DTME, CLATMN
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
     IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN
@@ -1896,8 +1937,8 @@ CONTAINS
       WRITE (NDSA,*) 'WDCG, WDTH:', WDCG, WDTH
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-           WDCG, WDTH
+      READ (NDSM,IOSTAT=IERR) WDCG, WDTH
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
     IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
@@ -1911,8 +1952,9 @@ CONTAINS
                   DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+      READ (NDSM,IOSTAT=IERR)                &
            DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
     !
     IF ( FLTEST ) WRITE (NDST,9260) DTMS, Refran
@@ -1926,8 +1968,9 @@ CONTAINS
                     TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+      READ (NDSM,IOSTAT=IERR) &
            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
 #ifdef W3_FLD2
@@ -1938,8 +1981,9 @@ CONTAINS
                    TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 #endif
     ELSE
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+      READ (NDSM,IOSTAT=IERR) &
            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
     END IF
 #endif
     !
@@ -1963,21 +2007,6 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 9')
     !
     RETURN
-    !
-    ! Escape locations read errors --------------------------------------- *
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:IEXT), IERR
-    CALL EXTCDE ( 50 )
-    !
-801 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:IEXT)
-    CALL EXTCDE ( 51 )
-    !
-802 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:IEXT), IERR, &
-         MESSAGE
-    CALL EXTCDE ( 52 )
     !
     ! Formats
     !
@@ -2015,16 +2044,6 @@ CONTAINS
          '               EXPECTED :',A/                      &
          , 5(A,/) /)
     !               '     CHECK CONSISTENCY OF SWITCHES IN PROGRAMS'/)
-    !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR : '/       &
-         '     ERROR IN OPENING mod_def.',A,' FILE'/         &
-         '     IOSTAT =',I5/)
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR : '/       &
-         '     PREMATURE END OF mod_def.',A,' FILE'/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR : '/,      &
-         '     ERROR IN READING FROM mod_def.',A,' FILE'/    &
-         '     IOSTAT =',I5,                                 &
-         5(A,/) /)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3IOGR : INXOUT = ',A,', WRITE = ',L1,   &
