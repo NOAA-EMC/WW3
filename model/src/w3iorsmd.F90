@@ -555,7 +555,7 @@ CONTAINS
                WRITE (NDSE,903) TNAME, GNAME
         END IF
         IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
-             TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
+             TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' .AND. TYPE.NE.'FTCH' ) THEN
           IF ( IAPROC .EQ. NAPERR )                               &
                WRITE (NDSE,904) TYPE
           CALL EXTCDE ( 12 )
