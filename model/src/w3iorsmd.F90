@@ -1445,6 +1445,7 @@ CONTAINS
         TICE(1) = -1
         TICE(2) =  0
         TRHO(1) = -1
+        TRHO(2) =  0
         TIC1(1) = -1
         TIC1(2) =  0
         TIC5(1) = -1
