@@ -316,6 +316,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
+    USE MPI 
 #endif
     !/
     USE W3SERVMD, ONLY: EXTCDE, EXTIOF
@@ -334,9 +335,6 @@ CONTAINS
     !
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    use mpi
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

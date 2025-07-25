@@ -332,7 +332,7 @@ PROGRAM W3SHEL
   !
   INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
        NDSEN, IERR, J, I, ILOOP, IPTS, NPTS,     &
-       NDTNEW, MPI_COMM = -99,                   &
+       NDTNEW, MPICOMM = -99,                   &
        FLAGTIDE, COUPL_COMM, IH, N_TOT
   INTEGER             :: NDSF(-7:9), NDS(15), NTRACE(2), NDT(7:9), &
        TIME0(2), TIMEN(2), TTIME(2), TTT(2),     &
@@ -465,7 +465,7 @@ PROGRAM W3SHEL
 
 #ifdef W3_OASIS
   IF (OASISED.EQ.1) THEN
-    CALL CPL_OASIS_INIT(MPI_COMM)
+    CALL CPL_OASIS_INIT(MPICOMM)
   ELSE
 #endif
 #ifdef W3_OMPH
@@ -482,7 +482,7 @@ PROGRAM W3SHEL
 #endif
 
 #ifdef W3_MPI
-    MPI_COMM = MPI_COMM_WORLD
+    MPICOMM = MPI_COMM_WORLD
 #endif
 #ifdef W3_OASIS
   END IF
@@ -490,8 +490,8 @@ PROGRAM W3SHEL
   !
   !
 #ifdef W3_MPI
-  CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
-  CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
+  CALL MPI_COMM_SIZE ( MPICOMM, NAPROC, IERR_MPI )
+  CALL MPI_COMM_RANK ( MPICOMM, IAPROC, IERR_MPI )
   IAPROC = IAPROC + 1
 #endif
   memunit = 740+IAPROC
@@ -689,7 +689,7 @@ PROGRAM W3SHEL
   INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
     ! Read namelist
-    CALL W3NMLSHEL (MPI_COMM, NDSI, TRIM(FNMPRE)//'ww3_shel.nml',  &
+    CALL W3NMLSHEL (MPICOMM, NDSI, TRIM(FNMPRE)//'ww3_shel.nml',  &
          NML_DOMAIN, NML_INPUT, NML_OUTPUT_TYPE,                   &
          NML_OUTPUT_DATE, NML_OUTPUT_PATH, NML_HOMOG_COUNT,        &
          NML_HOMOG_INPUT, IERR)
@@ -950,7 +950,7 @@ PROGRAM W3SHEL
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLGD,     &
                FLGRD, IAPROC, NAPOUT, IERR )
           IF ( IERR .NE. 0 ) & 
-            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+            CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
           ! Type 2: point output
         ELSE IF ( J .EQ. 2 ) THEN
@@ -1060,7 +1060,7 @@ PROGRAM W3SHEL
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLG2,  &
                FLGR2, IAPROC, NAPOUT, IERR )
           IF ( IERR .NE. 0 ) &
-            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+            CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
           FLDIN = NML_OUTPUT_TYPE%COUPLING%RECEIVED
           CPLT0 = NML_OUTPUT_TYPE%COUPLING%COUPLET0
 #endif
@@ -1074,7 +1074,7 @@ PROGRAM W3SHEL
     CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
          FLOGRR, IAPROC, NAPOUT, IERR )
     IF ( IERR .NE. 0 ) &
-      CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+      CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
     ! force minimal allocation to avoid memory seg fault
     IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
@@ -1387,7 +1387,7 @@ PROGRAM W3SHEL
         CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
              FLOGRR, IAPROC, NAPOUT, IERR )
         IF ( IERR .NE. 0 ) &
-          CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+          CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
       ELSE
         !
         !INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
@@ -1459,7 +1459,7 @@ PROGRAM W3SHEL
             CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
                  FLGRD, IAPROC, NAPOUT, IERR )
             IF ( IERR .NE. 0 ) &
-              CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+              CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
             ! Type 2: point output
           ELSE IF ( J .EQ. 2 ) THEN
@@ -1471,7 +1471,7 @@ PROGRAM W3SHEL
               ELSE
                 NDSI2  = NDSS
 #ifdef W3_MPI
-                CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
+                CALL MPI_BARRIER (MPICOMM,IERR_MPI)
 #endif
                 OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
                 REWIND (NDSS)
@@ -1529,13 +1529,13 @@ PROGRAM W3SHEL
                  WRITE (NDSO,2947)
             IF ( IAPROC .EQ. 1 ) THEN
 #ifdef W3_MPI
-              CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+              CALL MPI_BARRIER ( MPICOMM, IERR_MPI )
 #endif
               CLOSE (NDSS,STATUS='DELETE')
             ELSE
               CLOSE (NDSS)
 #ifdef W3_MPI
-              CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+              CALL MPI_BARRIER ( MPICOMM, IERR_MPI )
 #endif
             END IF
             !
@@ -1574,7 +1574,7 @@ PROGRAM W3SHEL
             CALL W3READFLGRD ( NDSI, NDSO, NDSS, NDSEN, COMSTR, FLG2,     &
                  FLGR2, IAPROC, NAPOUT, IERR )
             IF ( IERR .NE. 0 ) &
-              CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+              CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,'(A)',IOSTAT=IERR) FLDIN
             IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
@@ -1730,7 +1730,7 @@ PROGRAM W3SHEL
                NDSEN, NX, NY, GTYPE,               &
                IERR, FPRE=TRIM(FNMPRE), TIDEFLAGIN=FLAGTIDE )
           IF ( IERR .NE. 0 ) &
-            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+            CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 #ifdef W3_TIDE
           IF (FLAGTIDE.GT.0.AND.J.EQ.1) FLAGSTIDE(1)=.TRUE.
           IF (FLAGTIDE.GT.0.AND.J.EQ.2) FLAGSTIDE(2)=.TRUE.
@@ -1748,7 +1748,7 @@ PROGRAM W3SHEL
              RCLD(J), NY, NODATA(J),                 &
              IERR, FPRE=TRIM(FNMPRE) )
         IF ( IERR .NE. 0 ) &
-          CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+          CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
              RCLD(J), NODATA(J)
       ELSE
@@ -1941,7 +1941,7 @@ PROGRAM W3SHEL
   OARST = ANY(FLOGR)
   !
   CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
-       FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
+       FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPICOMM,   &
        FLAGSTIDEIN=FLAGSTIDE )
   !
   !      IF (MINVAL(VA) .LT. 0.) THEN
@@ -1966,7 +1966,7 @@ PROGRAM W3SHEL
   ALLOCATE ( XXX(NX,NY) )
   !
 #ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  CALL MPI_BARRIER ( MPICOMM, IERR_MPI )
 #endif
   !
   IF ( IAPROC .EQ. NAPOUT ) THEN
@@ -1983,7 +1983,7 @@ PROGRAM W3SHEL
   ENDIF
   ! Estimate the weights for the spatial interpolation
   IF (DTOUT(7).NE.0) THEN
-    CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+    CALL CPL_OASIS_GRID(L_MASTER,MPICOMM)
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
 #endif
@@ -2008,11 +2008,11 @@ PROGRAM W3SHEL
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
     CALL W3WAVE ( 1, ODAT, TIMEN                      &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., MPI_COMM, TIMEN     &
+         , .TRUE., .FALSE., MPICOMM, TIMEN     &
 #endif
         )
     !
-    CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+    CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
     !
   END IF
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2133,7 +2133,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
@@ -2200,7 +2200,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
@@ -2277,7 +2277,7 @@ PROGRAM W3SHEL
               ELSE
 #endif
 #ifdef W3_OASIS
-                COUPL_COMM = MPI_COMM
+                COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASOCM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2325,7 +2325,7 @@ PROGRAM W3SHEL
               ELSE
 #endif
 #ifdef W3_OASIS
-                COUPL_COMM = MPI_COMM
+                COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASOCM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2361,7 +2361,7 @@ PROGRAM W3SHEL
 #endif
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2384,7 +2384,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
@@ -2420,7 +2420,7 @@ PROGRAM W3SHEL
 #endif
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2452,7 +2452,7 @@ PROGRAM W3SHEL
 #endif
             ELSE
 #ifdef W3_OASIS
-              COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPICOMM
 #endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2527,7 +2527,7 @@ PROGRAM W3SHEL
           END IF
           !
           IF ( IERR.GT.0 ) &
-            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+            CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
           IF ( IERR.LT.0 .AND. IAPROC.EQ.NAPOUT ) WRITE (NDSO,973) IDFLDS(J)
 
 
@@ -2604,7 +2604,7 @@ PROGRAM W3SHEL
     !
     CALL W3WAVE ( 1, ODAT, TIME0                                    &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., MPI_COMM, TIMEN                         &
+         , .TRUE., .FALSE., MPICOMM, TIMEN                         &
 #endif
          )
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
@@ -2647,7 +2647,7 @@ PROGRAM W3SHEL
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
         CALL W3WAVE ( 1, ODAT, TIME0                                 &
 #ifdef W3_OASIS
-             , .TRUE., .FALSE., MPI_COMM, TIMEN              &
+             , .TRUE., .FALSE., MPICOMM, TIMEN              &
 #endif
              )
       END IF
@@ -2663,7 +2663,7 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !     End of shel
   !
-  CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+  CALL FINALISE(MPICOMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
   !
   ! Formats
   !
@@ -2854,7 +2854,7 @@ CONTAINS
   !>
   !> @author J.M. Castillo
   !> @date 04-Jun-2025
-  SUBROUTINE FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS, CLKDT1, CLKDT2)
+  SUBROUTINE FINALISE(MPICOMM_IN, IERR_MPI, NDSO, NDS, CLKDT1, CLKDT2)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2877,7 +2877,7 @@ CONTAINS
     !
     !     Parameter list
     !     ----------------------------------------------------------------
-    !       MPI_COMM  Int.  I  MPI communicator 
+    !       MPICOMM_IN Int.  I  MPI communicator 
     !       IERR_MPI  Int.  O  MPI error code
     !       NDSO      Int.  I  Output unit number
     !       NDS       Int.  I  Dataset unit number
@@ -2904,7 +2904,7 @@ CONTAINS
     IMPLICIT NONE
 
     ! Parameter list
-    INTEGER, INTENT(IN)   :: MPI_COMM
+    INTEGER, INTENT(IN)   :: MPICOMM_IN
     INTEGER, INTENT(OUT)  :: IERR_MPI
     INTEGER, INTENT(IN)   :: NDSO
     INTEGER, INTENT(IN)   :: NDS
@@ -2915,7 +2915,7 @@ CONTAINS
     INTEGER               :: CLKDT3(8)
 
 #ifdef W3_MPI
-    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+    CALL MPI_BARRIER ( MPICOMM_IN, IERR_MPI )
 #endif
     !
     IF ( IAPROC .EQ. NAPOUT ) THEN
