@@ -507,6 +507,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD,  ONLY: STRACE
 #endif
+    use w3odatmd, only : use_cmeps
     !
     IMPLICIT NONE
     !/
@@ -519,10 +520,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: JGRID
-    LOGICAL                 :: FLAGSTIDE(4)=.FALSE.
+    INTEGER       :: JGRID
+    LOGICAL       :: FLAGSTIDE(4)=.FALSE.
+    integer       :: allocsizex, allocsizey
 #ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
+    INTEGER, SAVE :: IENT = 0
     CALL STRACE (IENT, 'W3DIMI')
 #endif
     !
@@ -631,6 +633,13 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
+    if (use_cmeps) then
+       allocsizex = 1
+       allocsizey = 1
+    else
+       allocsizex = nx
+       allocsizey = ny
+    end if
     IF ( FLCUR  ) THEN
 #ifdef W3_SMC
       IF( FSWND ) THEN
@@ -640,10 +649,10 @@ CONTAINS
              INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
-             INPUTS(IMOD)%CY0(NX,NY) ,              &
-             INPUTS(IMOD)%CXN(NX,NY) ,              &
-             INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,           &
+             INPUTS(IMOD)%CY0(NX,NY) ,                 &
+             INPUTS(IMOD)%CXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%CYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -683,12 +692,12 @@ CONTAINS
              INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
-             INPUTS(IMOD)%WY0(NX,NY) ,              &
-             INPUTS(IMOD)%DT0(NX,NY) ,              &
-             INPUTS(IMOD)%WXN(NX,NY) ,              &
-             INPUTS(IMOD)%WYN(NX,NY) ,              &
-             INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,           &
+             INPUTS(IMOD)%WY0(NX,NY) ,                 &
+             INPUTS(IMOD)%DT0(NX,NY) ,                 &
+             INPUTS(IMOD)%WXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%WYN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%DTN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -713,10 +722,10 @@ CONTAINS
              INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
-             INPUTS(IMOD)%UY0(NX,NY) ,              &
-             INPUTS(IMOD)%UXN(NX,NY) ,              &
-             INPUTS(IMOD)%UYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,           &
+             INPUTS(IMOD)%UY0(NX,NY) ,                 &
+             INPUTS(IMOD)%UXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%UYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -731,7 +740,7 @@ CONTAINS
       ELSE
 #endif
         ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
-             INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
+             INPUTS(IMOD)%RHN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif

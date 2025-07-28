@@ -594,6 +594,7 @@ MODULE W3ODATMD
   character(len=36)  :: time_origin = ''               !< @public the time_origin used for netCDF output
   character(len=36)  :: calendar_name = ''             !< @public the calendar used for netCDF output
   integer(kind=8)    :: elapsed_secs = 0               !< @public the time in seconds from the time_origin
+  logical            :: use_cmeps = .false.            !< @public a logical flag to indicate cmeps is providing the forcing
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -937,7 +938,7 @@ CONTAINS
     IDOUT( 8, 6)  = 'kxky-peakdness      '
     IDOUT( 8, 7)  = 'Skewness            '
     IDOUT( 8, 8)  = 'EM bias(l120+l102)/8'
-    IDOUT( 8, 9)  = 'Tracker bias:-l300/8'            
+    IDOUT( 8, 9)  = 'Tracker bias:-l300/8'
     !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
     !      IDOUT( 8, 4)  = 'Surf grad correl XT'
     !      IDOUT( 8, 5)  = 'Surf grad correl YT'
@@ -1135,9 +1136,9 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     OUTPTS(IMOD)%OUT2%O2INIT = .TRUE.
-    !Initialize: 
-    OUTPTS(IMOD)%OUT2%IPTINT=0 
-    OUTPTS(IMOD)%OUT2%PTNME='' 
+    !Initialize:
+    OUTPTS(IMOD)%OUT2%IPTINT=0
+    OUTPTS(IMOD)%OUT2%PTNME=''
     OUTPTS(IMOD)%OUT2%PTLOC=0.
     OUTPTS(IMOD)%OUT2%PTIFAC=0.
     !

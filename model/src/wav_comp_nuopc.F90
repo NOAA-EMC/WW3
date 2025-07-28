@@ -214,6 +214,7 @@ contains
   !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
+    use w3odatmd        , only : use_cmeps
     use w3adatmd        , only : w3naux, w3seta
     use w3idatmd        , only : w3seti, w3ninp
     use w3gdatmd        , only : w3nmod, w3setg
@@ -265,6 +266,9 @@ contains
     call ufs_settimer(wtime)
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    ! if we're here, then cmeps is active
+    use_cmeps = .true.
 
     !----------------------------------------------------------------------------
     ! retrieve configuration settings
