@@ -292,7 +292,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
+    USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE, FETCH
     USE W3ODATMD, ONLY: W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
     USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
@@ -417,7 +417,7 @@ CONTAINS
     !
     IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'HOT'  .AND.               &
          INXOUT.NE.'COLD' .AND. INXOUT.NE.'WIND' .AND.               &
-         INXOUT.NE.'CALM' ) THEN
+         INXOUT.NE.'CALM' .AND. INXOUT.NE.'FTCH') THEN
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
       CALL EXTCDE ( 1 )
     END IF
@@ -553,7 +553,7 @@ CONTAINS
                WRITE (NDSE,903) TNAME, GNAME
         END IF
         IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
-             TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
+             TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' .AND. TYPE.NE.'FTCH' ) THEN
           IF ( IAPROC .EQ. NAPERR )                               &
                WRITE (NDSE,904) TYPE
           CALL EXTCDE ( 12 )
@@ -638,7 +638,13 @@ CONTAINS
     !          ( Bail out if write for TYPE.EQ.'WIND' )
     !
     IF ( WRITE ) THEN
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'FTCH' ) THEN
+        RPOS = 1_8 + LRECL*(3-1_8)
+        WRITE (NDSR,POS=RPOS,IOSTAT=IERR) FETCH
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
+                                   ISWRITE=.TRUE.,POS=RPOS)
+      ENDIF
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' .OR. TYPE.EQ.'FTCH' ) THEN
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
           CLOSE ( NDSR )
         END IF
@@ -765,7 +771,14 @@ CONTAINS
       !
       ! Reading spectra
       !
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'FTCH') THEN
+        RPOS  = 1_8 + LRECL*(3-1_8)
+        READ(NDSR, POS=RPOS,IOSTAT=IERR) FETCH
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+      ELSEIF ( TYPE.EQ.'WIND') THEN
+        FETCH = 0
+      ENDIF
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' .OR. TYPE.EQ.'FTCH' ) THEN
 #ifdef W3_T
         WRITE (NDST,9020) TYPE
 #endif
@@ -1443,6 +1456,7 @@ CONTAINS
         TICE(1) = -1
         TICE(2) =  0
         TRHO(1) = -1
+        TRHO(2) =  0
         TIC1(1) = -1
         TIC1(2) =  0
         TIC5(1) = -1

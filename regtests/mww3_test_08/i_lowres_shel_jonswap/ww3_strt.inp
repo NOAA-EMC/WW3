@@ -3,7 +3,6 @@ $ WAVEWATCH III Initial conditions input file                          $
 $--------------------------------------------------------------------- $
 $ type of initial field ITYPE .
 $
-    1
 $
 $ ITYPE = 1 ---------------------------------------------------------- $
 $ Gaussian in frequency and space, cos type in direction.
@@ -12,7 +11,6 @@ $    convention) and cosine power, Xm and spread (degr. or m) Ym and
 $    spread (degr. or m), Hmax (m) (Example for lon-lat grid in degr.).
 $
 $   0.10  0.01  270. 2  1. 0.5 1. 0.5 2.5
-    0.10  0.01  270. 2  0. 1000. 1. 1000. 2.5
 $   0.10  0.01  270. 2  0. 1000. 1. 1000. 0.01
 $   0.10  0.01  270. 2  0. 1000. 1. 1000. 0.
 $
@@ -71,7 +69,8 @@ $ ITYPE = 6 ---------------------------------------------------------- $
 $ Similar to ITYPE = 3, but with manually specified fetch.
 $ - assumed fetch (m):
 $ 
-$ 5000
+6
+10000
 $ 
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

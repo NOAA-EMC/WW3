@@ -629,12 +629,22 @@ contains
 
     !if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
 #ifdef W3_SCOTCH
+#ifdef SCOTCH_707 
+! Starting with SCOTCH 7.0.7 need ot explicitly call the SCOTCHF
+    call SCOTCHFParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
+         vwgt, & !vwgt - ignore weights
+         adjwgt, & ! adjwgt - ignore weights
+         wgtflag, &
+         numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
+         edgecut,part, comm,ref)
+#else 
     call SCOTCH_ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
          vwgt, & !vwgt - ignore weights
          adjwgt, & ! adjwgt - ignore weights
          wgtflag, &
          numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
          edgecut,part, comm,ref)
+#endif
 #endif
 
 #ifdef W3_METIS
