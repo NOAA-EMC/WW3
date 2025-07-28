@@ -19,6 +19,8 @@ MODULE W3SERVMD
   !/                  processing rotated grid data
   !/    15-Jan-2021 : Added UV_TO_MAG_DIR routine         ( version 7.12 )
   !/    02-Jan-2025 : Added DIST_HAVERSINE routine        ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements, add EXTIOF and 
+  !/                  EXTOPN routines                     ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -52,6 +54,8 @@ MODULE W3SERVMD
   !      EJ5P      R.F.  Public   Five parameter JONSWAP spectrum.
   !      WWDATE    Subr. Public   Get system date.
   !      WWTIME    Subr. Public   Get system time.
+  !      EXTOPN    Subr. Public   Abort program with exit code when opening file.
+  !      EXTIOF    Subr. Public   Abort program with exit code when I/O file.
   !      EXTCDE    Subr. Public   Abort program with exit code.
   !     Four subs for rotated grid are appended to this module.  As they
   !     are shared with SMC grid, they are not quoted by option /RTD but
@@ -290,41 +294,28 @@ CONTAINS
     CALL STRACE (IENT, 'NEXTLN')
 #endif
     !
-100 CONTINUE
-    ! read line
-    READ ( NDSI, 900, END=800, ERR=801, IOSTAT=IERR, IOMSG=MSG ) LINE
-    ! leading blanks removed and placed on the right
-    TEST = ADJUSTL ( LINE )
-    IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
-      ! if comment or blank line, then skip
-      GOTO 100
-    ELSE
-      ! otherwise, backup to beginning of line
-      BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
-    ENDIF
-    RETURN
-    !
-800 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,910)
-    CALL EXTCDE ( 1 )
-    !
-801 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,911) IERR, TRIM(MSG)
-    CALL EXTCDE ( 2 )
-    !
-802 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,912) IERR, TRIM(MSG)
-    CALL EXTCDE ( 3 )
+    DO
+      ! read line
+      READ ( NDSI, '(A)', IOSTAT=IERR, IOMSG=MSG ) LINE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'NEXTLN','INPUT',1,MSG)
+      ! leading blanks removed and placed on the right
+      TEST = ADJUSTL ( LINE )
+      IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+        ! if comment or blank line, then skip
+        CYCLE
+      ELSE
+        ! otherwise, backup to beginning of line and exit
+        BACKSPACE ( NDSI, IOSTAT=IERR, IOMSG=MSG )
+        IF (IERR.GT.0) THEN
+          IF ( NDSE .GE. 0 ) WRITE (NDSE,912) IERR, TRIM(MSG)
+          CALL EXTCDE ( 3 )
+        END IF
+        RETURN
+      ENDIF
+    END DO
     !
     ! Formats
     !
-900 FORMAT (A)
-910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
-         '     PREMATURE END OF INPUT FILE'/)
-911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
-         '     ERROR IN READING FROM FILE'/           &
-         '     IOSTAT =',I5,/                         &
-         '     IOMSG = ',A/)
 912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
          '     ERROR ON BACKSPACE'/                   &
          '     IOSTAT =',I5,/                         &
@@ -826,6 +817,248 @@ CONTAINS
     !/ End of WWTIME ----------------------------------------------------- /
     !/
   END SUBROUTINE WWTIME
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE EXTIOF (NDSE, IERR, PNAME, FNAME, ERRCODE, MESSAGE, &
+                                            ISWRITE, POS, FIELD)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         27-Jun-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    27-Jun-2025 : First implementation                ( version x.xx )
+    !/
+    !  1. Purpose :
+    !
+    !     Perform a program stop with an exit code when there are errors
+    !     reading or writing a file
+    !
+    !  2. Method :
+    !
+    !     Check IOSTAT and call EXTCDE if it shows an error
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDSE    Int.   I   File unit where to write error messages
+    !       IERR    Int.   I   Error code thrown by the OPEN statement
+    !       PNAME   Str.   I   Name of the calling subroutine
+    !       FNAME   Str.   I   Type of file that was opened
+    !       ERRCODE Int.   I   Exit code to be used.
+    !       MESSAGE Str.   I   (optional) error message 
+    !       ISWRITE Log.   I   (optional) output writing version
+    !       POS     Int.   I   (optional) writing position 
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     EXTCDE
+    !
+    !  5. Called by :
+    !
+    !     Any routine.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    INTEGER,          INTENT(IN)           :: NDSE, IERR, ERRCODE
+    CHARACTER(len=*), INTENT(IN)           :: PNAME, FNAME
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: MESSAGE
+    LOGICAL,          INTENT(IN), OPTIONAL :: ISWRITE
+    INTEGER(KIND=8),  INTENT(IN), OPTIONAL :: POS
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: FIELD
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    LOGICAL  :: TOWRITE
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    IF (PRESENT(ISWRITE)) THEN
+      TOWRITE = ISWRITE
+    ELSE
+      TOWRITE = .FALSE.
+    END IF
+    !
+    IF (TOWRITE) THEN
+      IF (PRESENT(POS)) THEN
+        WRITE (NDSE,903) TRIM(PNAME), TRIM(FNAME), IERR, POS
+        CALL EXTCDE ( ERRCODE )
+      ELSE
+        WRITE (NDSE,900) TRIM(PNAME), TRIM(FNAME), IERR
+        CALL EXTCDE ( ERRCODE )
+      END IF
+    ELSE
+      IF (TRIM(PNAME).EQ.'W3TIMEMD') THEN
+        IF (IERR.LT.0) THEN
+          WRITE (NDSE,1004) TRIM(PNAME), TRIM(FNAME)
+        ELSE
+          WRITE (NDSE,1005) TRIM(PNAME), TRIM(FNAME), IERR
+        END IF
+      ELSE
+        IF (IERR.GT.0) THEN
+          IF (PRESENT(MESSAGE)) THEN
+            WRITE (NDSE,1003) TRIM(PNAME), TRIM(FNAME), IERR, TRIM(MESSAGE)
+          ELSE IF (PRESENT(FIELD)) THEN
+            WRITE (NDSE,1006) TRIM(PNAME), TRIM(FIELD), TRIM(FNAME), IERR
+          ELSE
+            WRITE (NDSE,1002) TRIM(PNAME), TRIM(FNAME), IERR
+          END IF
+          CALL EXTCDE ( ERRCODE+1 )
+        END IF
+        IF (IERR.LT.0) THEN
+          WRITE (NDSE,1001) TRIM(PNAME), TRIM(FNAME)
+          CALL EXTCDE ( ERRCODE )
+        END IF
+      END IF
+    END IF
+    !
+900 FORMAT (/' *** ERROR ', A, ' : '/                         &
+         '     ERROR IN WRITING TO ', A, ' FILE'/             &
+         '     IOSTAT =',I5/)
+    !
+903 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/        &
+         '     ERROR IN WRITING TO ', A, ' FILE'/             &
+         '     IOSTAT =',I5,', POS =',I11 /)
+    !
+1001 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     PREMATURE END OF ', A, ' FILE'/)
+    !
+1002 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     ERROR IN READING FROM ', A, ' FILE'/             &
+       '     IOSTAT =',I5/)
+    !
+1003 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     ERROR IN READING FROM ', A, ' FILE'/           &
+         '     IOSTAT =',I5,/                                 &
+         '     IOMSG = ',A/)
+    !
+1006 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     ERROR IN READING ',A,' FROM ', A, ' FILE'/       &
+       '     IOSTAT =',I5/)
+    !
+1004 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     PREMATURE END OF TIME ATTRIBUTE '/             &
+         '     ',A/                                           &
+         '     DIFFERS FROM CONVENTIONS ISO8601 '/            &
+         '     XXX since YYYY-MM-DD hh:mm:ss'/                &
+         '     XXX since YYYY-M-D h:m:s'/                     &
+         '     XXX since YYYY-M-D hh:mm:ss'/)
+    !
+1005 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     ERROR IN READING OF TIME ATTRIBUTE '/          &
+         '     ',A/                                           &
+         '     DIFFERS FROM CONVENTIONS ISO8601 '/            &
+         '     XXX since YYYY-MM-DD hh:mm:ss'/                &
+         '     XXX since YYYY-M-D h:m:s'/                     &
+         '     XXX since YYYY-M-D hh:mm:ss'/                  &
+         '     IOSTAT =',I5/)
+
+    RETURN
+    !/
+    !/ End of EXTIOF ----------------------------------------------------- /
+    !/
+  END SUBROUTINE EXTIOF
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE EXTOPN (NDSE, IERR, PNAME, FNAME, ERRCODE, NDSF, NAMEF)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         27-Jun-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    27-Jun-2025 : First implementation                ( version x.xx )
+    !/
+    !  1. Purpose :
+    !
+    !     Perform a program stop with an exit code when there are errors
+    !     opening a file
+    !
+    !  2. Method :
+    !
+    !     Check IOSTAT and call EXTCDE if it shows an error
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDSE    Int.   I   File unit where to write error messages
+    !       IERR    Int.   I   Error code thrown by the OPEN statement
+    !       PNAME   Str.   I   Name of the calling subroutine
+    !       FNAME   Str.   I   Type of file that was opened
+    !       ERRCODE Int.   I   Exit code to be used.
+    !       NDSF    Int.   I   (optional) file unit
+    !       NAMEF   Str.   I   (optional) name of the file that was opened
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     EXTCDE
+    !
+    !  5. Called by :
+    !
+    !     Any routine.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    INTEGER,          INTENT(IN)           :: NDSE, IERR, ERRCODE
+    CHARACTER(len=*), INTENT(IN)           :: PNAME, FNAME
+    INTEGER,          INTENT(IN), OPTIONAL :: NDSF
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: NAMEF
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    IF (PRESENT(NDSF) .AND. PRESENT(NAMEF)) THEN
+      WRITE (NDSE,1050) TRIM(PNAME), TRIM(FNAME), IERR, NDSF, TRIM(NAMEF)
+    ELSE IF (PRESENT(NAMEF)) THEN
+      WRITE (NDSE,1009) TRIM(PNAME), TRIM(FNAME), IERR, TRIM(NAMEF)
+    ELSE
+      WRITE (NDSE,1000) TRIM(PNAME), TRIM(FNAME), IERR
+    END IF
+    CALL EXTCDE ( ERRCODE )
+
+1000 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE'/                &
+       '     IOSTAT =',I5/)
+!
+1009 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE: ', A/           &
+       '     IOSTAT =',I5/)
+!
+1050 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE'/                &
+       '     IOSTAT =',I5/                                  &
+       '     NDSF   =',I5/                                  &
+       '     NAMEF  = ',A/)
+    !
+    RETURN
+    !/
+    !/ End of EXTOPN ----------------------------------------------------- /
+    !/
+  END SUBROUTINE EXTOPN
   !/ ------------------------------------------------------------------- /
   SUBROUTINE EXTCDE ( IEXIT, UNIT, MSG, FILE, LINE, COMM )
     !/
@@ -1690,237 +1923,263 @@ CONTAINS
       end do
     ENDIF
     !
-    IF (KK .EQ. 2) GO TO 100
-    !
-    !     Sort X only
-    !
-    M = 1
-    I = 1
-    J = NN
-    R = 0.375E0
-    !
-20  IF (I .EQ. J) GO TO 60
-    IF (R .LE. 0.5898437E0) THEN
-      R = R+3.90625E-2
-    ELSE
-      R = R-0.21875E0
-    ENDIF
-    !
-30  K = I
-    !
-    !     Select a central element of the array and save it in location T
-    !
-    IJ = I + INT((J-I)*R)
-    T = X(IJ)
-    !
-    !     If first element of array is greater than T, interchange with T
-    !
-    IF (X(I) .GT. T) THEN
-      X(IJ) = X(I)
-      X(I) = T
-      T = X(IJ)
-    ENDIF
-    L = J
-    !
-    !     If last element of array is less than than T, interchange with T
-    !
-    IF (X(J) .LT. T) THEN
-      X(IJ) = X(J)
-      X(J) = T
-      T = X(IJ)
+    IF (KK .EQ. 2) THEN
       !
-      !        If first element of array is greater than T, interchange with T
+      !     Sort X and carry Y along
       !
-      IF (X(I) .GT. T) THEN
-        X(IJ) = X(I)
-        X(I) = T
-        T = X(IJ)
-      ENDIF
-    ENDIF
-    !
-    !     Find an element in the second half of the array which is smaller
-    !     than T
-    !
-40  L = L-1
-    IF (X(L) .GT. T) GO TO 40
-    !
-    !     Find an element in the first half of the array which is greater
-    !     than T
-    !
-50  K = K+1
-    IF (X(K) .LT. T) GO TO 50
-    !
-    !     Interchange these elements
-    !
-    IF (K .LE. L) THEN
-      TT = X(L)
-      X(L) = X(K)
-      X(K) = TT
-      GO TO 40
-    ENDIF
-    !
-    !     Save upper and lower subscripts of the array yet to be sorted
-    !
-    IF (L-I .GT. J-K) THEN
-      IL(M) = I
-      IU(M) = L
-      I = K
-      M = M+1
-    ELSE
-      IL(M) = K
-      IU(M) = J
-      J = L
-      M = M+1
-    ENDIF
-    GO TO 70
-    !
-    !     Begin again on another portion of the unsorted array
-    !
-60  M = M-1
-    IF (M .EQ. 0) GO TO 190
-    I = IL(M)
-    J = IU(M)
-    !
-70  IF (J-I .GE. 1) GO TO 30
-    IF (I .EQ. 1) GO TO 20
-    I = I-1
-    !
-80  I = I+1
-    IF (I .EQ. J) GO TO 60
-    T = X(I+1)
-    IF (X(I) .LE. T) GO TO 80
-    K = I
-    !
-90  X(K+1) = X(K)
-    K = K-1
-    IF (T .LT. X(K)) GO TO 90
-    X(K+1) = T
-    GO TO 80
-    !
-    !     Sort X and carry Y along
-    !
-100 M = 1
-    I = 1
-    J = NN
-    R = 0.375E0
-    !
-110 IF (I .EQ. J) GO TO 150
-    IF (R .LE. 0.5898437E0) THEN
-      R = R+3.90625E-2
-    ELSE
-      R = R-0.21875E0
-    ENDIF
-    !
-120 K = I
-    !
-    !     Select a central element of the array and save it in location T
-    !
-    IJ = I + INT((J-I)*R)
-    T = X(IJ)
-    TY = Y(IJ)
-    !
-    !     If first element of array is greater than T, interchange with T
-    !
-    IF (X(I) .GT. T) THEN
-      X(IJ) = X(I)
-      X(I) = T
-      T = X(IJ)
-      Y(IJ) = Y(I)
-      Y(I) = TY
-      TY = Y(IJ)
-    ENDIF
-    L = J
-    !
-    !     If last element of array is less than T, interchange with T
-    !
-    IF (X(J) .LT. T) THEN
-      X(IJ) = X(J)
-      X(J) = T
-      T = X(IJ)
-      Y(IJ) = Y(J)
-      Y(J) = TY
-      TY = Y(IJ)
+      M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
       !
-      !        If first element of array is greater than T, interchange with T
-      !
-      IF (X(I) .GT. T) THEN
-        X(IJ) = X(I)
-        X(I) = T
-        T = X(IJ)
-        Y(IJ) = Y(I)
-        Y(I) = TY
-        TY = Y(IJ)
-      ENDIF
-    ENDIF
-    !
-    !     Find an element in the second half of the array which is smaller
-    !     than T
-    !
-130 L = L-1
-    IF (X(L) .GT. T) GO TO 130
-    !
-    !     Find an element in the first half of the array which is greater
-    !     than T
-    !
-140 K = K+1
-    IF (X(K) .LT. T) GO TO 140
-    !
-    !     Interchange these elements
-    !
-    IF (K .LE. L) THEN
-      TT = X(L)
-      X(L) = X(K)
-      X(K) = TT
-      TTY = Y(L)
-      Y(L) = Y(K)
-      Y(K) = TTY
-      GO TO 130
-    ENDIF
-    !
-    !     Save upper and lower subscripts of the array yet to be sorted
-    !
-    IF (L-I .GT. J-K) THEN
-      IL(M) = I
-      IU(M) = L
-      I = K
-      M = M+1
+      DO
+        IF (I .EQ. J) THEN
+          M = M-1
+          IF (M .EQ. 0) EXIT
+          I = IL(M)
+          J = IU(M)
+          DO WHILE (J-I .GE. 1)
+            !
+            K = I
+            !
+            !     Select a central element of the array and save it in location T
+            !
+            IJ = I + INT((J-I)*R)
+            T = X(IJ)
+            TY = Y(IJ)
+            !
+            !     If first element of array is greater than T, interchange with T
+            !
+            IF (X(I) .GT. T) THEN
+              X(IJ) = X(I)
+              X(I) = T
+              T = X(IJ)
+              Y(IJ) = Y(I)
+              Y(I) = TY
+              TY = Y(IJ)
+            ENDIF
+            L = J
+            !
+            !     If last element of array is less than T, interchange with T
+            !
+            IF (X(J) .LT. T) THEN
+              X(IJ) = X(J)
+              X(J) = T
+              T = X(IJ)
+              Y(IJ) = Y(J)
+              Y(J) = TY
+              TY = Y(IJ)
+              !
+              !        If first element of array is greater than T, interchange with T
+              !
+              IF (X(I) .GT. T) THEN
+                X(IJ) = X(I)
+                X(I) = T
+                T = X(IJ)
+                Y(IJ) = Y(I)
+                Y(I) = TY
+                TY = Y(IJ)
+              ENDIF
+            ENDIF
+            !
+            DO
+              !
+              !     Find an element in the second half of the array which is smaller
+              !     than T
+              !
+              DO
+                L = L-1
+                IF (X(L) .LE. T) EXIT
+              END DO
+              !
+              !     Find an element in the first half of the array which is greater
+              !     than T
+              !
+              DO
+                K = K+1
+                IF (X(K) .GE. T) EXIT
+              END DO
+              !
+              !     Interchange these elements
+              !
+              IF (K .LE. L) THEN
+                TT = X(L)
+                X(L) = X(K)
+                X(K) = TT
+                TTY = Y(L)
+                Y(L) = Y(K)
+                Y(K) = TTY
+              ELSE
+                EXIT
+              ENDIF
+            END DO
+            !
+            !     Save upper and lower subscripts of the array yet to be sorted
+            !
+            IF (L-I .GT. J-K) THEN
+              IL(M) = I
+              IU(M) = L
+              I = K
+              M = M+1
+            ELSE
+              IL(M) = K
+              IU(M) = J
+              J = L
+              M = M+1
+            ENDIF
+          END DO
+          !
+          IF (I .EQ. 1) CYCLE
+          !
+          I = I-1
+          !
+          DO
+            I = I+1
+            IF (I .EQ. J) EXIT
+            T = X(I+1)
+            TY = Y(I+1)
+            IF (X(I) .LE. T) CYCLE
+            K = I
+            !
+            DO
+              X(K+1) = X(K)
+              Y(K+1) = Y(K)
+              K = K-1
+              IF (T .GE. X(K)) EXIT
+            END DO
+            X(K+1) = T
+            Y(K+1) = TY
+          END DO
+          IF (I .EQ. J) CYCLE
+        END IF
+        !
+        IF (R .LE. 0.5898437E0) THEN
+          R = R+3.90625E-2
+        ELSE
+          R = R-0.21875E0
+        ENDIF
+      END DO
     ELSE
-      IL(M) = K
-      IU(M) = J
-      J = L
-      M = M+1
-    ENDIF
-    GO TO 160
-    !
-    !     Begin again on another portion of the unsorted array
-    !
-150 M = M-1
-    IF (M .EQ. 0) GO TO 190
-    I = IL(M)
-    J = IU(M)
-    !
-160 IF (J-I .GE. 1) GO TO 120
-    IF (I .EQ. 1) GO TO 110
-    I = I-1
-    !
-170 I = I+1
-    IF (I .EQ. J) GO TO 150
-    T = X(I+1)
-    TY = Y(I+1)
-    IF (X(I) .LE. T) GO TO 170
-    K = I
-    !
-180 X(K+1) = X(K)
-    Y(K+1) = Y(K)
-    K = K-1
-    IF (T .LT. X(K)) GO TO 180
-    X(K+1) = T
-    Y(K+1) = TY
-    GO TO 170
+      !
+      !     Sort X only
+      !
+      M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
+      !
+      DO
+        IF (I .EQ. J) THEN
+          M = M-1
+          IF (M .EQ. 0) EXIT
+          I = IL(M)
+          J = IU(M)
+          DO WHILE (J-I .GE. 1)
+            K = I
+            INT((J-I)*R)
+            T = X(IJ)
+            !
+            !     If first element of array is greater than T, interchange with T
+            !
+            IF (X(I) .GT. T) THEN
+              X(IJ) = X(I)
+              X(I) = T
+              T = X(IJ)
+            ENDIF
+            L = J
+            !
+            !     If last element of array is less than than T, interchange with T
+            !
+            IF (X(J) .LT. T) THEN
+              X(IJ) = X(J)
+              X(J) = T
+              T = X(IJ)
+              !
+              !        If first element of array is greater than T, interchange with T
+              !
+              IF (X(I) .GT. T) THEN
+                X(IJ) = X(I)
+                X(I) = T
+                T = X(IJ)
+              ENDIF
+            ENDIF
+            !
+            !     Find an element in the second half of the array which is smaller
+            !     than T
+            !
+            DO
+              DO
+                L = L-1
+                IF (X(L) .LE. T) EXIT
+              END DO
+              !
+              !     Find an element in the first half of the array which is greater
+              !     than T
+              !
+              DO
+                K = K+1
+                IF (X(K) .GE. T) EXIT
+              END DO
+              !
+              !     Interchange these elements
+              !
+              IF (K .LE. L) THEN
+                TT = X(L)
+                X(L) = X(K)
+                X(K) = TT
+              ELSE
+                EXIT
+              ENDIF
+            END DO
+            !
+            !     Save upper and lower subscripts of the array yet to be sorted
+            !
+            IF (L-I .GT. J-K) THEN
+              IL(M) = I
+              IU(M) = L
+              I = K
+              M = M+1
+            ELSE
+              IL(M) = K
+              IU(M) = J
+              J = L
+              M = M+1
+            ENDIF
+          END DO
+          IF (I .EQ. 1) CYCLE
+          I = I-1
+          !
+          DO
+            DO
+              I = I+1
+              IF (I .EQ. J) EXIT
+              T = X(I+1)
+              IF (X(I) .GT. T) EXIT
+            END DO
+            IF (I .EQ. J) EXIT
+            K = I
+            !
+            DO
+              X(K+1) = X(K)
+              K = K-1
+              IF (T .GE. X(K)) EXIT
+            END DO
+            X(K+1) = T
+          END DO
+          IF (I .EQ. J) CYCLE
+        END IF
+        !
+        IF (R .LE. 0.5898437E0) THEN
+          R = R+3.90625E-2
+        ELSE
+          R = R-0.21875E0
+        ENDIF
+      END DO
+    END IF
     !
     !     Clean up
     !
-190 IF (KFLAG .LE. -1) THEN
+    IF (KFLAG .LE. -1) THEN
       DO  I=1,NN
         X(I) = -X(I)
       end do

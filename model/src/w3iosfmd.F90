@@ -38,6 +38,7 @@ MODULE W3IOSFMD
   !/                            INIT_GET_JSEA_ISPROC      ( version 6.04 )
   !/    25-Jul-2018 : Changed DIMXP size for partitioning ( version 6.05 )
   !/                  methods 4 and 5. (C Bunney, UKMO)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -72,7 +73,7 @@ MODULE W3IOSFMD
   !     ----------------------------------------------------------------
   !      W3PART    Subr. W3PARTMD Spectral partition for single spectrum.
   !      STRACE    Sur.  W3SERVMD Subroutine tracing.
-  !      EXTCDE    Subr.   Id.    Program abort.
+  !      EXTOPN    Subr. W3SERVMD Abort if error when opening file.
   !      MPI_SEND, MPI_RECV
   !                               MPI send and recieve routines
   !     ----------------------------------------------------------------
@@ -399,7 +400,7 @@ CONTAINS
     !      Name      Type  Module   Description
     !     ----------------------------------------------------------------
     !      STRACE    Subr. W3SERVMD Subroutine tracing.
-    !      EXTCDE    Subr.   Id.    Program abort.
+    !      EXTOPN    Subr.   Id.    Abort if error when opening file.
     !      MPI_SEND, MPI_RECV
     !                               MPI send and recieve routines
     !     ----------------------------------------------------------------
@@ -427,7 +428,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     USE CONSTANTS
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTOPN
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -517,11 +518,12 @@ CONTAINS
       !
       IF ( FLFORM ) THEN
         OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
-             ERR=800,IOSTAT=IERR)
+              IOSTAT=IERR)
       ELSE
         OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
-             form='UNFORMATTED',convert=file_endian,ERR=800,IOSTAT=IERR)
+             form='UNFORMATTED',convert=file_endian,IOSTAT=IERR)
       END IF
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOSF','',1)
       !
       REWIND (NDSPT)
       !
@@ -722,12 +724,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations read errors --------------------------------------- *
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 1 )
-    !
     ! Formats
     !
 910 FORMAT (A,1X,A)
@@ -738,10 +734,6 @@ CONTAINS
 941 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
          1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
 942 FORMAT (I3,3F8.2,2F9.2,F7.2)
-    !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOSF : '/               &
-         '     ERROR IN OPENING FILE'/                          &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3IOSF : IPASS =',I4,',  FLFROM = ',L1,        &

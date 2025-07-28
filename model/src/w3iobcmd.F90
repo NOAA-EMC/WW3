@@ -55,6 +55,8 @@ MODULE W3IOBCMD
   !      W3CSPC    Subr. W3CSPCMD Spectral grid conversion.
   !      W3LLTOEQ  Subr. W3CSPCMD Standard to rotated lat/lon conversion.
   !      STRACE    Subr. W3SERVMD Subroutine tracing.
+  !      EXTIOF    Subr. W3SERVMD Abort if error when I/O file.
+  !      EXTOPN    Subr. W3SERVMD Abort if error when opening file.
   !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
   !     ----------------------------------------------------------------
   !
@@ -132,6 +134,7 @@ CONTAINS
     !/                  of input spectra for rotated grids  ( version 6.02 )
     !/    07-Oct-2019 : RTD option with standard lat-lon
     !/                  grid when nesting to rotated grid   ( version 7.11 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -237,7 +240,7 @@ CONTAINS
          FILED, SPCONV, FNMPRE
     USE W3GSRUMD
     !
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -327,7 +330,13 @@ CONTAINS
       WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
       OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
-           ERR=801,IOSTAT=IERR,STATUS='OLD')
+            IOSTAT=IERR,STATUS='OLD')
+      IF (IERR.NE.0) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) IMOD
+        IOTST  = 1
+        FLBPI  = .FALSE.
+        RETURN
+      END IF
     END IF
     !
     IF ( INXOUT.EQ.'WRITE' .AND. FILEW ) THEN
@@ -339,7 +348,8 @@ CONTAINS
         WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
 #endif
         OPEN (NDSL(IFILE),FILE=FNMPRE(:J)//FILEN(:6+I),           &
-             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOBC','',40,NAMEF=FILEN)
       END DO
     END IF
     !
@@ -349,7 +359,8 @@ CONTAINS
       WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
       OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
-           ERR=800,IOSTAT=IERR)
+            IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOBC','',40,NAMEF=FILEN)
     END IF
     !
     ! test info ---------------------------------------------------------- *
@@ -421,8 +432,9 @@ CONTAINS
     !
     IF ( INXOUT.EQ.'READ' .AND. FILER ) THEN
       !
-      READ (NDSB,ERR=803,IOSTAT=IERR)                             &
+      READ (NDSB,IOSTAT=IERR)                             &
            IDTST, VERTST, NKI, NTHI, XFRI, FR1I, TH1I, NBI
+      IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
       !
 #ifdef W3_T
       WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
@@ -448,10 +460,11 @@ CONTAINS
       !
       CALL W3DMO5 ( IGRD, NDSE, NDST, 1 )
       !
-      READ (NDSB,ERR=803,IOSTAT=IERR)                             &
-           (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),                   &
-           ((IPBPI(I,J),I=1,NBI),J=1,4),                           &
+      READ (NDSB,IOSTAT=IERR)                                 &
+           (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),              &
+           ((IPBPI(I,J),I=1,NBI),J=1,4),                      &
            ((RDBPI(I,J),I=1,NBI),J=1,4)
+      IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
       !
 #ifdef W3_RTD
       ! All boundary conditions position arrays XBPI, YBPI are defined
@@ -546,7 +559,28 @@ CONTAINS
       !
       !     Read first time and allocate ABPI0/N
       !
-      READ (NDSB,END=810,ERR=810) TIME2, NBI2
+      READ (NDSB,IOSTAT=IERR) TIME2, NBI2
+      IF (IERR.NE.0) THEN
+        IF ( FILER ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010)
+          CALL EXTCDE ( 43 )
+        END IF
+        !
+#ifdef W3_T
+        WRITE (NDST,9022)
+#endif
+        TIME1(1) = TIME2(1)
+        TIME1(2) = TIME2(2)
+        DO IP=0, NBI2
+          DO ISP=1, NSPEC
+            ABPI0(ISP,IP) = ABPIN(ISP,IP)
+          END DO
+        END DO
+        !
+        IOTST  = -1
+        FLBPI  = .FALSE.
+        RETURN
+      END IF
       BACKSPACE (NDSB)
 #ifdef W3_T
       WRITE (NDST,9012) NDSB, TIME2, NBI2
@@ -585,7 +619,28 @@ CONTAINS
     END IF
     !
     IF ( INXOUT .EQ. 'READ'  ) THEN
-      READ (NDSB,ERR=810,END=810) TIME2, NBI2
+      READ (NDSB,IOSTAT=IERR) TIME2, NBI2
+      IF (IERR.NE.0) THEN
+        IF ( FILER ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010)
+          CALL EXTCDE ( 43 )
+        END IF
+        !
+#ifdef W3_T
+        WRITE (NDST,9022)
+#endif
+        TIME1(1) = TIME2(1)
+        TIME1(2) = TIME2(2)
+        DO IP=0, NBI2
+          DO ISP=1, NSPEC
+            ABPI0(ISP,IP) = ABPIN(ISP,IP)
+          END DO
+        END DO
+        !
+        IOTST  = -1
+        FLBPI  = .FALSE.
+        RETURN
+      END IF
 #ifdef W3_T
       WRITE (NDST,9011) NDSB, TIME2, NBI2
 #endif
@@ -664,7 +719,8 @@ CONTAINS
       !
       IF ( .NOT. SPCONV ) THEN
         DO IP=1, NBI2
-          READ (NDSB,ERR=803,IOSTAT=IERR) ABPIN(:,IP)
+          READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
         END DO
       ELSE
         !
@@ -674,7 +730,8 @@ CONTAINS
         !
         ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
         DO IP=1, NBI2
-          READ (NDSB,ERR=803,IOSTAT=IERR) TMPSPC(:,IP)
+          READ (NDSB,IOSTAT=IERR) TMPSPC(:,IP)
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
         END DO
         CALL W3CSPC ( TMPSPC     ,    NKI, NTHI, XFRI, FR1I, TH1I, &
              ABPIN(:,1:NBI2),NK,  NTH,  XFR,  FR1,  TH(1),&
@@ -721,47 +778,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations IO errors
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEN, IERR
-    CALL EXTCDE ( 40 )
-    !
-801 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) IMOD
-    IOTST  = 1
-    FLBPI  = .FALSE.
-    RETURN
-    !
-802 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002)
-    CALL EXTCDE ( 41 )
-    !
-803 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) IERR
-    CALL EXTCDE ( 42 )
-    !
-810 CONTINUE
-    IF ( FILER ) THEN
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010)
-      CALL EXTCDE ( 43 )
-    END IF
-    !
-#ifdef W3_T
-    WRITE (NDST,9022)
-#endif
-    TIME1(1) = TIME2(1)
-    TIME1(2) = TIME2(2)
-    DO IP=0, NBI2
-      DO ISP=1, NSPEC
-        ABPI0(ISP,IP) = ABPIN(ISP,IP)
-      END DO
-    END DO
-    !
-    IOTST  = -1
-    FLBPI  = .FALSE.
-    RETURN
-    !
     ! Formats
     !
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
@@ -781,21 +797,11 @@ CONTAINS
          ' WILL NOT BE UPDATED')
 920 FORMAT (/' *** SMCTYPE mapped boundary cells:'/ ((I8,2F9.3)) )
     !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
-         '     ERROR IN OPENING FILE ',A/                       &
-         '     IOSTAT =',I5/)
-    !
     ! Note: This 1001 error can occur when multi-grid time steps are not
     !       compatible.
 1001 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOBC : '/             &
          '     INPUT FILE WITH BOUNDARY CONDITIONS NOT FOUND'/  &
          '     BOUNDARY CONDITIONS WILL NOT BE UPDATED ',I5/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
-         '     PREMATURE END OF FILE'/)
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
-         '     ERROR IN READING FROM FILE'/                     &
-         '     IOSTAT =',I5/)
-    !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
          '     NO DATA IN INPUT FILE'/)
     !

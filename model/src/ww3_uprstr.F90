@@ -46,6 +46,7 @@ PROGRAM W3UPRSTR
   !/                   or from restart under WRST switch (Andy Saulter)
   !/    06-Oct-2020 :  Added namelist input options        ( version 7.11 )
   !/    06-May-2021 :  Use SMCTYPE and FSWND for SMC grid. ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements           ( version X.XX )
   !/
   !/    Copyright 2010 National Weather Service (NWS),
   !/    National Oceanic and Atmospheric Administration.  All rights
@@ -278,6 +279,8 @@ PROGRAM W3UPRSTR
   !      W3SETA    Subr.   Id.    Point to selected model for aux data.
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      NEXTLN    Subr.   Id.    Get next line from input file.
+  !      EXTIOF    Subr.   Id.    Abort if error I/O file
+  !      EXTOPN    Subr.   Id.    Abort if error opening file
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
   !      WAVNU1    Subr. W3DISPMD
@@ -334,7 +337,7 @@ PROGRAM W3UPRSTR
   USE W3ADATMD, ONLY: W3NAUX, W3SETA
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3IORSMD, ONLY: W3IORS
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3DISPMD, ONLY: WAVNU1
   !
@@ -455,32 +458,40 @@ PROGRAM W3UPRSTR
   ! otherwise read from the .inp file
   IF (.NOT. FLGNML) THEN
     J      = LEN_TRIM(FNMPRE)
-    OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
-         ERR=800,IOSTAT=IERR)
-    READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+    OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, MYNAME, 'INPUT', 10)
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',11)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     WRITE (NDSO,901) COMSTR
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=2001,ERR=2002) TIME
+    READ (NDSI,*,IOSTAT=IERR) TIME
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=2001,ERR=2002) UPDPROC
+    READ (NDSI,*,IOSTAT=IERR) UPDPROC
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
     IF (UPDPROC .EQ. 'UPD0F') THEN
-      READ (NDSI,*,END=2001,ERR=2002) PRCNTG
+      READ (NDSI,*,IOSTAT=IERR) PRCNTG
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
     ELSE
       IF ((UPDPROC .EQ. 'UPD2') .OR. (UPDPROC .EQ. 'UPD3')) THEN
         !         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
+        READ (NDSI,*,IOSTAT=IERR) PRCNTG_CAP
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
 #ifdef W3_F
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
+        READ (NDSI,*,IOSTAT=IERR) FLNMCOR
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
 #endif
       ELSE
-        READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP, THRWSEA
+        READ (NDSI,*,IOSTAT=IERR) PRCNTG_CAP, THRWSEA
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
       END IF
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) FLNMANL
+      READ (NDSI,*,IOSTAT=IERR) FLNMANL
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3UPSTR','INPUT',1001)
     END IF
   ENDIF
 #ifdef W3_T
@@ -1123,41 +1134,7 @@ PROGRAM W3UPRSTR
   CALL writeMatrix('VA02.txt', REAL(VA))
 #endif
   !
-  !/
-  !/ ------------------------------------------------------------------- /
-  ! Escape locations read errors 08k:
-  !/
-  GOTO 888
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 10 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 11 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 12 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
-  !/
-  !/ ------------------------------------------------------------------- /
-  ! Escape locations read errors 2k:
-  !/
-  GOTO 2222
-  !
-2001 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-  GOTO 2222
-  !
-2002 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-  GOTO 2222
-  !
-2222 CONTINUE
   !/
   !/ ------------------------------------------------------------------- /
   !  Formats
@@ -1183,16 +1160,6 @@ PROGRAM W3UPRSTR
        ' ========================================='/          &
        '         WAVEWATCH III ww3_uprstr         '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3UPRSTR : '/              &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3UPRSTR : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3UPRSTR : '/              &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
 1004 FORMAT (/' '/,A/)
 1005 FORMAT (' ',A, F6.3/)
 1006 FORMAT (' ',A, A/)

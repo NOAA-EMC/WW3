@@ -37,6 +37,7 @@ MODULE W3SNL1MD
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    03-Sep-2012 : Clean up of test output T0, T1      ( version 4.07 )
   !/    28-Feb-2023 : Adds GQM separate routines          ( version 7.07 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1323,18 +1324,19 @@ CONTAINS
     M=(NPOIN+1)/2
     DO I=1,M
       Z=COS(PI*(DBLE(I)-0.25D0)/(DBLE(NPOIN)+0.5D0))
-1     CONTINUE
-      P1=1.0D0
-      P2=0.0D0
-      DO J=1,NPOIN
-        P3=P2
-        P2=P1
-        P1=((2.D0*DBLE(J)-1.D0)*Z*P2-(DBLE(J)-1.D0)*P3)/DBLE(J)
-      ENDDO
-      PP=DBLE(NPOIN)*(Z*P1-P2)/(Z*Z-1.D0)
-      Z1=Z
-      Z=Z-P1/PP
-      IF (ABS(Z-Z1).GT.EPS) GOTO 1
+      DO
+        P1=1.0D0
+        P2=0.0D0
+        DO J=1,NPOIN
+          P3=P2
+          P2=P1
+          P1=((2.D0*DBLE(J)-1.D0)*Z*P2-(DBLE(J)-1.D0)*P3)/DBLE(J)
+        ENDDO
+        PP=DBLE(NPOIN)*(Z*P1-P2)/(Z*Z-1.D0)
+        Z1=Z
+        Z=Z-P1/PP
+        IF (ABS(Z-Z1).LE.EPS) EXIT
+      END DO
       X_LEG(I)=-Z
       X_LEG(NPOIN+1-I)=Z
       W_LEG(I)=2.D0/((1.D0-Z**2)*PP**2)

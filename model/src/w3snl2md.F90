@@ -108,6 +108,7 @@ CONTAINS
     !/    11-Nov-2002 : Interface fix                       ( version 3.00 )
     !/    25-Sep-2003 : Exact-NL version 5.0                ( version 3.05 )
     !/    24-Dec-2004 : Multiple model version.             ( version 3.06 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -232,44 +233,44 @@ CONTAINS
     CALL xnl_main ( A2, SIG(1:NK), TH, NK, NTH, DEPTH, IQTPE,       &
          S2, D2, IAPROC, IERR )
     !
-    IF ( IERR .NE. 0 ) GOTO 800
-    !
-    ! 3.  Pack results in proper format ---------------------------------- *
-    !
-    DO IK=1, NK
-      DO ITH=1, NTH
-        S(ITH,IK) = S2(IK,ITH) * CG(IK)
-        D(ITH,IK) = D2(IK,ITH)
+    IF ( IERR .EQ. 0 ) THEN
+      !
+      ! 3.  Pack results in proper format ---------------------------------- *
+      !
+      DO IK=1, NK
+        DO ITH=1, NTH
+          S(ITH,IK) = S2(IK,ITH) * CG(IK)
+          D(ITH,IK) = D2(IK,ITH)
+        END DO
       END DO
-    END DO
-    !
-    ! ... Test output :
-    !
+      !
+      ! ... Test output :
+      !
 #ifdef W3_T0
-    DO IK=1, NK
-      DO ITH=1, NTH
-        SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
-        DOUT(IK,ITH) = D(IK,ITH)
+      DO IK=1, NK
+        DO ITH=1, NTH
+          SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
+          DOUT(IK,ITH) = D(IK,ITH)
+        END DO
       END DO
-    END DO
-    CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,  &
-         0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
-    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,  &
-         0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
+      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,  &
+           0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,  &
+           0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
 #endif
-    !
+      !
 #ifdef W3_T1
-    CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
-    CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
+      CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
 #endif
+      !
+    ELSE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
+      CALL EXTCDE ( 1 )
+      !
+    END IF
     !
     RETURN
-    !
-    !     Error escape locations
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 1 )
     !
     ! Format statements
     !
@@ -393,15 +394,12 @@ CONTAINS
     CALL xnl_init ( SIG(1:NK), TH, NK, NTH, NLTAIL, XGRAV,          &
          DPTHNL, NDPTHS, IQTPE, IGRD, IAPROC, IERR )
     !
-    IF ( IERR .NE. 0 ) GOTO 800
+    IF ( IERR .NE. 0 ) THEN
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
+      CALL EXTCDE ( 1 )
+    END IF
     !
     RETURN
-    !
-    !     Error escape locations
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 1 )
     !
     !     Format statements
     !
