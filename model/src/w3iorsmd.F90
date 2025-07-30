@@ -469,7 +469,7 @@ CONTAINS
     !
     if (present(filename)) then ! only when restart_nc and restart_from_binary=true
       open (ndsr,file=trim(filename),form='unformatted', convert=file_endian, &
-           access='stream',err=800,iostat=ierr, status='old',action='read')
+           access='stream',iostat=ierr, status='old',action='read')
     else
       IF (LEN_TRIM(FNMRST) .EQ. 0) THEN
         FNMPRE_LOCAL = FNMPRE
@@ -1112,8 +1112,10 @@ CONTAINS
               WRITE(NDSR,IOSTAT=IERR) TAUOCY(1:NSEA)
             ENDIF
             IF ( FLOGRR(6,14) ) THEN
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHX(1:NSEA)
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHY(1:NSEA)
+              WRITE(NDSR,IOSTAT=IERR) USSHX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
+                                         ISWRITE=.TRUE.,POS=RPOS)
+              WRITE(NDSR,IOSTAT=IERR) USSHY(1:NSEA)
             ENDIF
             IF ( FLOGRR(7,2) ) THEN
               WRITE(NDSR,IOSTAT=IERR) UBA(1:NSEA)
@@ -1425,8 +1427,10 @@ CONTAINS
             ENDDO
           ENDIF
           IF ( FLOGOA(6,14) ) THEN
-            READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
-            READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            READ (NDSR,IOSTAT=IERR) TMP2(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
             DO I=1, NSEALM
               J = IAPROC + (I-1)*NAPROC
               IF (J .LE. NSEA) THEN

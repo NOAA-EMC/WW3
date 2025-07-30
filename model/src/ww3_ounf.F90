@@ -1394,109 +1394,8 @@ CONTAINS
 #ifdef W3_SMC
                 CALL W3S2XY_SMC( WNMEAN, X1 )
 #endif
-            ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCX(1:NSEA)     &
-                   , MAPSF, XX )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)     &
-                   , MAPSF, XY )
-            ENDIF ! SMCGRD
-            !
-            NFIELD=2
-
-            !
-            ! Surface averaged stokes drift
-          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
-            DO ISEA=1, NSEA
-              USSHX(ISEA)=MAX(-0.9998,MIN(0.9998,USSHX(ISEA)))
-              USSHY(ISEA)=MAX(-0.9998,MIN(0.9998,USSHY(ISEA)))
-            END DO
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSHX(1:NSEA), USSHY(1:NSEA), AnglD)
-#endif
-            CALL S2GRID(USSHX(1:NSEA), XX)
-            CALL S2GRID(USSHY(1:NSEA), XY)
-            !
-            NFIELD=2
-            !
-            ! RMS of bottom displacement amplitude
-          ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
-            ! NB: ABA and ABD are the X and Y components of the bottom displacement
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, ABA(1:NSEA), ABD(1:NSEA), AnglD)
-#endif
-            CALL S2GRID(ABA(1:NSEA), XX)
-            CALL S2GRID(ABD(1:NSEA), XY)
-            NFIELD=2
-            !
-            ! RMS of bottom velocity amplitude
-          ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
-            ! NB: UBA and UBD are the X and Y components of the bottom velocity
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UBA(1:NSEA), UBD(1:NSEA), AnglD)
-#endif
-            CALL S2GRID(UBA(1:NSEA), XX)
-            CALL S2GRID(UBD(1:NSEA), XY)
-            NFIELD=2
-            !
-            ! Bottom roughness
-          ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
-                 BEDFORMS(1:NSEA,3), AnglD)
-#endif
-            CALL S2GRID(BEDFORMS(1:NSEA,1), X1)
-            CALL S2GRID(BEDFORMS(1:NSEA,2), X2)
-            CALL S2GRID(BEDFORMS(1:NSEA,3), XY)
-            NFIELD=3
-            !
-            ! Wave dissipation in bottom boundary layer
-          ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
-            CALL S2GRID(PHIBBL(1:NSEA), X1)
-            !
-            ! Wave to bottom boundary layer stress
-          ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
-                 TAUBBL(1:NSEA,2), AnglD)
-#endif
-            CALL S2GRID(TAUBBL(1:NSEA,1), XX)
-            CALL S2GRID(TAUBBL(1:NSEA,2), XY)
-            NFIELD=2
-            !
-            ! Mean square slope
-          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSSX, MSSY, AnglD)
-#endif
-            CALL S2GRID(MSSX, XX)
-            CALL S2GRID(MSSY, XY)
-            NFIELD=2
-            !
-            ! Phillips constant
-          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
-#ifdef W3_RTD
-            ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSCX, MSCY, AnglD)
-#endif
-            CALL S2GRID(MSCX, XX)
-            CALL S2GRID(MSCY, XY)
-            NFIELD=2
-            !
-            ! u direction for mss
-          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
-#ifdef W3_RTD
-            ! Rotate direction back to standard pole
-            IF ( FLAGUNR ) CALL W3THRTN(NSEA, MSSD, AnglD, .FALSE.)
-#endif
-            DO ISEA=1, NSEA
-              IF ( MSSD(ISEA) .NE. UNDEF )  THEN
-                MSSD(ISEA) = MOD ( 630. - RADE*MSSD(ISEA) , 180. )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
               END IF
               !
               ! Wave elevation spectrum
@@ -1951,6 +1850,23 @@ CONTAINS
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)     &
                      , MAPSF, XY )
               ENDIF ! SMCGRD
+              NFIELD=2
+ 
+              !
+              ! Surface averaged stokes drift
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+              DO ISEA=1, NSEA
+                USSHX(ISEA)=MAX(-0.9998,MIN(0.9998,USSHX(ISEA)))
+                USSHY(ISEA)=MAX(-0.9998,MIN(0.9998,USSHY(ISEA)))
+              END DO
+#ifdef W3_RTD
+              ! Rotate x,y vector back to standard pole
+              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSHX(1:NSEA), USSHY(1:NSEA), AnglD)
+#endif
+              CALL S2GRID(USSHX(1:NSEA), XX)
+              CALL S2GRID(USSHY(1:NSEA), XY)
+              !
+
               NFIELD=2
               !
               ! RMS of bottom displacement amplitude
