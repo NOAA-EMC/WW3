@@ -36,6 +36,7 @@ MODULE WMUPDTMD
   !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
   !/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.13 )
   !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -114,6 +115,7 @@ CONTAINS
     !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
     !/                  (T. J. Campbell, NRL)
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -404,7 +406,10 @@ CONTAINS
       ! 5.  Finalize for each type ----------------------------------------- /
       ! 5.a Process IERR output
       !
-      IF ( IERR.GT.0 ) GOTO 2000
+      IF ( IERR.GT.0 ) THEN
+        CALL EXTCDE ( 2000 )
+        RETURN
+      END IF
       IF ( IERR.LT.0 .AND. MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )    &
            WRITE (MDSS,950) IDFLDS(J)
       !
@@ -461,12 +466,6 @@ CONTAINS
     WRITE (MDST,9072) 10, 'MOV'        , INFLAGS1(10), TG0, TGN
 #endif
     !
-    RETURN
-    !
-    ! Error escape locations
-    !
-2000 CONTINUE
-    CALL EXTCDE ( 2000 )
     RETURN
     !
     ! Formats
@@ -878,6 +877,7 @@ CONTAINS
     !/    14-Oct-2006 : Origination.                        ( version 3.10 )
     !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -1162,20 +1162,12 @@ CONTAINS
       CALL WMUPDS ( IMOD, INPUTS(IMOD)%RHN,                       &
            JMOD, INPUTS(JMOD)%RHN, DAIR )
       !
-      ! 2.g Assimilation data 0
+      ! 2.g,h,i Assimilation data 0,1,2
       !
-    CASE (7)
-      GOTO 2999
-      !
-      ! 2.h Assimilation data 1
-      !
-    CASE (8)
-      GOTO 2999
-      !
-      ! 2.i Assimilation data 2
-      !
-    CASE (9)
-      GOTO 2999
+    CASE (7,8,9)
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSE,1999)
+      CALL EXTCDE ( 2999 )
+      RETURN
       !
     END SELECT
     !
@@ -1256,13 +1248,6 @@ CONTAINS
     !
     ! 4. End of routine -------------------------------------------------- /
     !
-    RETURN
-    !
-    ! Error escape locations
-    !
-2999 CONTINUE
-    IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSE,1999)
-    CALL EXTCDE ( 2999 )
     RETURN
     !
     ! Formats

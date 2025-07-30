@@ -25,7 +25,7 @@ PROGRAM W3PRTIDE
   !/    21-Apr-2020 : MPI implementation                  ( version 7.13 )
   !/    21-Apr-2020 : bug fix for rectilinear grid        ( version 7.13 )
   !/     1-Feb-2020 : Improve indexing, A.Roland	        ( version 7.14 )
-
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -79,6 +79,8 @@ PROGRAM W3PRTIDE
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
@@ -124,7 +126,7 @@ PROGRAM W3PRTIDE
 #endif
   USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF, STRSPLIT
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -267,10 +269,11 @@ PROGRAM W3PRTIDE
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
   !
-  OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_prtide.inp',STATUS='OLD',        &
-       ERR=800,IOSTAT=IERR)
+  OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_prtide.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3PRTIDE','INPUT',40)
   REWIND (NDSI)
-  READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
 
@@ -291,7 +294,8 @@ PROGRAM W3PRTIDE
   !==========================================================
 
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDFLD
+  READ (NDSI,*,IOSTAT=IERR) IDFLD
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   !
   IF ( IDFLD.EQ.'LEV' ) THEN
     IFLD    = 2
@@ -303,31 +307,39 @@ PROGRAM W3PRTIDE
   END IF
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) TIDECONSTNAMES
+  READ (NDSI,'(A)',IOSTAT=IERR) TIDECONSTNAMES
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
   TIDECON_PRNAMES(:)=''
   CALL STRSPLIT(TIDECONSTNAMES,TIDECON_PRNAMES)
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) TIDECONSTNAMES
+  READ (NDSI,'(A)',IOSTAT=IERR) TIDECONSTNAMES
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   TIDECON_MAXNAMES(:)=''
   CALL STRSPLIT(TIDECONSTNAMES,TIDECON_MAXNAMES)
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
   TIDECON_MAXVALS(:)=''
-  READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) TIDECONSTNAMES
+  READ (NDSI,'(A)',IOSTAT=IERR) TIDECONSTNAMES
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   CALL STRSPLIT(TIDECONSTNAMES,TIDECON_MAXVALS)
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIDE_START,PRTIDE_DT,TIDE_END
+  READ (NDSI,*,IOSTAT=IERR) TIDE_START,PRTIDE_DT,TIDE_END
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) FILENAMEXT
+  READ (NDSI,*,IOSTAT=IERR) FILENAMEXT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRTIDE','INPUT',41)
   !
   CALL W3FLDO ('READ', IDFLD, NDSF, NDST,     &
        NDSE, NX, NY, GTYPE,               &
        IERR, FILENAMEXT, '', TIDEFLAGIN=FLAGTIDE )
   !
-  IF (FLAGTIDE.NE.1) GOTO 803
+  IF (FLAGTIDE.NE.1) THEN
+    WRITE (NDSE,1003)
+    CALL EXTCDE ( 43 )
+  END IF
   !
   CALL VUF_SET_PARAMETERS
 
@@ -506,7 +518,13 @@ PROGRAM W3PRTIDE
   !==========================================================
 
   DTTST  = DSEC21 ( TIDE_START , TIDE_END )
-  IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) GOTO 888
+  IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) THEN
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+#ifdef W3_MPI
+    CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+    STOP
+  END IF
   TIME = TIDE_START
   TIDE_KD0= 2415020
   !
@@ -514,7 +532,13 @@ PROGRAM W3PRTIDE
   !
   DO
     DTTST  = DSEC21 ( TIME, TIDE_END )
-    IF ( DTTST .LT. 0. ) GOTO 888
+    IF ( DTTST .LT. 0. ) THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+#ifdef W3_MPI
+      CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+      STOP
+    END IF
     !
     CALL STME21 ( TIME , IDTIME )
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
@@ -827,32 +851,10 @@ PROGRAM W3PRTIDE
 
   END DO
   !
-  GOTO 888
-  !
-  ! Error escape locations
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003)
-  CALL EXTCDE ( 43 )
-  !
-888 CONTINUE
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
 #ifdef W3_MPI
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
-
   !
   ! Formats
   !
@@ -865,17 +867,6 @@ PROGRAM W3PRTIDE
 999 FORMAT(/'  End of program '/                                     &
        ' ========================================='/           &
        '         WAVEWATCH III Input preprocessing '/)
-  !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRTIDE : '/              &
-       '     ERROR IN OPENING INPUT FILE'/                     &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRTIDE : '/              &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRTIDE : '/              &
-       '     ERROR IN READING FROM INPUT FILE'/                &
-       '     IOSTAT =',I5/)
   !
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRTIDE : '/              &
        '     THE INPUT FILE DOES NOT CONTAIN TIDAL DATA'/)

@@ -110,6 +110,7 @@ implicit none
 !     17/06/2002  Initialisation of IUNIT=-1 included
 !     24/08/2002  Bug fixed when routine called with IUFIND=0
 !     08/02/2003  Bug fixed when file could not be created due to invalid path 
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose
 !
@@ -209,7 +210,8 @@ if(iufind==1) iunit  = -1
 if(iufind/=0 .and. iufind/=1) then
   if(i_print >0) write(i_out,*) 'Z_FILEIO: Incorrect value for IUFIND:',iufind
   iostat = -5
-  goto 9999
+  if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
+  return
 end if
 !
 !
@@ -252,14 +254,12 @@ else
         else  
           open(file=filename,unit=junit,form=cform,iostat=iostat)
         end if 
-        if(iostat/=0) then
-          iostat = -4
-          goto 9999
-        end if
+        if(iostat/=0) iostat = -4
       end if
     end if
     close(junit,status=cstat)
-    goto 9999
+    if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
+    return
   end if
 !
 !  if the file exists, check if it is opened
@@ -343,8 +343,6 @@ else
     end if
   end if
 end if
-!
-9999 continue
 !
 if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
 !

@@ -51,6 +51,7 @@ PROGRAM W3GSPL
   !/    04-Mar-2013 : Adding GrADS output.                ( version 4.10 )
   !/    05-Aug-2013 : Add UQ/UNO for distances.           ( version 4.12 )
   !/    18-Nov-2013 : Add user-defined halo extension.    ( version 4.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2012-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -96,6 +97,8 @@ PROGRAM W3GSPL
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
   !
@@ -182,7 +185,7 @@ PROGRAM W3GSPL
   !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
   USE W3ADATMD, ONLY: W3NAUX, W3SETA
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
   USE W3ARRYMD, ONLY : OUTA2I, OUTA2R
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
@@ -283,9 +286,11 @@ PROGRAM W3GSPL
   !
   J      = LEN_TRIM(FNMPRE)
   OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_gspl.inp',STATUS='OLD',        &
-       ERR=800,IOSTAT=IERR)
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL','INPUT',40)
   REWIND (NDSI)
-  READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -293,7 +298,8 @@ PROGRAM W3GSPL
   ! 2.  Read model definition file.
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) FEXT
+  READ (NDSI,*,IOSTAT=IERR) FEXT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   !
   CALL W3IOGR ( 'READ', NDSM, 1, FEXT )
   CLOSE (NDSM)
@@ -310,10 +316,12 @@ PROGRAM W3GSPL
   CASE (UNGTYPE)
     WRITE ( NDSO,903) 'unstructured'
     IDGRID = 'UNST'
-    GOTO 820
+    WRITE (NDSE,1020) GTYPE
+    CALL EXTCDE ( 20 )
   CASE DEFAULT
     WRITE ( NDSO,903) 'not recognized'
-    GOTO 821
+    WRITE (NDSE,1021) GTYPE
+    CALL EXTCDE ( 21 )
   END SELECT
   !
   SELECT CASE (ICLOSE)
@@ -329,20 +337,27 @@ PROGRAM W3GSPL
     WRITE ( NDSO,904) 'global (tripolar)'
     IDCLSE = 'TRPL'
     GLOBAL = .TRUE.
-    GOTO 822
+    WRITE (NDSE,1022) ICLOSE
+    CALL EXTCDE ( 22 )
   CASE DEFAULT
     WRITE ( NDSO,904) 'not recognized'
-    GOTO 823
+    WRITE (NDSE,1023) ICLOSE
+    CALL EXTCDE ( 23 )
   END SELECT
   !
   WRITE (NDSO,905) NX, NY, NSEA
-  IF ( NSEA .EQ. 0 ) GOTO 824
+  IF ( NSEA .EQ. 0 ) THEN
+    WRITE (NDSE,1024)
+    CALL EXTCDE ( 24 )
+  END IF
+  !
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read options from input file.
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NG, NITMAX, STARG, NHEXT
+  READ (NDSI,*,IOSTAT=IERR) NG, NITMAX, STARG, NHEXT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   NG     = MAX ( 2, NG )
   NITMAX = MAX ( 1, NITMAX )
   STARG  = MAX ( 0. , STARG )
@@ -350,8 +365,9 @@ PROGRAM W3GSPL
   WRITE (NDSO,930) NG, NITMAX, STARG, NHEXT
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDLA1, IDFM1,         &
+  READ (NDSI,*,IOSTAT=IERR) IDLA1, IDFM1,         &
        VSC1, RFORM1
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   IF (IDLA1.LT.1 .OR. IDLA1.GT.4) IDLA1  = 1
   IF (IDFM1.LT.1 .OR. IDFM1.GT.3) IDFM1  = 1
   IF ( ABS(VSC1) .LT. 1.E-15 )    VSC1   = 1.
@@ -359,8 +375,9 @@ PROGRAM W3GSPL
   WRITE (NDSO,931) IDLA1, IDFM1, VSC1, RFORM1
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDLA2, IDFM2,         &
+  READ (NDSI,*,IOSTAT=IERR) IDLA2, IDFM2,         &
        VSC2, RFORM2
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   IF (IDLA2.LT.1 .OR. IDLA2.GT.4) IDLA2  = 1
   IF (IDFM2.LT.1 .OR. IDFM2.GT.3) IDFM2  = 1
   IF ( ABS(VSC2) .LT. 1.E-15 )    VSC2   = 1.
@@ -371,19 +388,25 @@ PROGRAM W3GSPL
   END IF
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDLA3, IDFM3,         &
+  READ (NDSI,*,IOSTAT=IERR) IDLA3, IDFM3,         &
        VSC3, RFORM3
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   IF (IDLA3.LT.1 .OR. IDLA3.GT.4) IDLA3  = 1
   IF (IDFM3.LT.1 .OR. IDFM3.GT.3) IDFM3  = 1
   IF (     VSC3  .EQ. 0      )    VSC3   = 1
   WRITE (NDSO,934) IDLA3, IDFM3, VSC3, RFORM3
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) FRACL, FRACH, FRFLAG
+  READ (NDSI,*,IOSTAT=IERR) FRACL, FRACH, FRFLAG
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GSPL','INPUT',41)
   FRACL = MAX ( 0. , FRACL )
   FRACH = MIN ( 1. , FRACH )
   WRITE (NDSO,935) FRACL, FRACH
-  IF ( FRACL .GT. FRACH ) GOTO 830
+  IF ( FRACL .GT. FRACH ) THEN
+    WRITE (NDSE,1030)
+    CALL EXTCDE ( 30 )
+  END IF
+  !
   IF ( .NOT. FRFLAG ) WRITE (NDSO,936)
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -516,7 +539,10 @@ PROGRAM W3GSPL
   DO J=1, IG
     MINGRD = MINGRD + INGRD(J)
   END DO
-  IF ( MINGRD .NE. NSEA ) GOTO 825
+  IF ( MINGRD .NE. NSEA ) THEN
+    WRITE (NDSE,1025) MINGRD, NSEA
+    CALL EXTCDE ( 25 )
+  END IF
   !
 #ifdef W3_T
   WRITE (NDST,9043) IG, NG
@@ -660,7 +686,10 @@ PROGRAM W3GSPL
   WRITE (NDSO,951) 0, MSTATS%NMIN, MSTATS%NMAX,                   &
        100.*MSTATS%RSTD/XMEAN
   G0ID   = '5.a'
-  IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+  IF ( MSTATS%NMIN .EQ. 0 ) THEN
+    WRITE (NDSE,1050) G0ID
+    CALL EXTCDE ( 50 )
+  END IF
   INGMIN = MSTATS%NMIN
   INGMAX = MSTATS%NMAX
   INGMNC = 0
@@ -691,7 +720,10 @@ PROGRAM W3GSPL
       IF ( MSTOLD%NMIN .NE. MSTATS%NMIN ) THEN
         WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,       &
              100.*MSTATS%RSTD/XMEAN
-        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+        IF ( MSTATS%NMIN .EQ. 0 ) THEN
+          WRITE (NDSE,1050) G0ID
+          CALL EXTCDE ( 50 )
+        END IF
 #ifdef W3_O16
         WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
         NTGRDS = NTGRDS + 1
@@ -701,7 +733,10 @@ PROGRAM W3GSPL
       ELSE
         WRITE (NDSO,952)      MSTATS%NMIN, MSTATS%NMAX,       &
              100.*MSTATS%RSTD/XMEAN
-        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+        IF ( MSTATS%NMIN .EQ. 0 ) THEN
+          WRITE (NDSE,1050) G0ID
+          CALL EXTCDE ( 50 )
+        END IF
       END IF
       !
     END IF
@@ -748,7 +783,10 @@ PROGRAM W3GSPL
 #endif
     !
     G0ID   = '5.g'
-    IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+    IF ( MSTATS%NMIN .EQ. 0 ) THEN
+      WRITE (NDSE,1050) G0ID
+      CALL EXTCDE ( 50 )
+    END IF
     !
     ! 5.h Optional GrADS output
     !
@@ -934,10 +972,11 @@ PROGRAM W3GSPL
     !
     IF ( IDFM1 .EQ. 3 ) THEN
       OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-           form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
+           form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
     ELSE
-      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),IOSTAT=IERR)
     END IF
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//FNAME(:J5),60)
     REWIND (NDSM)
     CALL OUTA2R ( PGRID(IG)%ZBIN, PGRID(IG)%NX, PGRID(IG)%NY,     &
          1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
@@ -956,11 +995,12 @@ PROGRAM W3GSPL
       !
       IF ( IDFM2 .EQ. 3 ) THEN
         OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-             form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
+              form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
       ELSE
         OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-             ERR=860,IOSTAT=IERR)
+              IOSTAT=IERR)
       END IF
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//FNAME(:J5),60)
       REWIND (NDSM)
       CALL OUTA2R ( PGRID(IG)%OBSX, PGRID(IG)%NX, PGRID(IG)%NY, &
            1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM,     &
@@ -980,10 +1020,11 @@ PROGRAM W3GSPL
     !
     IF ( IDFM3 .EQ. 3 ) THEN
       OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-           form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
     ELSE
-      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),IOSTAT=IERR)
     END IF
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//FNAME(:J5),60)
     REWIND (NDSM)
     CALL OUTA2I ( PGRID(IG)%MASK, PGRID(IG)%NX, PGRID(IG)%NY,     &
          1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
@@ -996,7 +1037,8 @@ PROGRAM W3GSPL
     FNAME(J4+1:J5) = '.tmpl'
     WRITE (NDSO,962) FNAME(:J5)
     !
-    OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+    OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//FNAME(:J5),60)
     !
     GNAME(31-J2:30) = AEXT
     GNAME(30-J2:30-J2) = 'p'
@@ -1033,7 +1075,8 @@ PROGRAM W3GSPL
   !
   J5     = 11+J1+J2
   INAME(:J5) = 'ww3_multi.'//FEXT(:J1)//'.'//AEXT(:J2)
-  OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5), ERR=870,IOSTAT=IERR)
+  OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5),IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//INAME(:J5),70)
   !
   DO IG=1, NG
     WRITE (AEXT,NRFMT) IG
@@ -1054,7 +1097,8 @@ PROGRAM W3GSPL
   !
   J5     = 10+J1+J2
   INAME(:J5) = 'ww3_mask.'//FEXT(:J1)//'.'//AEXT(:J2)
-  OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5), ERR=870,IOSTAT=IERR)
+  OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5),IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GSPL',FNMPRE(:J)//INAME(:J5),70)
   !
   DO IY=1, NY
     WRITE (NDSM,980) MSPLIT(IY,:)
@@ -1073,63 +1117,6 @@ PROGRAM W3GSPL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 9.  End of program
   !
-  GOTO 888
-  !
-  ! Error escape locations
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-820 CONTINUE
-  WRITE (NDSE,1020) GTYPE
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021) GTYPE
-  CALL EXTCDE ( 21 )
-  !
-822 CONTINUE
-  WRITE (NDSE,1022) ICLOSE
-  CALL EXTCDE ( 22 )
-  !
-823 CONTINUE
-  WRITE (NDSE,1023) ICLOSE
-  CALL EXTCDE ( 23 )
-  !
-824 CONTINUE
-  WRITE (NDSE,1024)
-  CALL EXTCDE ( 24 )
-  !
-825 CONTINUE
-  WRITE (NDSE,1025) MINGRD, NSEA
-  CALL EXTCDE ( 25 )
-  !
-830 CONTINUE
-  WRITE (NDSE,1030)
-  CALL EXTCDE ( 30 )
-  !
-850 CONTINUE
-  WRITE (NDSE,1050) G0ID
-  CALL EXTCDE ( 50 )
-  !
-860 CONTINUE
-  WRITE (NDSE,1060) FNMPRE(:J)//FNAME(:J5), IERR
-  CALL EXTCDE ( 60 )
-  !
-870 CONTINUE
-  WRITE (NDSE,1070) FNMPRE(:J)//INAME(:J5), IERR
-  CALL EXTCDE ( 70 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
   !
   ! Formats
@@ -1220,17 +1207,6 @@ PROGRAM W3GSPL
        ' ========================================='/          &
        '             WAVEWATCH III Grid splitting '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
        '     SPLITTING NOT AVAILABLE FOR GRID TYPE'/          &
        '     GTYPE =',I5/)
@@ -1259,14 +1235,6 @@ PROGRAM W3GSPL
   !
 1050 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
        '     SHOULD NOT HAVE ZERO GRID SIZE (',A,') ...'/)
-  !
-1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
-       '     ERROR IN OPENING FILE ',A/                       &
-       '     IOSTAT =',I5/)
-  !
-1070 FORMAT (/' *** WAVEWATCH III ERROR IN W3GSPL : '/               &
-       '     ERROR IN OPENING FILE ',A/                       &
-       '     IOSTAT =',I5/)
   !
 #ifdef W3_T
 9040 FORMAT ( 'TEST W3GSPL: CHECKERBOARD X-Y:',2I8)

@@ -1,0 +1,88 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.05
+  SPECTRUM%NK        =  40
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  .5
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  900.
+  TIMESTEPS%DTXY         =  450.
+  TIMESTEPS%DTKTH        =  450.
+  TIMESTEPS%DTMIN        =  5.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'ADRIATIC SEA 15km LAMBERT CONFORMAL'
+  GRID%NML          =  '../input_rho/namelists_ADRIATIC.nml'
+  GRID%TYPE         =  'CURV'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.10
+  GRID%DMIN         =  2.50
+/
+
+! -------------------------------------------------------------------- !
+! Define the curvilinear grid type via CURV_NML namelist
+! -------------------------------------------------------------------- !
+&CURV_NML
+  CURV%NX              =  43
+  CURV%NY              =  42
+  CURV%XCOORD%FILENAME  =  '../input/lon_ste_adri_15km.dat'
+  CURV%XCOORD%FORMAT    =  '(...)'
+  CURV%YCOORD%FILENAME  =  '../input/lat_ste_adri_15km.dat'
+  CURV%YCOORD%FORMAT    =  '(...)'
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  0.001000
+  DEPTH%FILENAME  =  '../input/ste_adri_15km_etopo1.depth'
+/
+
+! -------------------------------------------------------------------- !
+! Define the point status map via MASK_NML namelist
+! -------------------------------------------------------------------- !
+&MASK_NML
+  MASK%FILENAME  =  '../input/ste_adri_15km_etopo1.mask'
+  MASK%FORMAT    =  '(...)'
+/
+
+! -------------------------------------------------------------------- !
+! Define the obstruction map via OBST_NML namelist
+! -------------------------------------------------------------------- !
+&OBST_NML
+  OBST%SF        =  0.010000
+  OBST%FILENAME  =  '../input/ste_adri_15km_etopo1.obstr'
+  OBST%FORMAT    =  '(...)'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
