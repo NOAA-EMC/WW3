@@ -3296,7 +3296,7 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #endif
 #ifdef W3_MPI
-    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE,NSPEC)
+    type(MPI_STATUS)        :: STATUS(NSPEC)
     INTEGER                 :: IOFF, IERR_MPI, JSEA, ISEA,     &
                                IXY, IS0, IB0, NPST, J
 #endif
@@ -3528,7 +3528,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J, JSEA, IB0
-    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE,NSPEC)
+    type(MPI_STATUS)        :: STATUS(NSPEC)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT

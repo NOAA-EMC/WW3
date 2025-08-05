@@ -37,7 +37,7 @@
 !
 !> Has fancy data
 module yowDatapool
-  use mpi_f08, only: MPI_COMM_WORLD, MPI_INTEGER, MPI_REAL4, MPI_REAL8, MPI_STATUS_SIZE, &
+  use mpi_f08, only: MPI_COMM_WORLD, MPI_INTEGER, MPI_REAL4, MPI_REAL8, &
                      MPI_COMM, MPI_STATUS, MPI_Datatype
   implicit none
   !#ifdef USE_SINGLE
@@ -72,7 +72,7 @@ module yowDatapool
 
   !> MPI Real Type
   !> Shpuld be MPI_REAL8
-  type(MPI_STATUS) :: istatus(MPI_STATUS_SIZE)
+  type(MPI_STATUS) :: istatus
   !#ifdef USE_SINGLE
   type(MPI_Datatype), save :: rtype = MPI_REAL4
   !#else

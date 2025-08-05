@@ -38,7 +38,7 @@
 !> Has only the ghost nodes assign to a neighbor domain
 module yowExchangeModule
   use yowDatapool, only: rkind
-  use mpi_f08, only: MPI_DATATYPE_NULL
+  use mpi_f08, only: MPI_INTEGER, MPI_Datatype, MPI_DATATYPE_NULL
   implicit none
   private
   public :: initNbrDomains, createMPITypes, setDimSize
@@ -72,22 +72,22 @@ module yowExchangeModule
     ! MPI datatypes for size(U) == npa+1  U(0:npa)
 
     !> MPI datatypes for 1D exchange
-    integer :: p1DRsendType_zero = MPI_DATATYPE_NULL
-    integer :: p1DRrecvType_zero = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p1DRsendType_zero = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p1DRrecvType_zero = MPI_DATATYPE_NULL
 
     !> MPI datatypes for 2D exchange
-    integer :: p2DRsendType_zero = MPI_DATATYPE_NULL
-    integer :: p2DRrecvType_zero = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRsendType_zero = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRrecvType_zero = MPI_DATATYPE_NULL
 
     ! MPI datatypes for size(U) == npa  U(1:npa)
     !> MPI datatypes for 1D exchange
-    integer :: p1DRsendType = MPI_DATATYPE_NULL
-    integer :: p1DRrecvType = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p1DRsendType = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p1DRrecvType = MPI_DATATYPE_NULL
     !> MPI datatypes for 2D exchange
-    integer :: p2DRsendType1 = MPI_DATATYPE_NULL
-    integer :: p2DRrecvType1 = MPI_DATATYPE_NULL
-    integer :: p2DRsendType2 = MPI_DATATYPE_NULL
-    integer :: p2DRrecvType2 = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRsendType1 = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRrecvType1 = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRsendType2 = MPI_DATATYPE_NULL
+    type(MPI_Datatype) :: p2DRrecvType2 = MPI_DATATYPE_NULL
 
   contains
     !     procedure :: exchangeGhostIds
@@ -257,7 +257,7 @@ contains
 
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
     character(len=140) :: errmsg
 
     if(size(U) /= npa) then
@@ -310,7 +310,7 @@ contains
 
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
 
 
 #ifdef W3_DEBUGEXCH
@@ -404,7 +404,7 @@ contains
 
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
     character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
@@ -474,7 +474,7 @@ contains
 
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
     character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa

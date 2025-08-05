@@ -1294,7 +1294,7 @@ CONTAINS
 #ifdef W3_MPIBDI
     INTEGER, ALLOCATABLE    :: NX_SIZE(:)
     type(MPI_REQUEST), ALLOCATABLE :: IRQ(:)
-    type(MPI_STATUS), ALLOCATABLE :: MSTAT(:,:)
+    type(MPI_STATUS), ALLOCATABLE :: MSTAT(:)
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IM, NX_REM, TAG, NRQ
@@ -1447,7 +1447,7 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
 #ifdef W3_MPIBDI
     ALLOCATE ( NX_SIZE(NMPROC), IRQ(2*NMPROC), &
-         MSTAT(MPI_STATUS_SIZE,2*NMPROC), STAT=ISTAT )
+         MSTAT(2*NMPROC), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 #endif
     !
@@ -5384,7 +5384,7 @@ CONTAINS
          IP, NP, ICROOT, JCROOT, IEER
 
 #ifdef W3_MPI
-    type(MPI_STATUS), Dimension(MPI_STATUS_SIZE):: MPIState
+    type(MPI_STATUS) :: MPIState
 #endif
 
 #ifdef W3_S

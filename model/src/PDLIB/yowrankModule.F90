@@ -94,7 +94,7 @@ contains
     implicit none
     integer :: i, ierr, stat
     type(MPI_REQUEST) :: sendRqst(nTasks), recvRqst(nTasks)
-    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nTasks), sendStat(MPI_STATUS_SIZE, nTasks)
+    type(MPI_STATUS)  :: recvStat(nTasks), sendStat(nTasks)
     integer IPglob, J, istat
 
     ! step1 exchange np

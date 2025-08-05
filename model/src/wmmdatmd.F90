@@ -297,6 +297,9 @@ MODULE WMMDATMD
   !
   !/ ------------------------------------------------------------------- /
   !/
+#ifdef W3_MPI
+  use mpi_f08, only: MPI_COMM, MPI_REQUEST
+#endif
   !/ Specify default accessibility
   !/
   PUBLIC
@@ -407,9 +410,9 @@ MODULE WMMDATMD
     INTEGER, POINTER      :: UPTMAP(:)   !< UPTMAP
 
 #ifdef W3_MPI
-    INTEGER, POINTER      :: IRQBPG(:)   !< IRQBPG
-    INTEGER, POINTER      :: IRQHGG(:)   !< IRQHGG
-    INTEGER, POINTER      :: IRQEQG(:)   !< IRQEQG
+    type(MPI_REQUEST), POINTER :: IRQBPG(:)   !< IRQBPG
+    type(MPI_REQUEST), POINTER :: IRQHGG(:)   !< IRQHGG
+    type(MPI_REQUEST), POINTER :: IRQEQG(:)   !< IRQEQG
 #endif
     REAL, POINTER         :: DATA0(:,:)   !< DATA0
     REAL, POINTER         :: DATA1(:,:)   !< DATA1
@@ -446,7 +449,7 @@ MODULE WMMDATMD
 #endif
     INTEGER                 :: VTIME(2)   !< VTIME
 #ifdef W3_MPI
-    INTEGER, POINTER        :: IRQBPS(:)   !< IRQBPS
+    type(MPI_REQUEST), POINTER :: IRQBPS(:)   !< IRQBPS
 #endif
     REAL, POINTER           :: SBPI(:,:)   !< SBPI
 #ifdef W3_MPI
@@ -475,7 +478,7 @@ MODULE WMMDATMD
     INTEGER, POINTER        :: ITAG(:,:)   !< ITAG
     INTEGER, POINTER        :: ISEND(:,:)   !< ISEND
 #ifdef W3_MPI
-    INTEGER, POINTER        :: IRQHGS(:)   !< IRQHGS
+    type(MPI_REQUEST), POINTER :: IRQHGS(:)   !< IRQHGS
     INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
     REAL, POINTER           :: WGTH(:,:)   !< WGTH
@@ -511,7 +514,7 @@ MODULE WMMDATMD
     INTEGER, POINTER        :: STG(:)   !< STG
 
 #ifdef W3_MPI
-    INTEGER, POINTER        :: IRQEQS(:)   !< IRQEQS
+    type(MPI_REQUEST), POINTER :: IRQEQS(:)   !< IRQEQS
     INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
     REAL, POINTER           :: SEQL(:,:,:)   !< SEQL

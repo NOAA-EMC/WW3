@@ -368,7 +368,7 @@ CONTAINS
 #endif
     INTEGER(KIND=8)         :: RPOS
 #ifdef W3_MPI
-    INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:)
+    type(MPI_STATUS), ALLOCATABLE :: STAT1(:), STAT2(:)
     REAL, ALLOCATABLE       :: VGBUFF(:), VLBUFF(:)
 #endif
     REAL(KIND=LRB), ALLOCATABLE :: WRITEBUFF(:), TMP(:), TMP2(:)
@@ -718,7 +718,7 @@ CONTAINS
               NRQ    = NAPROC
             END IF
             !
-            ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
+            ALLOCATE ( STAT1(NRQ) )
             IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
                  ( NRQ, IRQRSS, IERR_MPI )
             !
@@ -758,7 +758,7 @@ CONTAINS
                 CALL MPI_STARTALL                        &
                      ( 1, IRQRSS(IB:IB), IERR_MPI )
                 CALL MPI_WAITALL                         &
-                     ( 1, IRQRSS(IB:IB), STAT1(:,1:1), IERR_MPI )
+                     ( 1, IRQRSS(IB:IB), STAT1(1:1), IERR_MPI )
                 !
               END IF
             END DO
@@ -888,7 +888,7 @@ CONTAINS
           !
 #ifdef W3_MPI
           if (associated(irqrs)) then
-            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            ALLOCATE ( STAT2(NRQRS) )
             CALL MPI_WAITALL                               &
                  ( NRQRS, IRQRS , STAT2, IERR_MPI )
             DEALLOCATE ( STAT2 )

@@ -155,6 +155,9 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_MPI
+    use mpi_f08, ONLY: mpi_wtime
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -168,9 +171,6 @@ CONTAINS
 #endif
     INTEGER mpimode
     REAL(8), intent(out) :: eTime
-#ifdef W3_MPI
-    REAL(8) mpi_wtime
-#endif
     mpimode=0
 #ifdef W3_MPI
     mpimode=1

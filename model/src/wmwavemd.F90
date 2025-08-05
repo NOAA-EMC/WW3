@@ -278,7 +278,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NMPSCS
-    MPI_STATUS, ALLOCATABLE :: STATUS(:,:)
+    type(MPI_STATUS), ALLOCATABLE :: STATUS(:)
 #endif
     REAL                    :: DTTST, DTMAXI
 #ifdef W3_MPRF
@@ -1368,7 +1368,7 @@ CONTAINS
                   !
 #ifdef W3_MPI
                   IF ( NRQPO .NE. 0 ) THEN
-                    ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQPO) )
+                    ALLOCATE ( STATUS(NRQPO) )
                     CALL MPI_WAITALL                      &
                          ( NRQPO, IRQPO1, STATUS, IERR_MPI )
                     DEALLOCATE ( STATUS )
@@ -2030,7 +2030,7 @@ CONTAINS
     !/
 #ifdef W3_MPI
     INTEGER                 :: ITAG, IP, IERR_MPI
-    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE)
+    type(MPI_STATUS)        :: STATUS
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -2216,7 +2216,7 @@ CONTAINS
     !/
 #ifdef W3_MPI
     INTEGER                 :: ITAG, IP, IERR_MPI
-    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE)
+    type(MPI_STATUS)        :: STATUS
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

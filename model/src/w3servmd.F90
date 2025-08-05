@@ -1130,7 +1130,11 @@ CONTAINS
     CHARACTER(*), INTENT(IN), OPTIONAL :: MSG
     CHARACTER(*), INTENT(IN), OPTIONAL :: FILE
     INTEGER,      INTENT(IN), OPTIONAL :: LINE
+#ifdef W3_MPI
+    type(MPI_COMM), INTENT(IN), OPTIONAL :: COMM
+#else
     INTEGER,      INTENT(IN), OPTIONAL :: COMM
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/

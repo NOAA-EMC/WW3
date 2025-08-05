@@ -754,7 +754,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NMPPNT
-    type(MPI_STATUS), ALLOCATABLE    :: STATUS(:)
+    type(MPI_STATUS)        :: STATUS
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -1026,7 +1026,7 @@ CONTAINS
       IT0    = MTAG0 - 7*NRGRD - 1
       IT     = IT0 + (J-1)*7
       IFROM  = NMPPNT - 1
-      ALLOCATE ( SPCR(NSPEC,NOPTS), STATUS(MPI_STATUS_SIZE),  &
+      ALLOCATE ( SPCR(NSPEC,NOPTS),  &
            DPR(NOPTS), WAR(NOPTS), WDR(NOPTS), ASR(NOPTS),&
            CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           &
            ICRFO(NOPTS), ICRHO(NOPTS) )
@@ -1153,7 +1153,7 @@ CONTAINS
       !
 #ifdef W3_MPI
       IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
-      DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR, STATUS )
+      DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR)
 #endif
       !        !JDM add deallocates here and check the itag stuff.. really not
       !        sure aabout that

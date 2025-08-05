@@ -63,6 +63,7 @@ contains
   !> @param[in] MPIComm MPI communicator to use with pdlib
   !> @overload initPD1
   subroutine initFromGridDim(MNP, MNE, INE_global, secDim, MPIcomm)
+    use mpi_f08,           only: MPI_COMM
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
     use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
     use yowElementpool,    only: ne_global,ne
@@ -180,7 +181,7 @@ contains
     type(MPI_COMM), intent(in) :: TheComm
     character(*), intent(in) :: string
     integer NbProc, eRank
-    type(MPI_STATUS) :: istatus(MPI_STATUS_SIZE)
+    type(MPI_STATUS) :: istatus
     integer ierr, iField(1), iProc
     !      Print *, 'Start of REAL_MPI_BARRIER_PDLIB'
     CALL MPI_COMM_RANK(TheComm, eRank, ierr)
@@ -1075,7 +1076,7 @@ contains
     ! store the revc status
     type(MPI_REQUEST) :: recvRequest(nConnDomains)
     ! status to verify if one communication fails or not
-    type(MPI_STATUS)  :: status(MPI_STATUS_SIZE, nConnDomains);
+    type(MPI_STATUS)  :: status(nConnDomains);
 
 
     type(t_node), pointer :: node

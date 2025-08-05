@@ -448,7 +448,11 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE
+#ifdef W3_MPI
     type(MPI_COMM)             :: MPI_COMM_IN
+#else
+    INTEGER                    :: MPI_COMM_IN
+#endif
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
     !/
@@ -463,10 +467,13 @@ CONTAINS
          TLST(2), NCPROC, NPOUTT, NAPLOC,     &
          NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
          IFT
-    type(MPI_COMM) :: MPI_COMM_LOC
     INTEGER                 :: STMPT(2), ETMPT(2)
 #ifdef W3_MPI
-    INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
+    type(MPI_COMM) :: MPI_COMM_LOC
+    INTEGER                 :: IERR_MPI, IROOT
+    type(MPI_GROUP)         :: BGROUP, LGROUP
+#else
+    INTEGER        :: MPI_COMM_LOC
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -3792,8 +3799,12 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE,     &
-         MPI_COMM_IN
+    INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE
+#ifdef W3_MPI
+    type(MPI_COMM), INTENT(IN) :: MPI_COMM_IN
+#else
+    INTEGER, INTENT(IN)        :: MPI_COMM_IN
+#endif
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
     !/
@@ -3819,7 +3830,7 @@ CONTAINS
     INTEGER                 :: MDSE2, IERR, I,J,K, N_MOV, N_TOT,     &
          SCRATCH, RNKMIN, RNKMAX, RNKTMP,      &
          GRPMIN, GRPMAX, II, NDSREC, NDSFND,   &
-         NPTS, JJ, IP1, IPN, MPI_COMM_LOC,     &
+         NPTS, JJ, IP1, IPN,     &
          NMPSC2, JJJ, NCPROC, NPOUTT, NAPLOC,  &
          NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW, &
          IFT, ILOOP
@@ -3827,7 +3838,11 @@ CONTAINS
     INTEGER                 :: TTIME(2), TOUT(2), STMPT(2), ETMPT(2),&
          TLST(2)
 #ifdef W3_MPI
-    INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
+    INTEGER                 :: IERR_MPI, IROOT
+    type(MPI_GROUP)         :: BGROUP, LGROUP
+    type(MPI_COMM)          :: MPI_COMM_LOC
+#else
+    INTEGER                 :: MPI_COMM_LOC
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

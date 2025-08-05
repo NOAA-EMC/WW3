@@ -174,7 +174,7 @@ MODULE W3NMLSHELMD
 CONTAINS
 
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE W3NMLSHEL (MPI_COMM, NDSI, INFILE, NML_DOMAIN,            &
+  SUBROUTINE W3NMLSHEL (MPICOMM, NDSI, INFILE, NML_DOMAIN,            &
        NML_INPUT, NML_OUTPUT_TYPE, NML_OUTPUT_DATE, NML_OUTPUT_PATH,   &
        NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
     !/
@@ -256,6 +256,7 @@ CONTAINS
     USE WMMDATMD, ONLY: MDSE, IMPROC, NMPLOG
 #ifdef W3_MPI
     USE WMMDATMD, ONLY: MPI_COMM_MWAVE
+    use mpi_f08, ONLY : MPI_COMM, MPI_COMM_RANK
 #endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -263,7 +264,12 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(IN)                       :: MPI_COMM, NDSI
+    INTEGER, INTENT(IN)                       :: NDSI
+#ifdef W3_MPI
+    type(MPI_COMM), INTENT(IN)                :: MPICOMM
+#else
+    INTEGER, INTENT(IN)                       :: MPICOMM
+#endif
     CHARACTER*(*), INTENT(IN)                 :: INFILE
     TYPE(NML_DOMAIN_T), INTENT(INOUT)         :: NML_DOMAIN
     TYPE(NML_INPUT_T), INTENT(INOUT)          :: NML_INPUT
@@ -288,7 +294,7 @@ CONTAINS
 #endif
 
 #ifdef W3_MPI
-    MPI_COMM_MWAVE = MPI_COMM
+    MPI_COMM_MWAVE = MPICOMM
     CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
     IMPROC = IMPROC + 1
 #endif

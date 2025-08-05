@@ -483,7 +483,8 @@ CONTAINS
     INTEGER                 :: ISTEP, ISP, IW
 #endif
 #ifdef W3_MPI
-    INTEGER                 :: IERR_MPI, BGROUP, LGROUP
+    INTEGER                 :: IERR_MPI
+    type(MPI_GROUP)         :: BGROUP, LGROUP
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
