@@ -50,7 +50,7 @@ MODULE WMGRIDMD
   !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
   !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
   !/                  (T. J. Campbell, NRL)
-  !/    12-Mar-2012 : use mpi_f08_COMM_NULL in checks.        ( version 3.14 )
+  !/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 3.14 )
   !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
   !/    05-Sep-2012 : Implementation of UNGTYPE with SCRIP
   !/                       (Mathieu Dutour Sikiric, IRB; Aron Roland, Z&P)
@@ -165,7 +165,7 @@ CONTAINS
     !/                  (W. E. Rogers & T. J. Campbell, NRL)
     !/    22-Dec-2010 : Adapt for use with irregular grids  ( version 3.14 )
     !/                  (W. E. Rogers, NRL)
-    !/    12-Mar-2012 : use mpi_f08_COMM_NULL in checks.        ( version 4.07 )
+    !/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 4.07 )
     !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
     !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
     !/    06-Jun-2018 : Use W3PARALL                        ( version 6.04 )

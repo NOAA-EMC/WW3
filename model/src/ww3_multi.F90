@@ -120,7 +120,7 @@ PROGRAM W3MLTI
   ! 0.  Initialization necessary for driver
   ! 0.a General I/O: all can start with initialization in wmmdatmd
   !
-  ! 0.b MPI environment: Here, we use mpi_f08_COMM_WORLD
+  ! 0.b MPI environment: Here, we use MPI_COMM_WORLD
   !
 #ifdef W3_OMPH
   FLHYBR = .TRUE.

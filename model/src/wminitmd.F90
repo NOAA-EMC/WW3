@@ -38,7 +38,7 @@ MODULE WMINITMD
   !/    07-Mar-2012 : Adding TNAMES to avoid read warn.   ( version 4.07 )
   !/                  Adjust allocation INPMAP and IDINP.
   !/    12-Mar-2012 : Fixing format 9061.                 ( version 3.14 )
-  !/                  use mpi_f08_COMM_NULL for checks instead of fixed '-1'.
+  !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
   !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
   !/                  Tom Durrant's fix, but moved to allocation.
   !/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
