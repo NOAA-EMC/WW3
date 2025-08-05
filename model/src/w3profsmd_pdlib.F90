@@ -931,7 +931,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    use mpi_f08, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1259,7 +1259,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    use mpi_f08, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1555,7 +1555,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    use mpi_f08, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -5520,7 +5520,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use YOWNODEPOOL, only: npa, iplg
     use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
-    use mpi_f08, only : MPI_SUM, MPI_INT
+    use mpi_f08, only : MPI_SUM, MPI_INT, MPI_ALLREDUCE
     USE W3ADATMD, only: MPI_COMM_WCMP
     USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
@@ -6402,7 +6402,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only: PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
     use yowRankModule,     only: ipgl_npa
-    use mpi_f08, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
 #endif
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
