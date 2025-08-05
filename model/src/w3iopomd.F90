@@ -373,7 +373,11 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)          :: NPT, IMOD
+#ifdef W3_MPI
     TYPE(MPI_COMM), INTENT(IN)   :: MPI_COMM_IOPP
+#else
+    INTEGER, INTENT(IN)          :: MPI_COMM_IOPP
+#endif
     REAL, INTENT(INOUT)          :: XPT(NPT), YPT(NPT)
     CHARACTER(LEN=40),INTENT(IN) :: PNAMES(NPT)
     !/

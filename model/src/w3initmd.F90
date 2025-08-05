@@ -460,7 +460,11 @@ CONTAINS
     !/
     INTEGER, INTENT(IN)           :: IMOD, MDS(15), MTRACE(2),      &
          ODAT(40),NPT, IPRT(6)
+#ifdef W3_MPI
     type(MPI_COMM), INTENT(IN)    :: MPI_COMM_IN
+#else
+    INTEGER, INTENT(IN)           :: MPI_COMM_IN
+#endif
     LOGICAL, INTENT(IN)           :: IsMulti
     REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
     LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),&
