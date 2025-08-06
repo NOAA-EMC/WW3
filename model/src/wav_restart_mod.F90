@@ -132,7 +132,7 @@ contains
     if (addrstflds) then
       do i = 1,rstfldcnt
         vname = trim(rstfldlist(i))
-        if (vname == 'itstep') then
+        if (vname == 'itstep' .or. vname == 'itstep_w') then
           ierr = pio_def_var(pioid, 'itstep', PIO_INT, (/timid/), varid)
           call handle_err(ierr,'def_itstep')
           ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_int)
@@ -213,7 +213,7 @@ contains
         if (vname == 'ice') then
           call write_globalfield(vname, nseal_cpl, ice(1:nsea))
         end if
-        if (vname == 'itstep') then
+        if (vname == 'itstep' .or. vname == 'itstep_w') then
           ierr = pio_inq_varid(pioid, 'itstep', varid)
           call handle_err(ierr, 'inquire variable itstep ')
           ierr = pio_put_var(pioid, varid, (/1/), ITSTEP)
@@ -390,7 +390,7 @@ contains
         if (vname == 'ice') then
           call read_globalfield(wave_communicator, vname, nseal_cpl, ice(1:nsea), icei)
         end if
-        if (vname == 'itstep') then
+        if (vname == 'itstep' .or. vname == 'itstep_r') then
           ierr = pio_inq_varid(pioid, 'itstep', varid)
           call handle_err(ierr, 'inquire variable itstep ')
           ierr = pio_get_var(pioid, varid, (/1/), ITSTEP)
