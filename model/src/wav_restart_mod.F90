@@ -55,6 +55,7 @@ contains
   subroutine write_restart (fname, va, mapsta)
 
     use w3odatmd , only : time_origin, calendar_name, elapsed_secs
+    use w3adatmd , only : ITSTEP
 
     real            , intent(in) :: va(1:nspec,0:nsealm)
     integer         , intent(in) :: mapsta(ny,nx)
@@ -131,10 +132,17 @@ contains
     if (addrstflds) then
       do i = 1,rstfldcnt
         vname = trim(rstfldlist(i))
-        ierr = pio_def_var(pioid, trim(vname), PIO_REAL, (/xtid, ytid, timid/), varid)
-        call handle_err(ierr, 'define variable '//trim(vname))
-        ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
-        call handle_err(ierr, 'define _FillValue '//trim(vname))
+        if (vname == 'itstep') then
+          ierr = pio_def_var(pioid, 'itstep', PIO_INT, (/timid/), varid)
+          call handle_err(ierr,'def_itstep')
+          ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_int)
+          call handle_err(ierr,'def_itstep_fillvalue')
+        else
+          ierr = pio_def_var(pioid, trim(vname), PIO_REAL, (/xtid, ytid, timid/), varid)
+          call handle_err(ierr, 'define variable '//trim(vname))
+          ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+          call handle_err(ierr, 'define _FillValue '//trim(vname))
+        end if
       end do
     end if
     ! end variable definitions
@@ -202,7 +210,15 @@ contains
     if (addrstflds) then
       do i = 1,rstfldcnt
         vname = trim(rstfldlist(i))
-        if (vname == 'ice')call write_globalfield(vname, nseal_cpl, ice(1:nsea))
+        if (vname == 'ice') then
+          call write_globalfield(vname, nseal_cpl, ice(1:nsea))
+        end if
+        if (vname == 'itstep') then
+          ierr = pio_inq_varid(pioid, 'itstep', varid)
+          call handle_err(ierr, 'inquire variable itstep ')
+          ierr = pio_put_var(pioid, varid, (/1/), ITSTEP)
+          call handle_err(ierr, 'put itstep')
+        end if
       end do
     end if
 
@@ -229,7 +245,7 @@ contains
   subroutine read_restart (fname, va, mapsta, mapst2)
 
     use mpi_f08
-    use w3adatmd    , only : mpi_comm_wave
+    use w3adatmd    , only : mpi_comm_wave, itstep
     use w3gdatmd    , only : sig
     use w3idatmd    , only : icei
     use w3wdatmd    , only : time, tlev, tice, trho, tic1, tic5, wlv, asf, fpis
@@ -371,7 +387,15 @@ contains
     if (addrstflds) then
       do i = 1,rstfldcnt
         vname = trim(rstfldlist(i))
-        if (vname == 'ice')call read_globalfield(wave_communicator, vname, nseal_cpl, ice(1:nsea), icei)
+        if (vname == 'ice') then
+          call read_globalfield(wave_communicator, vname, nseal_cpl, ice(1:nsea), icei)
+        end if
+        if (vname == 'itstep') then
+          ierr = pio_inq_varid(pioid, 'itstep', varid)
+          call handle_err(ierr, 'inquire variable itstep ')
+          ierr = pio_get_var(pioid, varid, (/1/), ITSTEP)
+          call handle_err(ierr, 'get variable itstep')
+        end if
       end do
     end if
 
