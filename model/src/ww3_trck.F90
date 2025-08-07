@@ -30,6 +30,7 @@ PROGRAM W3TRCK
   !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
   !/                  (W. E. Rogers & T. J. Campbell, NRL)
   !/    05-Mar-2014 : Now calls W3SETG for pointer def.   ( version 4.18 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,7 +77,7 @@ PROGRAM W3TRCK
   !/ ------------------------------------------------------------------- /
   USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR
   USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -142,14 +143,16 @@ PROGRAM W3TRCK
   WRITE (NDSO,900)
   !
   J      = LEN_TRIM(FNMPRE)
-  OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_trck.inp',STATUS='OLD',        &
-       ERR=805,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=806,ERR=807) COMSTR
+  OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_trck.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3TRCK', 'INPUT', 5)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT',6)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=806,ERR=807) NK, NTH
+  READ (NDSI,*,IOSTAT=IERR) NK, NTH
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT',6)
   NSPEC  = NK * NTH
   WRITE (NDSO,902) NK, NTH
   !
@@ -159,8 +162,10 @@ PROGRAM W3TRCK
   WRITE (NDSO,920)
   !
   OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
-       STATUS='OLD',ERR=800,IOSTAT=IERR)
-  READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
+       STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3TRCK','INPUT DATA',1)
+  READ (NDSINP,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
   !
   IF ( FLAGLL ) THEN
     FACTOR  = 1.
@@ -168,244 +173,225 @@ PROGRAM W3TRCK
     FACTOR  = 1.E-3
   END IF
   !
-  IF ( IDSTR .NE. IDTST ) GOTO 810
-  IF ( NK.NE.MK .OR. NTH.NE.MTH ) GOTO 811
+  IF ( IDSTR .NE. IDTST ) THEN
+    WRITE (NDSE,1010) IDSTR, IDTST
+    CALL EXTCDE ( 5 )
+  END IF
+  IF ( NK.NE.MK .OR. NTH.NE.MTH ) THEN
+    WRITE (NDSE,1011) MK, MTH, NK, NTH
+    CALL EXTCDE ( 6 )
+  END IF
 
   ALLOCATE ( SIG(MK), DSIP(MK), SPEC(MK,MTH) )
   !
-  READ (NDSINP,ERR=801,IOSTAT=IERR) TH1, DTH, SIG, DSIP
+  READ (NDSINP,IOSTAT=IERR) TH1, DTH, SIG, DSIP
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Open output file and prepare
   !
   WRITE (NDSO,930)
   !
-  OPEN (NDSOUT,FILE=FNMPRE(:J)//'track.ww3',                      &
-       FORM='FORMATTED',ERR=802,IOSTAT=IERR)
+  OPEN (NDSOUT,FILE=FNMPRE(:J)//'track.ww3',FORM='FORMATTED',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3TRCK','OUTPUT',3)
   !
-  WRITE (NDSOUT,980,ERR=803,IOSTAT=IERR) IDSTR
-  WRITE (NDSOUT,981,ERR=803,IOSTAT=IERR) MK, MTH, TH1, DTH
-  WRITE (NDSOUT,982,ERR=803,IOSTAT=IERR) SIG
-  WRITE (NDSOUT,983,ERR=803,IOSTAT=IERR) DSIP
+  WRITE (NDSOUT,980,IOSTAT=IERR) IDSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+  WRITE (NDSOUT,981,IOSTAT=IERR) MK, MTH, TH1, DTH
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+  WRITE (NDSOUT,982,IOSTAT=IERR) SIG
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+  WRITE (NDSOUT,983,IOSTAT=IERR) DSIP
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 4.  Process data
   !
   ILOC    = 0
   ISPEC   = 0
-  READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TTST
-  BACKSPACE (NDSINP)
-  WRITE (NDSO,940)
-  !
-400 CONTINUE
-  !
-  ! 4.a Read/write basic data
-  !
-  READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR,  &
-       TRCKID
-  IF ( FLAGLL ) THEN
-    WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                      &
-         TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
-  ELSE
-    WRITE (NDSOUT,974,ERR=803,IOSTAT=IERR)                      &
-         TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
-  END IF
-  !
-  IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
-    ILOC = ILOC + 1
-    IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-  ENDIF
-  IF ( TIME(1).NE.TTST(1) .OR. TIME(2).NE.TTST(2) ) THEN
-    CALL STME21 ( TTST , STIME )
-    WRITE (NDSO,941) STIME, ILOC, ISPEC
-    ILOC    = 1
-    ISPEC   = 0
-    IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-    TTST(1) = TIME(1)
-    TTST(2) = TIME(2)
-  ENDIF
-  !
-  ! 4.b Check if sea point
-  !
-  IF ( TSTSTR .NE. 'SEA' ) GOTO 400
-  !
-  ! 4.c Read all data
-  !
-  READ (NDSINP,ERR=801,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, AS,  &
-       SPEC
-  IF ( UST .LT. 0. ) UST = -1.0
-  !
-  ! 4.d Write the basic stuff
-  !
-  WRITE (NDSOUT,985,ERR=803,IOSTAT=IERR)                          &
-       DW, CX, CY, WX, WY, UST, AS, SCALE
-  !
-  ! 4.e Start of integer packing
-  !
-  STRING = EMPTY
-  ILAST  = 0
-  NZERO  = 0
-  !
-  ! 4.e.1 Loop over spectrum
-  !
-  DO IK=1, NK
-    DO ITH=1, NTH
-      VALUE  = MAX ( 0.1 , 1.1*SPEC(IK,ITH)/SCALE )
-      IWDTH  = 2 + MAX( 0 , INT( ALOG10(VALUE) ) )
+  READ (NDSINP,IOSTAT=IERR) TTST
+  IF (IERR.GT.0) THEN
+    CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
+  ELSE IF(IERR.EQ.0) THEN
+    BACKSPACE (NDSINP)
+    WRITE (NDSO,940)
+    !
+    DO
       !
-      ! 4.e.2 Put value in string and test overflow
+      ! 4.a Read/write basic data
       !
-      IF ( IWDTH .GT. 9 ) THEN
-        IWDTH   = 9
-        PART    = ' 99999999'
+      READ (NDSINP,IOSTAT=IERR) TIME, X, Y, TSTSTR,  &
+           TRCKID
+      IF (IERR.GT.0) THEN
+        CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
+      ELSE IF(IERR.LT.0) THEN
+        EXIT
+      END IF
+      IF ( FLAGLL ) THEN
+        WRITE (NDSOUT,984,IOSTAT=IERR)                      &
+             TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
       ELSE
-        WRITE (PART,987) NINT(SPEC(IK,ITH)/SCALE)
-        IF ( PART(11-IWDTH:11-IWDTH) .EQ. ' ' )                 &
-             IWDTH   = IWDTH - 1
+        WRITE (NDSOUT,974,IOSTAT=IERR)                      &
+             TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+      END IF
+      !
+      IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
+        ILOC = ILOC + 1
+        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+      ENDIF
+      IF ( TIME(1).NE.TTST(1) .OR. TIME(2).NE.TTST(2) ) THEN
+        CALL STME21 ( TTST , STIME )
+        WRITE (NDSO,941) STIME, ILOC, ISPEC
+        ILOC    = 1
+        ISPEC   = 0
+        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+        TTST(1) = TIME(1)
+        TTST(2) = TIME(2)
       ENDIF
       !
-      ! 4.e.3 It's a zero, wait with writing
+      ! 4.b Check if sea point
       !
-      IF ( PART(8:9) .EQ. ' 0' ) THEN
-        NZERO  = NZERO + 1
-      ELSE
-        !
-        ! 4.e.4 It's not a zero, write unwritten zeros
-        !
-        IF ( NZERO .NE. 0 ) THEN
-          IF ( NZERO .EQ. 1 ) THEN
-            ZEROS  = '        0'
-            IWZERO = 2
+      IF ( TSTSTR .NE. 'SEA' ) CYCLE
+      !
+      ! 4.c Read all data
+      !
+      READ (NDSINP,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, AS,  &
+           SPEC
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
+      IF ( UST .LT. 0. ) UST = -1.0
+      !
+      ! 4.d Write the basic stuff
+      !
+      WRITE (NDSOUT,985,IOSTAT=IERR)                          &
+           DW, CX, CY, WX, WY, UST, AS, SCALE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+      !
+      ! 4.e Start of integer packing
+      !
+      STRING = EMPTY
+      ILAST  = 0
+      NZERO  = 0
+      !
+      ! 4.e.1 Loop over spectrum
+      !
+      DO IK=1, NK
+        DO ITH=1, NTH
+          VALUE  = MAX ( 0.1 , 1.1*SPEC(IK,ITH)/SCALE )
+          IWDTH  = 2 + MAX( 0 , INT( ALOG10(VALUE) ) )
+          !
+          ! 4.e.2 Put value in string and test overflow
+          !
+          IF ( IWDTH .GT. 9 ) THEN
+            IWDTH   = 9
+            PART    = ' 99999999'
           ELSE
-            WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
-            IWZERO = 4
-            DO
-              ICH    = 10 - IWZERO
-              IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
-                IWZERO = IWZERO + 1
+            WRITE (PART,987) NINT(SPEC(IK,ITH)/SCALE)
+            IF ( PART(11-IWDTH:11-IWDTH) .EQ. ' ' )                 &
+                 IWDTH   = IWDTH - 1
+          ENDIF
+          !
+          ! 4.e.3 It's a zero, wait with writing
+          !
+          IF ( PART(8:9) .EQ. ' 0' ) THEN
+            NZERO  = NZERO + 1
+          ELSE
+            !
+            ! 4.e.4 It's not a zero, write unwritten zeros
+            !
+            IF ( NZERO .NE. 0 ) THEN
+              IF ( NZERO .EQ. 1 ) THEN
+                ZEROS  = '        0'
+                IWZERO = 2
               ELSE
-                EXIT
+                WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
+                IWZERO = 4
+                DO
+                  ICH    = 10 - IWZERO
+                  IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
+                    IWZERO = IWZERO + 1
+                  ELSE
+                    EXIT
+                  ENDIF
+                END DO
               ENDIF
-            END DO
+              IF ( ILAST+IWZERO .GT. LINELN ) THEN
+                WRITE (NDSOUT,986,IOSTAT=IERR)          &
+                     STRING(2:ILAST)
+                IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+                STRING = EMPTY
+                ILAST  = 0
+              ENDIF
+              STRING(ILAST+1:ILAST+IWZERO) =                      &
+                   ZEROS(10-IWZERO:9)
+              ILAST  = ILAST + IWZERO
+              NZERO  = 0
+            ENDIF
+            !
+            ! 4.e.5 It's not a zero, put in string
+            !
+            IF ( ILAST+IWDTH .GT. LINELN ) THEN
+              WRITE (NDSOUT,986,IOSTAT=IERR)              &
+                   STRING(2:ILAST)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+              STRING = EMPTY
+              ILAST  = 0
+            ENDIF
+            !
+            STRING(ILAST+1:ILAST+IWDTH) = PART(10-IWDTH:9)
+            ILAST  = ILAST + IWDTH
+            !
           ENDIF
-          IF ( ILAST+IWZERO .GT. LINELN ) THEN
-            WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)          &
-                 STRING(2:ILAST)
-            STRING = EMPTY
-            ILAST  = 0
-          ENDIF
-          STRING(ILAST+1:ILAST+IWZERO) =                      &
-               ZEROS(10-IWZERO:9)
-          ILAST  = ILAST + IWZERO
-          NZERO  = 0
+          !
+        END DO
+      END DO
+      !
+      ! ..... End of loop over spectrum (4.e.1)
+      !
+      ! 4.e.6 Write trailing zeros
+      !
+      IF ( NZERO .NE. 0 ) THEN
+        IF ( NZERO .EQ. 1 ) THEN
+          ZEROS  = '        0'
+          IWZERO = 2
+        ELSE
+          WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
+          IWZERO = 4
+          DO
+            ICH    = 10 - IWZERO
+            IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
+              IWZERO = IWZERO + 1
+            ELSE
+              EXIT
+            ENDIF
+          END DO
         ENDIF
-        !
-        ! 4.e.5 It's not a zero, put in string
-        !
-        IF ( ILAST+IWDTH .GT. LINELN ) THEN
-          WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)              &
+        IF ( ILAST+IWZERO .GT. LINELN ) THEN
+          WRITE (NDSOUT,986,IOSTAT=IERR)                  &
                STRING(2:ILAST)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
           STRING = EMPTY
           ILAST  = 0
         ENDIF
-        !
-        STRING(ILAST+1:ILAST+IWDTH) = PART(10-IWDTH:9)
-        ILAST  = ILAST + IWDTH
-        !
+        STRING(ILAST+1:ILAST+IWZERO) = ZEROS(10-IWZERO:9)
+        ILAST  = ILAST + IWZERO
+        NZERO  = 0
       ENDIF
       !
+      ! 4.e.7 Write last line
+      !
+      IF ( ILAST .NE. 0 ) THEN
+        WRITE (NDSOUT,986,IOSTAT=IERR) STRING(2:ILAST)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','OUTPUT',4)
+      ENDIF
     END DO
-  END DO
-  !
-  ! ..... End of loop over spectrum (4.e.1)
-  !
-  ! 4.e.6 Write trailing zeros
-  !
-  IF ( NZERO .NE. 0 ) THEN
-    IF ( NZERO .EQ. 1 ) THEN
-      ZEROS  = '        0'
-      IWZERO = 2
-    ELSE
-      WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
-      IWZERO = 4
-      DO
-        ICH    = 10 - IWZERO
-        IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
-          IWZERO = IWZERO + 1
-        ELSE
-          EXIT
-        ENDIF
-      END DO
-    ENDIF
-    IF ( ILAST+IWZERO .GT. LINELN ) THEN
-      WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)                  &
-           STRING(2:ILAST)
-      STRING = EMPTY
-      ILAST  = 0
-    ENDIF
-    STRING(ILAST+1:ILAST+IWZERO) = ZEROS(10-IWZERO:9)
-    ILAST  = ILAST + IWZERO
-    NZERO  = 0
-  ENDIF
-  !
-  ! 4.e.7 Write last line
-  !
-  IF ( ILAST .NE. 0 ) THEN
-    WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR) STRING(2:ILAST)
-  ENDIF
-  !
-  ! ... Loop back to top
-  !
-  GOTO 400
+  END IF
   !
   ! 4.f All data done, write last batch info
   !
-444 CONTINUE
-  !
   CALL STME21 ( TTST , STIME )
   WRITE (NDSO,941) STIME, ILOC, ISPEC
-  !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 1 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001) IERR
-  CALL EXTCDE ( 2 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 3 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003) IERR
-  CALL EXTCDE ( 4 )
-  !
-805 CONTINUE
-  WRITE (NDSE,1004) IERR
-  CALL EXTCDE ( 5 )
-  !
-806 CONTINUE
-  WRITE (NDSE,1005) IERR
-  CALL EXTCDE ( 6 )
-  !
-807 CONTINUE
-  WRITE (NDSE,1006) IERR
-  CALL EXTCDE ( 7 )
-  !
-810 CONTINUE
-  WRITE (NDSE,1010) IDSTR, IDTST
-  CALL EXTCDE ( 5 )
-  !
-811 CONTINUE
-  WRITE (NDSE,1011) MK, MTH, NK, NTH
-  CALL EXTCDE ( 6 )
-  !
-888 CONTINUE
   !
   WRITE (NDSO,999)
   !
@@ -436,34 +422,6 @@ PROGRAM W3TRCK
 999 FORMAT (/'  End of program '/                                   &
        ' ========================================='/          &
        '         WAVEWATCH III Track output '/)
-  !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN OPENING INPUT DATA FILE'/               &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN READING FROM INPUT DATA FILE'/          &
-       '     IOSTAT =',I5/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN OPENING OUTPUT DATA FILE'/              &
-       '     IOSTAT =',I5/)
-  !
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN WRITING TO OUTPUT FILE'/                &
-       '     IOSTAT =',I5/)
-  !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
-1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
-       '     ERROR IN OPENING OUTPUT FILE'/                   &
-       '     IOSTAT =',I5/)
   !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRCK : '/               &
        '     UNEXPECTED ID STRING IN INPUT : ',A/             &

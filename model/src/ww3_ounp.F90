@@ -77,6 +77,7 @@ PROGRAM W3OUNP
   !/    05-Jan-2022 : Added TIMESPLIT=0 (nodate) support  ( version 7.14 )
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -112,6 +113,8 @@ PROGRAM W3OUNP
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -185,7 +188,7 @@ PROGRAM W3OUNP
   USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT, DIMP
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOPOMD
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF, STRSPLIT
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -492,16 +495,19 @@ PROGRAM W3OUNP
   ! process old ww3_ounp.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_ounp.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_ounp.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUNP','INPUT',40)
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
     ! 4.1 Time setup IDTIME, DTREQ, NOUT
-    READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+    READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
 
     ! 4.2 Output points NOPTS
     ALLOCATE ( FLREQ(NOPTS) )
@@ -515,7 +521,8 @@ PROGRAM W3OUNP
     DO I=1, NOPTS
       ! reads point index
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) IPOINT
+      READ (NDSI,*,IOSTAT=IERR) IPOINT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
       ! last index
       IF (IPOINT .LT. 0) THEN
         IF (I.EQ.1) THEN
@@ -536,7 +543,8 @@ PROGRAM W3OUNP
       ! read the 'end of list' if nopts reached before it
       IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) IPOINT
+        READ (NDSI,*,IOSTAT=IERR) IPOINT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
       END IF
     END DO
     ! check if last point index is -1
@@ -548,26 +556,35 @@ PROGRAM W3OUNP
     ! 4.3 Output type
     FILEPREFIX= 'ww3.'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) FILEPREFIX
+    READ (NDSI,*,IOSTAT=IERR) FILEPREFIX
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) S3
+    READ (NDSI,*,IOSTAT=IERR) S3
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) NCTYPE
+    READ (NDSI,*,IOSTAT=IERR) NCTYPE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) TOGETHER, MFL
+    READ (NDSI,*,IOSTAT=IERR) TOGETHER, MFL
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) ITYPE
+    READ (NDSI,*,IOSTAT=IERR) ITYPE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) FLWW3
+    READ (NDSI,*,IOSTAT=IERR) FLWW3
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) ORDER
+    READ (NDSI,*,IOSTAT=IERR) ORDER
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     !
-    IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, NCVARTYPE
-    IF (ITYPE .EQ. 2) READ (NDSI,*,END=801,ERR=802) OTYPE
-    IF (ITYPE .EQ. 3) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
+    IF (ITYPE .EQ. 1) READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2, NCVARTYPE
+    IF (ITYPE .EQ. 2) READ (NDSI,*,IOSTAT=IERR) OTYPE
+    IF (ITYPE .EQ. 3) READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
 
-    CLOSE(NDSI,ERR=800,IOSTAT=IERR)
+    CLOSE(NDSI,IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUNP','INPUT',40)
 
   END IF ! .NOT. FLGNML
 
@@ -604,6 +621,7 @@ PROGRAM W3OUNP
 
 
   ! 4.1.3 Loops on TIME from out_pnt file to reach the first time PASTDATE
+  IOTEST = 0
   DTEST  = DSEC21 ( TIME , TOUT )
   DO WHILE (DTEST.NE.0)
     DTEST  = DSEC21 ( TIME , TOUT )
@@ -615,7 +633,7 @@ PROGRAM W3OUNP
 #endif
       IF ( IOTEST .EQ. -1 ) THEN
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
-        GOTO 888
+        EXIT
       END IF
       CYCLE
     END IF
@@ -624,148 +642,34 @@ PROGRAM W3OUNP
       CYCLE
     END IF
   END DO
-  WRITE(PASTDATE,'(I8.8,I6.6)') TIME(1), TIME(2)
-
-
-  ! 4.2 Output points NOPTS
-  ALLOCATE ( INDREQ(NREQ) )
-  INDREQ(:)=INDREQTMP(1:NREQ)
-  DEALLOCATE(INDREQTMP)
-
-
-  ! 4.3 Output type
   !
-  ! S3 defines the number of characters in the date for the filename
-  ! S3=0 -> empty, S3=4 -> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
-  !
-  ! Setups min and max date format
-  IF (S3.GT.0 .AND. S3.LT.4) S3=4
-  IF (S3.GT.10) S3=10
-  !
-  ! Defines the format of FILETIME as ISO8601 convention
-  S5=S3-8
-  ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
-  IF (S3.EQ.0) THEN
-    FILETIME = ''
-  ELSE IF (S3.EQ.10) THEN
-    WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
-    WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
-         FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
-    ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
-  ELSE IF (S3.EQ.8) THEN
-    WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-    WRITE (FILETIME,FORMAT1) TIME(1)
-    ! if S3=>YYYYMM then filetime='YYYYMM'
-    ! or S3=>YYYY then filetime='YYYY'
-  ELSE
-    WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-    WRITE (FILETIME,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
-  END IF
-  !
-  ! order time,station
-  IF (ORDER) THEN
-    ONE=1
-    TWO=2
-    ! order station,time
-  ELSE
-    ONE=2
-    TWO=1
-  END IF
-  !
-  IF ((NCTYPE.EQ.3) .AND. (.NOT.ORDER)) GOTO 803
-  IF ((NCTYPE.EQ.4) .AND. INDEX(NF90_INQ_LIBVERS(),'"3.').NE.0) GOTO 804
+  IF (IOTEST .EQ. 0) THEN
+    WRITE(PASTDATE,'(I8.8,I6.6)') TIME(1), TIME(2)
+
+    ! 4.2 Output points NOPTS
+    ALLOCATE ( INDREQ(NREQ) )
+    INDREQ(:)=INDREQTMP(1:NREQ)
+    DEALLOCATE(INDREQTMP)
 
 
-  ! 4.4 Converts direction unit in degree
-  ALLOCATE(THD(NTH))
-  DTHD=360./NTH
-  RTH0=TH(1)/DTH
-  DO ITH=1, NTH
-    THD(ITH)=DTHD*(RTH0+REAL(ITH-1))
-  END DO
-  !
-  !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! 5.  Now creates files
-  !     If too many (memory problem) then makes several reads
-  !
-
-
-  ! 5.1 Defines number of files/stations per file NFL
-  IF (TOGETHER) THEN
-    NFL=1
-  ELSE
-    NFL=1+NOPTS/MFL
-  END IF
-
-
-  ! 5.2 Creates filename listing
-  SEP = '_'
-  IF(S3 .EQ. 0) SEP = '' ! No "_" separator if no datetime string.
-  WRITE(EXT,'(A)') ''
-  IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
-  IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'spec.nc'
-  IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
-  IF  (ITYPE .EQ. 2)                     WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
-  IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
-  IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
-  IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'src.nc'
-  ! checks if extension exists
-  IF (LEN_TRIM(EXT).EQ.0) THEN
-    WRITE (NDSE,1006)
-    CALL EXTCDE ( 46 )
-  END IF
-
-  ! 5.3 Redefines netCDF type
-  IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NFL.GT.300).AND.(NREQ.GT.9000))  THEN
-    WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with NF90_share mode'
-    WRITE(NDSO,'(A)') ' WARNING : this is due to NF90_sync memory problem with netCDF4 library'
-    WRITE(NDSO,'(A)') ' WARNING : to convert in netCDF4, use ncks -h -a -4 -L 9 file.nc3 file.nc4'
-    WRITE(NDSO,'(A)') ' WARNING : or use option "Points in same file" with value TRUE in .inp file'
-    WRITE(NDSO,'(A)') ' WARNING : or limit the output points list to less than 300'
-    NCTYPE=3
-  END IF
-
-
-
-  ! 5.4 Defines periodic flushing of buffer (only available for netCDF3)
-  NCFLUSH=FLOOR(15E7/(FLOAT(NK)*FLOAT(NTH)*FLOAT(NREQ)/NFL))
-  IF (NCTYPE.EQ.3.AND.NREQ.GT.10.AND.(.NOT.TOGETHER)) WRITE(NDSO,5940) NCFLUSH
-
-
-  ! 5.5 Removes the duplicata if "ONE file per station" mode
-  IF (.NOT.TOGETHER) THEN
-    ! defines a file name per station (NOT TOGETHER)
-    DO I=1,NOPTS
-      IF (FLREQ(I)) THEN
-        J = LEN_TRIM(FNMPRE)
-        WRITE (NCNAME, '(5A)') TRIM(FILEPREFIX), TRIM(PTNME(I)),'_', TRIM(FILETIME), TRIM(EXT)
-        WRITE(NCFILE(I),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
-        IF( SUM(index(NCFILE(:),NCFILE(I))).GT.1 ) THEN
-          FLREQ(I)=.FALSE.
-          WRITE(NDSO,5950) TRIM(PTNME(I))
-          CYCLE
-        END IF
-      END IF  ! FLREQ(I)
-    END DO  ! I=1,NOPTS
-  END IF  ! .NOT.TOGETHER
-
-
-  ! 5.6 Loops on bunch of stations NFL
-  DO IFL=IAPROC,NFL,NAPROC
+    ! 4.3 Output type
     !
-    ! new file, so the time counter is initialized
-560 CONTINUE
-    IOUT=0
-
-
-    ! 5.6.1 Redefines the filetime when it's a new date defined by the date division S3
+    ! S3 defines the number of characters in the date for the filename
+    ! S3=0 -> empty, S3=4 -> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
+    !
+    ! Setups min and max date format
+    IF (S3.GT.0 .AND. S3.LT.4) S3=4
+    IF (S3.GT.10) S3=10
+    !
+    ! Defines the format of FILETIME as ISO8601 convention
+    S5=S3-8
     ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
     IF (S3.EQ.0) THEN
       FILETIME = ''
     ELSE IF (S3.EQ.10) THEN
       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
       WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
-           NINT(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
+           FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
     ELSE IF (S3.EQ.8) THEN
       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -774,527 +678,620 @@ PROGRAM W3OUNP
       ! or S3=>YYYY then filetime='YYYY'
     ELSE
       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-      WRITE (FILETIME,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
+      WRITE (FILETIME,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
+    END IF
+    !
+    ! order time,station
+    IF (ORDER) THEN
+      ONE=1
+      TWO=2
+      ! order station,time
+    ELSE
+      ONE=2
+      TWO=1
+    END IF
+    !
+    IF ((NCTYPE.EQ.3) .AND. (.NOT.ORDER)) THEN
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 43 )
+    END IF
+    IF ((NCTYPE.EQ.4) .AND. INDEX(NF90_INQ_LIBVERS(),'"3.').NE.0) THEN
+      WRITE (NDSE,1004) NF90_INQ_LIBVERS()
+      CALL EXTCDE ( 44 )
+    END IF
+
+    ! 4.4 Converts direction unit in degree
+    ALLOCATE(THD(NTH))
+    DTHD=360./NTH
+    RTH0=TH(1)/DTH
+    DO ITH=1, NTH
+      THD(ITH)=DTHD*(RTH0+REAL(ITH-1))
+    END DO
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 5.  Now creates files
+    !     If too many (memory problem) then makes several reads
+    !
+
+
+    ! 5.1 Defines number of files/stations per file NFL
+    IF (TOGETHER) THEN
+      NFL=1
+    ELSE
+      NFL=1+NOPTS/MFL
     END IF
 
 
-    ! 5.6.2 Defines the file names
-    ! defines unique file name (TOGETHER)
-    IF (TOGETHER) THEN
-      WRITE (NCNAME, '(3A)') TRIM(FILEPREFIX), TRIM(FILETIME), TRIM(EXT)
-      !IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1947) TRIM(NCNAME)
-      J = LEN_TRIM(FNMPRE)
-      WRITE(NCFILE(1),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
-    ELSE
+    ! 5.2 Creates filename listing
+    SEP = '_'
+    IF(S3 .EQ. 0) SEP = '' ! No "_" separator if no datetime string.
+    WRITE(EXT,'(A)') ''
+    IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+    IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'spec.nc'
+    IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+    IF  (ITYPE .EQ. 2)                     WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+    IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+    IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+    IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'src.nc'
+    ! checks if extension exists
+    IF (LEN_TRIM(EXT).EQ.0) THEN
+      WRITE (NDSE,1006)
+      CALL EXTCDE ( 46 )
+    END IF
+
+    ! 5.3 Redefines netCDF type
+    IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NFL.GT.300).AND.(NREQ.GT.9000))  THEN
+      WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with NF90_share mode'
+      WRITE(NDSO,'(A)') ' WARNING : this is due to NF90_sync memory problem with netCDF4 library'
+      WRITE(NDSO,'(A)') ' WARNING : to convert in netCDF4, use ncks -h -a -4 -L 9 file.nc3 file.nc4'
+      WRITE(NDSO,'(A)') ' WARNING : or use option "Points in same file" with value TRUE in .inp file'
+      WRITE(NDSO,'(A)') ' WARNING : or limit the output points list to less than 300'
+      NCTYPE=3
+    END IF
+
+
+
+    ! 5.4 Defines periodic flushing of buffer (only available for netCDF3)
+    NCFLUSH=FLOOR(15E7/(FLOAT(NK)*FLOAT(NTH)*FLOAT(NREQ)/NFL))
+    IF (NCTYPE.EQ.3.AND.NREQ.GT.10.AND.(.NOT.TOGETHER)) WRITE(NDSO,5940) NCFLUSH
+
+
+    ! 5.5 Removes the duplicata if "ONE file per station" mode
+    IF (.NOT.TOGETHER) THEN
       ! defines a file name per station (NOT TOGETHER)
       DO I=1,NOPTS
         IF (FLREQ(I)) THEN
-          WRITE (NCNAME, '(5A)') TRIM(FILEPREFIX), TRIM(PTNME(I)),'_', TRIM(FILETIME), TRIM(EXT)
-          !IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1947) TRIM(NCNAME)
           J = LEN_TRIM(FNMPRE)
+          WRITE (NCNAME, '(5A)') TRIM(FILEPREFIX), TRIM(PTNME(I)),'_', TRIM(FILETIME), TRIM(EXT)
           WRITE(NCFILE(I),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
+          IF( SUM(index(NCFILE(:),NCFILE(I))).GT.1 ) THEN
+            FLREQ(I)=.FALSE.
+            WRITE(NDSO,5950) TRIM(PTNME(I))
+            CYCLE
+          END IF
         END IF  ! FLREQ(I)
       END DO  ! I=1,NOPTS
-    END IF  ! TOGETHER
+    END IF  ! .NOT.TOGETHER
 
 
-    ! 5.6.3 Defines number of stations and files to CREATE
-    ! together
-    IF (TOGETHER) THEN
-      NBFILEOUT = 1
-      NBSTATION = NREQ
-      NREQL=NBFILEOUT
-      ! not together
-    ELSE
-      NBFILEOUT=MIN(MFL,NOPTS-(IFL-1)*MFL)
-      NBSTATION = 1
-      NREQL=0
-      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-        IF ( FLREQ(I) ) THEN
-          NREQL = NREQL + 1
-        END IF
-      END DO
-    END IF
-    ! cycle if no file to CREATE
-    IF (NREQL.EQ.0) CYCLE
-
-
-    ! 5.6.4 Creates netcdf file
-
-    ! ... ITYPE = 1
-    IF (ITYPE .EQ. 1) THEN
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra, pass #',IFL
-
-      ! ... OTYPE = 1
-      IF (OTYPE .EQ. 1) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'print plots'
-        IF ( SCALE1 .LT. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '1-D'
-        ELSE IF ( SCALE1 .EQ. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '1-D'
-        ELSE
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '1-D', SCALE1
-        END IF
-        IF ( SCALE2 .LT. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '2-D'
-        ELSE IF ( SCALE2 .EQ. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '2-D'
-        ELSE
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '2-D', SCALE2
-        END IF
-
-        ! ... OTYPE = 2
-      ELSE IF ( OTYPE .EQ. 2 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Table of 1-D spectral data'
-        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-            ! Create the netCDF file
-            DIMLN(1)=NF90_UNLIMITED    ! time
-            DIMLN(2)=NBSTATION         ! station
-            DIMLN(3)=40                ! string station name length
-            DIMLN(4)=NK                ! FREQ
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
-          END IF
-        END DO
-
-        ! ... OTYPE = 3
-      ELSE IF ( OTYPE .EQ. 3 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Transfer file'
-        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-            ! Create the netCDF file
-            DIMLN(1)=NF90_UNLIMITED  !time
-            DIMLN(2)=NBSTATION ! station
-            DIMLN(3)=40 ! string station name length
-            DIMLN(4)=NK ! FREQ
-            DIMLN(5)=NTH ! DIR
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,NCVARTYPE=NCVARTYPE)
-          END IF
-        END DO
-
-        ! ... OTYPE = 4
-      ELSE IF ( OTYPE .EQ. 4 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Partitioning of spectra'
-        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-            ! Create the netCDF file
-            DIMLN(1)=NF90_UNLIMITED  !time
-            DIMLN(2)=NBSTATION ! station
-            DIMLN(3)=40    ! string station name length
-            DIMLN(4)=DIMXP ! npart
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
-          END IF
-        END DO
-      ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 10 )
-      END IF
-
-
-
-      ! ... ITYPE = 2
-    ELSE IF (ITYPE .EQ. 2) THEN
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
-      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-        IF (FLREQ(I) .OR. TOGETHER) THEN
-          ! Create the netCDF file
-          DIMLN(1)=NF90_UNLIMITED  !time
-          DIMLN(2)=NBSTATION ! station
-          DIMLN(3)=40    ! string station name length
-          CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
-        END IF
-      END DO
-
-      ! ... OTYPE = 1
-      IF ( OTYPE .EQ. 1 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'depth, current and wind', NCNAME
-
-        ! ... OTYPE = 2
-      ELSE IF ( OTYPE .EQ. 2 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Mean wave parameters', NCNAME
-
-        ! ... OTYPE = 3
-      ELSE IF ( OTYPE .EQ. 3 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Nondimensional parameters (U*)', NCNAME
-
-        ! ... OTYPE = 4
-      ELSE IF ( OTYPE .EQ. 4 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Nondimensional parameters (U10)', NCNAME
-
-        ! ... OTYPE = 5
-      ELSE IF ( OTYPE .EQ. 5 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Validation parameters', NCNAME
-
-        ! ... OTYPE = 6
-      ELSE IF ( OTYPE .EQ. 6 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'WMO standard mean parameters', NCNAME
-        ! ... OTYPE = ILLEGAL
-      ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 30 )
-      END IF
+    ! 5.6 Loops on bunch of stations NFL
+    DO IFL=IAPROC,NFL,NAPROC
       !
-      DO I=1,6
-        IF ( FLSRCE(I) .AND. IAPROC .EQ. NAPOUT ) WRITE (NDSO,3940) IDSRCE(I)
-      END DO
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+      ! new file, so the time counter is initialized
+      DO
+        IOUT=0
 
 
-      ! ... ITYPE = 3
-    ELSE IF (ITYPE .EQ. 3) THEN
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, 'Source terms'
-#ifdef W3_NCO
-      NDSTAB = 51
-#endif
-      ISCALE = MAX ( 0 , MIN ( 5 , ISCALE ) )
-
-      ! ... OTYPE = 1
-      IF ( OTYPE .EQ. 1 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Print plots'
-        IF ( SCALE1 .LT. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '1-D'
-        ELSE IF ( SCALE1 .EQ. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '1-D'
+        ! 5.6.1 Redefines the filetime when it's a new date defined by the date division S3
+        ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
+        IF (S3.EQ.0) THEN
+          FILETIME = ''
+        ELSE IF (S3.EQ.10) THEN
+          WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
+          WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
+               NINT(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
+          ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
+        ELSE IF (S3.EQ.8) THEN
+          WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
+          WRITE (FILETIME,FORMAT1) TIME(1)
+          ! if S3=>YYYYMM then filetime='YYYYMM'
+          ! or S3=>YYYY then filetime='YYYY'
         ELSE
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '1-D', SCALE1
+          WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
+          WRITE (FILETIME,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
         END IF
-        IF ( SCALE2 .LT. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '2-D'
-        ELSE IF ( SCALE2 .EQ. 0.  ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '2-D'
+
+
+        ! 5.6.2 Defines the file names
+        ! defines unique file name (TOGETHER)
+        IF (TOGETHER) THEN
+          WRITE (NCNAME, '(3A)') TRIM(FILEPREFIX), TRIM(FILETIME), TRIM(EXT)
+          !IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1947) TRIM(NCNAME)
+          J = LEN_TRIM(FNMPRE)
+          WRITE(NCFILE(1),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
         ELSE
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '2-D', SCALE2
-        END IF
+          ! defines a file name per station (NOT TOGETHER)
+          DO I=1,NOPTS
+            IF (FLREQ(I)) THEN
+              WRITE (NCNAME, '(5A)') TRIM(FILEPREFIX), TRIM(PTNME(I)),'_', TRIM(FILETIME), TRIM(EXT)
+              !IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1947) TRIM(NCNAME)
+              J = LEN_TRIM(FNMPRE)
+              WRITE(NCFILE(I),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
+            END IF  ! FLREQ(I)
+          END DO  ! I=1,NOPTS
+        END IF  ! TOGETHER
 
-        ! ... OTYPE = 2
-        ! or  OTYPE = 3
-      ELSE IF (( OTYPE .EQ. 2 ) .OR. ( OTYPE .EQ. 3 )) THEN
-        IF ( ISCALE .LE. 2) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Tables as a function of freq.'
+
+        ! 5.6.3 Defines number of stations and files to CREATE
+        ! together
+        IF (TOGETHER) THEN
+          NBFILEOUT = 1
+          NBSTATION = NREQ
+          NREQL=NBFILEOUT
+          ! not together
         ELSE
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Tables as a function of f/fp.'
-        END IF
-        IF ( MOD(ISCALE,3) .EQ. 1 ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) '(nondimensional based on U10)'
-        ELSE IF ( MOD(ISCALE,3) .EQ. 2) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) '(nondimensional based on U*)'
-        END IF
-
-        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-            ! Create the netCDF file
-            DIMLN(1)=NF90_UNLIMITED  !time
-            DIMLN(2)=NBSTATION ! station
-            DIMLN(3)=40    ! string station name length
-            DIMLN(4)=NK ! freq
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
-          END IF
-        END DO
-
-        ! ... OTYPE = 4
-      ELSE IF ( OTYPE .EQ. 4 ) THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Transfer file'
-        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-            ! Create the netCDF file
-            DIMLN(1)=NF90_UNLIMITED  !time
-            DIMLN(2)=NBSTATION ! station
-            DIMLN(3)=40    ! string station name length
-            DIMLN(4)=NK ! freq
-            DIMLN(5)=NTH ! dir
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,FLSRCE=FLSRCE)
-          END IF
-        END DO
-
-        ! ... OTYPE = ILLEGAL
-      ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 20 )
-      END IF
-
-
-      ! ... ITYPE = ILLEGAL
-    ELSE
-      WRITE (NDSE,1010) ITYPE
-      CALL EXTCDE ( 1 )
-    END IF
-
-
-    ! 5.6.5 Output of output points
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950) NREQ
-    ! together
-    IF (TOGETHER) THEN
-      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBSTATION
-        IF (FLREQ(I)) THEN
-          IF ( FLAGLL ) THEN
-            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
-                 M2KM*PTLOC(2,I)
-          ELSE
-            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
-                 M2KM*PTLOC(2,I)
-          END IF
-        END IF
-      END DO
-      ! not together
-    ELSE
-      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-        IF (FLREQ(I)) THEN
-          IF ( FLAGLL ) THEN
-            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
-                 M2KM*PTLOC(2,I)
-          ELSE
-            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
-                 M2KM*PTLOC(2,I)
-          END IF
-        END IF
-      END DO
-    END IF
-    !
-    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ! 6.  Time management.
-    !
-#ifdef W3_IC1
-    WRITE(NDSO,3960)
-#endif
-#ifdef W3_IC2
-    WRITE(NDSO,3960)
-#endif
-#ifdef W3_IC3
-    WRITE(NDSO,3960)
-#endif
-#ifdef W3_IC5
-    WRITE(NDSO,3960)
-#endif
-#ifdef W3_NL5
-    WRITE(NDSO,3961)
-#endif
-    !
-    CALL T2D(TIME,STARTDATE,IERR)
-    WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2), &
-         '-',STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
-
-    ! loops on TIME from out_pnt.ww3 till not reach TOUT from inp file
-    DO
-      DTEST = DSEC21 ( TIME , TOUT )
-      IF ( DTEST .GT. 0. ) THEN
-        ! reads TIME from out_pnt.ww3
-#ifdef W3_BIN2NC
-        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
-#else
-        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-#endif
-        IF ( IOTEST .EQ. -1 ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
-          GOTO 700
-        END IF
-        CYCLE
-      END IF
-      IF ( DTEST .LT. 0. ) THEN
-        CALL TICK21 ( TOUT , DTREQ )
-        CYCLE
-      END IF
-      ! increment the time counter IOUT
-      IOUT = IOUT + 1
-      CALL STME21 ( TOUT , IDTIME )
-      WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
-
-
-      ! 6.1 Creates a new file if it is a new date defined by the date division S3
-      IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
-        WRITE(NDSO,954) TRIM(DATE(1:S3))
-        ! decrements timesteps already processed
-        NOUT=NOUT-(IOUT-1)
-        GOTO 700
-      END IF
-
-
-      ! 6.2 Writes out a progress message
-      IF (NREQ.GT.10.OR.NBFILEOUT.GT.10) WRITE(NDSO,955) TIME,    &
-           NBFILEOUT, IOUT, NOUT, IFL
-      J=0
-
-      ! 6.3 Calls subroutine w3exnc for each file
-      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-        IF (FLREQ(I) .OR. TOGETHER) THEN
-          ! together
-          IF ( TOGETHER ) THEN
-            CALL W3EXNC(I,NCID(I),NREQ,INDREQ,ORDER)
-            ! not together
-          ELSE
-            J=J+1
-            CALL W3EXNC(I,NCID(I),1,(/ I /),ORDER)
-            ! flush buffer (only available in netcdf3)
-            IF (MOD(IOUT,NCFLUSH).EQ.0) THEN
-              IRET=NF90_SYNC(NCID(I))
-            END IF
-          END IF ! TOGETHER
-        END IF ! (FLREQ(I) .OR. TOGETHER)
-      END DO ! I=1+ ...
-      !
-      WRITE(PASTDATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
-      CALL TICK21 ( TOUT , DTREQ )
-      IF ( IOUT .GE. NOUT ) GOTO 700
-      !
-    END DO
-    !
-    GOTO 888
-
-
-    !
-    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ! 7. Finalize file
-    !
-700 CONTINUE
-    !
-    CALL T2D(TIME,STOPDATE,IERR)
-    WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
-         '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
-
-
-    ! 7.1 Writes the global attributes to netCDF file
-    DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-      IF ( FLREQ(I) .OR. TOGETHER ) THEN
-        IRET=NF90_REDEF(NCID(I))
-        CALL CHECK_ERR(IRET,0)
-        IF (FLWW3.EQ.0)                                      &
-             OPEN(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
-        REWIND(994)
-        IF (ICODE.EQ.0) THEN
-          DO WHILE (ICODE.EQ.0)
-            READ(994,'(a)',iostat=ICODE) ATTNAME
-            READ(994,'(a)',iostat=ICODE) ATTVAL
-            IF (ICODE.EQ.0) THEN
-              STRL=LEN_TRIM(ATTNAME)
-              STRL2=LEN_TRIM(ATTVAL)
-              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,ATTNAME(1:STRL),ATTVAL(1:STRL2))
-              CALL CHECK_ERR(IRET,1)
+          NBFILEOUT=MIN(MFL,NOPTS-(IFL-1)*MFL)
+          NBSTATION = 1
+          NREQL=0
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF ( FLREQ(I) ) THEN
+              NREQL = NREQL + 1
             END IF
           END DO
         END IF
-        CLOSE(994)
-        !
-        WRITE(GLOBALATT,'(A)') TRIM(NCFILE(I))
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'product_name' ,GLOBALATT(3:))
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'area',TRIM(GNAME))
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'data_type','OCO spectra 2D')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'format_version','1.1')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'southernmost_latitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'northernmost_latitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'latitude_resolution','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'westernmost_longitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'easternmost_longitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'longitude_resolution','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'minimum_altitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'maximum_altitude','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'altitude_resolution','n/a')
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'start_date',STRSTARTDATE)
-        IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-        IF (DTREQ.EQ.3600)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','hourly')
-        ELSE IF (DTREQ.EQ.7200)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','2-hourly')
-        ELSE IF (DTREQ.EQ.10800)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','3-hourly')
-        ELSE IF (DTREQ.EQ.21600)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','6-hourly')
-        ELSE IF (DTREQ.EQ.32400)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','9-hourly')
-        ELSE IF (DTREQ.EQ.43200)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','12-hourly')
-        ELSE IF (DTREQ.EQ.86400)  THEN
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','daily')
+        ! cycle if no file to CREATE
+        IF (NREQL.EQ.0) CYCLE
+
+
+        ! 5.6.4 Creates netcdf file
+
+        ! ... ITYPE = 1
+        IF (ITYPE .EQ. 1) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra, pass #',IFL
+
+          ! ... OTYPE = 1
+          IF (OTYPE .EQ. 1) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'print plots'
+            IF ( SCALE1 .LT. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '1-D'
+            ELSE IF ( SCALE1 .EQ. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '1-D'
+            ELSE
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '1-D', SCALE1
+            END IF
+            IF ( SCALE2 .LT. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '2-D'
+            ELSE IF ( SCALE2 .EQ. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '2-D'
+            ELSE
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '2-D', SCALE2
+            END IF
+
+          ! ... OTYPE = 2
+          ELSE IF ( OTYPE .EQ. 2 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Table of 1-D spectral data'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                DIMLN(1)=NF90_UNLIMITED    ! time
+                DIMLN(2)=NBSTATION         ! station
+                DIMLN(3)=40                ! string station name length
+                DIMLN(4)=NK                ! FREQ
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
+              END IF
+            END DO
+
+          ! ... OTYPE = 3
+          ELSE IF ( OTYPE .EQ. 3 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Transfer file'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                DIMLN(1)=NF90_UNLIMITED  !time
+                DIMLN(2)=NBSTATION ! station
+                DIMLN(3)=40 ! string station name length
+                DIMLN(4)=NK ! FREQ
+                DIMLN(5)=NTH ! DIR
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,NCVARTYPE=NCVARTYPE)
+              END IF
+            END DO
+
+          ! ... OTYPE = 4
+          ELSE IF ( OTYPE .EQ. 4 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Partitioning of spectra'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                DIMLN(1)=NF90_UNLIMITED  !time
+                DIMLN(2)=NBSTATION ! station
+                DIMLN(3)=40    ! string station name length
+                DIMLN(4)=DIMXP ! npart
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
+              END IF
+            END DO
+          ELSE
+            WRITE (NDSE,1011) OTYPE
+            CALL EXTCDE ( 10 )
+          END IF
+
+
+
+        ! ... ITYPE = 2
+        ELSE IF (ITYPE .EQ. 2) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF (FLREQ(I) .OR. TOGETHER) THEN
+              ! Create the netCDF file
+              DIMLN(1)=NF90_UNLIMITED  !time
+              DIMLN(2)=NBSTATION ! station
+              DIMLN(3)=40    ! string station name length
+              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
+            END IF
+          END DO
+
+          ! ... OTYPE = 1
+          IF ( OTYPE .EQ. 1 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'depth, current and wind', NCNAME
+
+          ! ... OTYPE = 2
+          ELSE IF ( OTYPE .EQ. 2 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Mean wave parameters', NCNAME
+
+          ! ... OTYPE = 3
+          ELSE IF ( OTYPE .EQ. 3 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Nondimensional parameters (U*)', NCNAME
+
+          ! ... OTYPE = 4
+          ELSE IF ( OTYPE .EQ. 4 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Nondimensional parameters (U10)', NCNAME
+
+          ! ... OTYPE = 5
+          ELSE IF ( OTYPE .EQ. 5 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'Validation parameters', NCNAME
+
+          ! ... OTYPE = 6
+          ELSE IF ( OTYPE .EQ. 6 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2940) 'WMO standard mean parameters', NCNAME
+          ! ... OTYPE = ILLEGAL
+          ELSE
+            WRITE (NDSE,1011) OTYPE
+            CALL EXTCDE ( 30 )
+          END IF
+          !
+          DO I=1,6
+            IF ( FLSRCE(I) .AND. IAPROC .EQ. NAPOUT ) WRITE (NDSO,3940) IDSRCE(I)
+          END DO
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+
+
+        ! ... ITYPE = 3
+        ELSE IF (ITYPE .EQ. 3) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) ITYPE, 'Source terms'
+#ifdef W3_NCO
+          NDSTAB = 51
+#endif
+          ISCALE = MAX ( 0 , MIN ( 5 , ISCALE ) )
+
+          ! ... OTYPE = 1
+          IF ( OTYPE .EQ. 1 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Print plots'
+            IF ( SCALE1 .LT. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '1-D'
+            ELSE IF ( SCALE1 .EQ. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '1-D'
+            ELSE
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '1-D', SCALE1
+            END IF
+            IF ( SCALE2 .LT. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1940) '2-D'
+            ELSE IF ( SCALE2 .EQ. 0.  ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1941) '2-D'
+            ELSE
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '2-D', SCALE2
+            END IF
+
+          ! ... OTYPE = 2
+          ! or  OTYPE = 3
+          ELSE IF (( OTYPE .EQ. 2 ) .OR. ( OTYPE .EQ. 3 )) THEN
+            IF ( ISCALE .LE. 2) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Tables as a function of freq.'
+            ELSE
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Tables as a function of f/fp.'
+            END IF
+            IF ( MOD(ISCALE,3) .EQ. 1 ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) '(nondimensional based on U10)'
+            ELSE IF ( MOD(ISCALE,3) .EQ. 2) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) '(nondimensional based on U*)'
+            END IF
+
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                DIMLN(1)=NF90_UNLIMITED  !time
+                DIMLN(2)=NBSTATION ! station
+                DIMLN(3)=40    ! string station name length
+                DIMLN(4)=NK ! freq
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
+              END IF
+            END DO
+
+          ! ... OTYPE = 4
+          ELSE IF ( OTYPE .EQ. 4 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) 'Transfer file'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                DIMLN(1)=NF90_UNLIMITED  !time
+                DIMLN(2)=NBSTATION ! station
+                DIMLN(3)=40    ! string station name length
+                DIMLN(4)=NK ! freq
+                DIMLN(5)=NTH ! dir
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,FLSRCE=FLSRCE)
+              END IF
+            END DO
+
+          ! ... OTYPE = ILLEGAL
+          ELSE
+            WRITE (NDSE,1011) OTYPE
+            CALL EXTCDE ( 20 )
+          END IF
+
+
+        ! ... ITYPE = ILLEGAL
         ELSE
-          IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','n/a')
+          WRITE (NDSE,1010) ITYPE
+          CALL EXTCDE ( 1 )
+        END IF
+
+
+        ! 5.6.5 Output of output points
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950) NREQ
+        ! together
+        IF (TOGETHER) THEN
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBSTATION
+            IF (FLREQ(I)) THEN
+              IF ( FLAGLL ) THEN
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
+                     M2KM*PTLOC(2,I)
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
+                     M2KM*PTLOC(2,I)
+              END IF
+            END IF
+          END DO
+          ! not together
+        ELSE
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF (FLREQ(I)) THEN
+              IF ( FLAGLL ) THEN
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
+                     M2KM*PTLOC(2,I)
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
+                     M2KM*PTLOC(2,I)
+              END IF
+            END IF
+          END DO
         END IF
         !
-        ! Close netCDF file
-        IRET=NF90_ENDDEF(NCID(I))
-        CALL CHECK_ERR(IRET,2)
-        IRET=NF90_CLOSE(NCID(I))
-        CALL CHECK_ERR(IRET,3)
+        !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        ! 6.  Time management.
         !
-      END IF ! FLREQ(I) .OR. TOGETHER
-    END DO ! I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+#ifdef W3_IC1
+        WRITE(NDSO,3960)
+#endif
+#ifdef W3_IC2
+        WRITE(NDSO,3960)
+#endif
+#ifdef W3_IC3
+        WRITE(NDSO,3960)
+#endif
+#ifdef W3_IC5
+        WRITE(NDSO,3960)
+#endif
+#ifdef W3_NL5
+        WRITE(NDSO,3961)
+#endif
+        !
+        CALL T2D(TIME,STARTDATE,IERR)
+        WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2), &
+             '-',STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
 
-
-    ! 7.2 Goes back to the start of the loop with the same points
-    ! but with a new date defined by the date division S3
-    IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
-      GOTO 560
-    END IF
-
-
-    ! 7.3 Reinitiazes TIME (close open out_pnt.ww3) and TOUT to process a new bunch of stations
-    CLOSE(NDSOP) ! closes binary file out_pnt*
-    IPASS = 0   ! resets time counter for binary file out_pnt*
+        ! loops on TIME from out_pnt.ww3 till not reach TOUT from inp file
+        DO
+          DTEST = DSEC21 ( TIME , TOUT )
+          IF ( DTEST .GT. 0. ) THEN
+            ! reads TIME from out_pnt.ww3
 #ifdef W3_BIN2NC
-    CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+            CALL W3IOPON ( 'READ', NDSOP, IOTEST )
 #else
-    CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+            CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
+            IF ( IOTEST .EQ. -1 ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
+              EXIT
+            END IF
+            CYCLE
+          END IF
+          IF ( DTEST .LT. 0. ) THEN
+            CALL TICK21 ( TOUT , DTREQ )
+            CYCLE
+          END IF
+          ! increment the time counter IOUT
+          IOUT = IOUT + 1
+          CALL STME21 ( TOUT , IDTIME )
+          WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
+
+
+          ! 6.1 Creates a new file if it is a new date defined by the date division S3
+          IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
+            WRITE(NDSO,954) TRIM(DATE(1:S3))
+            ! decrements timesteps already processed
+            NOUT=NOUT-(IOUT-1)
+            EXIT
+          END IF
+
+
+          ! 6.2 Writes out a progress message
+          IF (NREQ.GT.10.OR.NBFILEOUT.GT.10) WRITE(NDSO,955) TIME,    &
+               NBFILEOUT, IOUT, NOUT, IFL
+          J=0
+
+          ! 6.3 Calls subroutine w3exnc for each file
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF (FLREQ(I) .OR. TOGETHER) THEN
+              ! together
+              IF ( TOGETHER ) THEN
+                CALL W3EXNC(I,NCID(I),NREQ,INDREQ,ORDER)
+                ! not together
+              ELSE
+                J=J+1
+                CALL W3EXNC(I,NCID(I),1,(/ I /),ORDER)
+                ! flush buffer (only available in netcdf3)
+                IF (MOD(IOUT,NCFLUSH).EQ.0) THEN
+                  IRET=NF90_SYNC(NCID(I))
+                END IF
+              END IF ! TOGETHER
+            END IF ! (FLREQ(I) .OR. TOGETHER)
+          END DO ! I=1+ ...
+          !
+          WRITE(PASTDATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
+          CALL TICK21 ( TOUT , DTREQ )
+          IF ( IOUT .GE. NOUT ) EXIT
+          !
+        END DO
+        !
+
+
+        !
+        !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        ! 7. Finalize file
+        !
+        DO
+          !
+          CALL T2D(TIME,STOPDATE,IERR)
+          WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
+               '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
+
+
+          ! 7.1 Writes the global attributes to netCDF file
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF ( FLREQ(I) .OR. TOGETHER ) THEN
+              IRET=NF90_REDEF(NCID(I))
+              CALL CHECK_ERR(IRET,0)
+              IF (FLWW3.EQ.0)                                      &
+                   OPEN(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
+              REWIND(994)
+              IF (ICODE.EQ.0) THEN
+                DO WHILE (ICODE.EQ.0)
+                  READ(994,'(a)',iostat=ICODE) ATTNAME
+                  READ(994,'(a)',iostat=ICODE) ATTVAL
+                  IF (ICODE.EQ.0) THEN
+                    STRL=LEN_TRIM(ATTNAME)
+                    STRL2=LEN_TRIM(ATTVAL)
+                    IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,ATTNAME(1:STRL),ATTVAL(1:STRL2))
+                    CALL CHECK_ERR(IRET,1)
+                  END IF
+                END DO
+              END IF
+              CLOSE(994)
+              !
+              WRITE(GLOBALATT,'(A)') TRIM(NCFILE(I))
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'product_name' ,GLOBALATT(3:))
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'area',TRIM(GNAME))
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'data_type','OCO spectra 2D')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'format_version','1.1')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'southernmost_latitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'northernmost_latitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'latitude_resolution','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'westernmost_longitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'easternmost_longitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'longitude_resolution','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'minimum_altitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'maximum_altitude','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'altitude_resolution','n/a')
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'start_date',STRSTARTDATE)
+              IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+              IF (DTREQ.EQ.3600)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','hourly')
+              ELSE IF (DTREQ.EQ.7200)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','2-hourly')
+              ELSE IF (DTREQ.EQ.10800)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','3-hourly')
+              ELSE IF (DTREQ.EQ.21600)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','6-hourly')
+              ELSE IF (DTREQ.EQ.32400)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','9-hourly')
+              ELSE IF (DTREQ.EQ.43200)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','12-hourly')
+              ELSE IF (DTREQ.EQ.86400)  THEN
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','daily')
+              ELSE
+                IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','n/a')
+              END IF
+              !
+              ! Close netCDF file
+              IRET=NF90_ENDDEF(NCID(I))
+              CALL CHECK_ERR(IRET,2)
+              IRET=NF90_CLOSE(NCID(I))
+              CALL CHECK_ERR(IRET,3)
+              !
+            END IF ! FLREQ(I) .OR. TOGETHER
+          END DO ! I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+
+
+          ! 7.2 Goes back to the start of the loop with the same points
+          ! but with a new date defined by the date division S3
+          IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
+            EXIT
+          END IF
+
+
+          ! 7.3 Reinitiazes TIME (close open out_pnt.ww3) and TOUT to process a new bunch of stations
+          CLOSE(NDSOP) ! closes binary file out_pnt*
+          IPASS = 0   ! resets time counter for binary file out_pnt*
+#ifdef W3_BIN2NC
+          CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
+          CALL W3IOPO ( 'READ', NDSOP, IOTEST )
 #endif
 #ifdef W3_T
-    WRITE(NDSE,*) 'out_pnt* closed and reopened'
+          WRITE(NDSE,*) 'out_pnt* closed and reopened'
 #endif
-    TOUT=TOUTL
-    NOUT=NOUTL
+          TOUT=TOUTL
+          NOUT=NOUTL
 
 
-    ! 7.4 Loops on TIME till it is equal to TOUT
-    DTEST  = DSEC21 ( TIME , TOUT )
-    DO WHILE (DTEST.NE.0)
-      DTEST  = DSEC21 ( TIME , TOUT )
-      IF ( DTEST .GT. 0. ) THEN
+          ! 7.4 Loops on TIME till it is equal to TOUT
+          IOTEST = 0
+          DTEST  = DSEC21 ( TIME , TOUT )
+          DO WHILE (DTEST.NE.0)
+            DTEST  = DSEC21 ( TIME , TOUT )
+            IF ( DTEST .GT. 0. ) THEN
 #ifdef W3_BIN2NC
-        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+              CALL W3IOPON ( 'READ', NDSOP, IOTEST )
 #else
-        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+              CALL W3IOPO ( 'READ', NDSOP, IOTEST )
 #endif
-        IF ( IOTEST .EQ. -1 ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
-          GOTO 700
-        END IF
-        CYCLE
-      END IF
-      IF ( DTEST .LT. 0. ) THEN
-        CALL TICK21 ( TOUT , DTREQ )
-        CYCLE
-      END IF
-    END DO
+              IF ( IOTEST .EQ. -1 ) THEN
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
+                EXIT
+              END IF
+              CYCLE
+            END IF
+            IF ( DTEST .LT. 0. ) THEN
+              CALL TICK21 ( TOUT , DTREQ )
+              CYCLE
+            END IF
+          END DO
+          !
+          IF (IOTEST .NE. -1) EXIT
+        END DO
+        IF ( (IOUT.LE.1) .OR. (INDEX(PASTDATE(1:S3),DATE(1:S3)).NE.0) ) EXIT
+      END DO ! new file
+    END DO ! IFL=1,NFL
     !
-  END DO ! IFL=1,NFL
-  !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003)
-  CALL EXTCDE ( 43 )
-  !
-804 CONTINUE
-  WRITE (NDSE,1004) NF90_INQ_LIBVERS()
-  CALL EXTCDE ( 44 )
-  !
-#ifdef W3_O14
-805 CONTINUE
-  WRITE (NDSE,1005) IERR
-  CALL EXTCDE ( 45 )
-#endif
-  !
-  !
-888 CONTINUE
+  END IF
   !
   IF(ALLOCATED(THD)) DEALLOCATE(THD)
   IF(ALLOCATED(NCID)) DEALLOCATE(NCID)
@@ -1362,17 +1359,6 @@ PROGRAM W3OUNP
        ' ========================================='/          &
        '         WAVEWATCH III Point output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
        '     NCTYPE=3 IS INCOMPATIBLE WITH'/                  &
        '     THE OPTIMIZED DIMENSION ORDER'/)
@@ -1380,12 +1366,6 @@ PROGRAM W3OUNP
 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
        '     NCTYPE=4 IS INCOMPATIBLE WITH'/                  &
        '     NETCDF LIBRARY USED :',A/)
-  !
-#ifdef W3_O14
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/          &
-       '     ERROR IN OPENING BUOY LOG FILE'/            &
-       '     IOSTAT =',I5/)
-#endif
   !
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/              &
        '     ITYPE AND OTYPE COMBINATION NOT RECOGNIZED'/)

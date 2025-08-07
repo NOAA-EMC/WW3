@@ -265,6 +265,7 @@ CONTAINS
     !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
     !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 )
     !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -636,7 +637,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
 #ifdef W3_NNT
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTOPN, EXTIOF
 #endif
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_SRCTRMCOMPUTE
@@ -1162,11 +1163,15 @@ CONTAINS
       J      = LEN_TRIM(FNMPRE)
       WRITE (FNAME(11:13),'(I3.3)') IAPROC
       OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,   &
-           ERR=800,IOSTAT=IERR)
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) NK, NTH
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) SIG(1:NK) * TPIINV
+            IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3SRCE','',1,NAMEF=FNAME)
+      WRITE (NDSD,IOSTAT=IERR) NK, NTH
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+      WRITE (NDSD,IOSTAT=IERR) SIG(1:NK) * TPIINV
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       OPEN (NDSD2,FILE=FNMPRE(:J)//'time.ww3',                &
-           FORM='FORMATTED',ERR=800,IOSTAT=IERR)
+            FORM='FORMATTED',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3SRCE','',1,NAMEF='time.ww3')
     END IF
 #endif
     !
@@ -1360,8 +1365,9 @@ CONTAINS
       WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
       WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
 8888  FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
+      WRITE (NDSD,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
            DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       !
       IF ( FLAGNN ) THEN
         DO IK=1, NK
@@ -1373,9 +1379,12 @@ CONTAINS
             DOUT(IK,ITH) = VDNL(IS)
           END DO
         END DO
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) FOUT
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) SOUT
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) DOUT
+        WRITE (NDSD,IOSTAT=IERR) FOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+        WRITE (NDSD,IOSTAT=IERR) SOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+        WRITE (NDSD,IOSTAT=IERR) DOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       END IF
 #endif
       !
@@ -2011,22 +2020,6 @@ CONTAINS
     DTDYN  = DTDYN / REAL(MAX(1,NSTEPS))
     FCUT   = FHIGH * TPIINV
     !
-    GOTO 888
-    !
-    ! Error escape locations
-    !
-#ifdef W3_NNT
-800 CONTINUE
-    WRITE (NDSE,8000) FNAME, IERR
-    CALL EXTCDE (1)
-    !
-801 CONTINUE
-    WRITE (NDSE,8001) IERR
-    CALL EXTCDE (2)
-#endif
-    !
-888 CONTINUE
-    !
     ! 9.a  Computes PHIOC------------------------------------------ *
     !     The wave to ocean flux is the difference between initial energy
     !     and final energy, plus wind input plus the SNL flux to high freq.,
@@ -2332,13 +2325,6 @@ CONTAINS
     RETURN
     !
     ! Formats
-    !
-#ifdef W3_NNT
-8000 FORMAT (/' *** ERROR W3SRCE : ERROR IN OPENING FILE ',A,' ***'/ &
-         '                    IOSTAT = ',I10/)
-8001 FORMAT (/' *** ERROR W3SRCE : ERROR IN WRITING TO FILE ***'/    &
-         '                    IOSTAT = ',I10/)
-#endif
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3SRCE : COUNTERS   : NO LONGER AVAILABLE')

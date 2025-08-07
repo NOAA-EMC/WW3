@@ -6,14 +6,16 @@
 # directories                                                               #
 #                                                                           #
 # Available input directories are as follows:                               #
-# Directory                Grid Set      Example below                      #
+# Directory                 Grid Set      Example below                     #
 #  /input/                  grdset_a      (E1), (E2)                        #
 #  /i_highres_multi/        grdset_a      (E6)                              #
 #  /i_highres_shel/         N/A           (E4)                              #
 #  /i_highres_shel_IC1/     N/A                                             #
 #  /i_lowres_multi/         grdset_a      (E5)                              #
+#  /i_lowres_multi_jonswap/ grdset_a                                        #
 #  /i_lowres_shel/          N/A           (E3)                              #
 #  /i_lowres_shel_IC1/      N/A                                             #
+#  /i_lowres_shel_jonswap/  N/A                                             #
 #                                                                           #
 # In case of /input/ , there are alternative switches:                      #
 #  S1) switch                                                               #
