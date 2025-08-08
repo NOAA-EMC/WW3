@@ -695,6 +695,7 @@ CONTAINS
       OUTPTS(I)%TBPIN = (-1,0)
       !
       OUTPTS(I)%OUT1%IPASS1 = 0
+      OUTPTS(I)%OUT1%FLOGRR = .FALSE.
 #ifdef W3_MPI
       OUTPTS(I)%OUT1%NRQGO  = 0
       OUTPTS(I)%OUT1%NRQGO2 = 0
