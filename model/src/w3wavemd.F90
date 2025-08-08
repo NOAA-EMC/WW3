@@ -2178,62 +2178,6 @@ CONTAINS
                   DELY=HQFAC(IY,IX)/ FACX
                   DELA=DELX*DELY
                 END IF
-              END DO
-              !
-#ifdef W3_MPI
-              IF ( NRQSG1 .GT. 0 ) THEN
-                ALLOCATE ( STATCO(NRQSG1) )
-                CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,1), STATCO, IERR_MPI)
-                CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,2), STATCO, IERR_MPI)
-                DEALLOCATE ( STATCO )
-              END IF
-#endif
-              call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 17')
-              !
-              !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
-              IK=1
-              IX=1
-              IY=1
-#ifdef W3_SMC
-              !Li    Find source boundary spectra and assign to SPCBAC
-              IF( ARCTC ) THEN
-
-                DO IK = 1, NBAC
-                  IF( IK .LE. (NBAC-NBGL) ) THEN
-                    IY = ICLBAC(IK)
-                  ELSE
-                    IY = NGLO + IK
-                  ENDIF
-
-                  !Li    Work out root PE (ISPEC) and JSEA numbers for IY
-#ifdef W3_DIST
-                  ISPEC = MOD( IY-1, NAPROC )
-                  JSEA = 1 + (IY - ISPEC - 1)/NAPROC
-#endif
-#ifdef W3_SHRD
-                  ISPEC = 0
-                  JSEA = IY
-#endif
-#endif
-                  ! W3_SMC ...
-                  !
-#ifdef W3_SMC
-                  !!Li   Assign boundary cell spectra.
-                  IF( IAPROC .EQ. ISPEC+1 ) THEN
-                    SPCBAC(:,IK)=VA(:,JSEA)
-                  ENDIF
-#endif
-                  !
-#ifdef W3_SMC
-                  !!Li   Broadcast local SPCBAC(:,IK) to all other PEs.
-#ifdef W3_MPI
-                  CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WAVE,IERR_MPI)
-                  CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
-#endif
-#endif
-                  !
-#ifdef W3_SMC
-                END DO   !! Loop IK ends.
 #endif
                 !
 #ifdef W3_REF1
