@@ -247,18 +247,17 @@ EOF
   echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
   echo "  module load $modscotch"                           >> matrix.head
-  echo "  export METIS_PATH=${metispath}"                   >> matrix.head
-  echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
-  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
   echo ' '
   if [ $ishera ] && [ $compiler = "gnu" ]
   then
-    echo "  export CPPFLAGS=\"-I/apps/slurm_hera/23.11.3/include/slurm \$CPPFLAGS\"" >> matrix.head
+    echo "  export CPPFLAGS=\"-I/apps/slurm_hera/23.11.3/include/slurm \$CPPFLAGS\""   >> matrix.head
     echo "  export LD_LIBRARY_PATH=\"/apps/slurm_hera/23.11.3/lib:\$LD_LIBRARY_PATH\"" >> matrix.head
-    echo "  export OMPI_MCA_btl_openib_allow_ib=true"       >> matrix.head
+    echo "  export OMPI_MCA_btl_openib_allow_ib=true"                                  >> matrix.head
+    echo "  export UCX_TLS=rc,ud,self"                                                 >> matrix.head
   fi
-  echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
-  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
+  echo "  export METIS_PATH=${metispath}"                                              >> matrix.head
+  echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix"            >> matrix.head
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                    >> matrix.head
   echo ' '
 
   if [ "$batchq" = 'slurm' ]
