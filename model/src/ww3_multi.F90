@@ -105,12 +105,14 @@ PROGRAM W3MLTI
   !/ Local parameters
   !/
   INTEGER              :: I
-  type(MPI_COMM)       :: mpicomm
   INTEGER, ALLOCATABLE :: TEND(:,:)
   LOGICAL              :: FLGNML
 #ifdef W3_MPI
+  type(MPI_COMM)       :: MPICOMM
   INTEGER              :: IERR_MPI
   LOGICAL              :: FLHYBR = .FALSE.
+#else 
+  INTEGER              :: MPICOMM
 #endif
 #ifdef W3_OMPH
   INTEGER              :: THRLEV
@@ -140,6 +142,8 @@ PROGRAM W3MLTI
   CALL MPI_COMM_SIZE ( MPICOMM, NMPROC, IERR_MPI )
   CALL MPI_COMM_RANK ( MPICOMM, IMPROC, IERR_MPI )
   IMPROC = IMPROC + 1
+#else 
+  MPICOMM=0
 #endif
   !
   ! 0.c Identifying output to "screen" unit

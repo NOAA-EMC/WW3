@@ -394,7 +394,11 @@ PROGRAM W3SHEL
 #endif
   character(len=10)   :: jchar
   integer             :: memunit
-
+#ifdef W3_MPI
+  type(MPI_COMM)       :: MPICOMM
+#else 
+  INTEGER              :: MPICOMM
+#endif
   !
   !/
   !/ ------------------------------------------------------------------- /
@@ -482,6 +486,8 @@ PROGRAM W3SHEL
 
 #ifdef W3_MPI
     MPICOMM = MPI_COMM_WORLD
+#else 
+    MPICOMM = 1    
 #endif
 #ifdef W3_OASIS
   END IF
@@ -2915,6 +2921,8 @@ CONTAINS
 
 #ifdef W3_MPI
     CALL MPI_BARRIER ( MPICOMM_IN, IERR_MPI )
+#else 
+    IERR_MPI=0
 #endif
     !
     IF ( IAPROC .EQ. NAPOUT ) THEN
