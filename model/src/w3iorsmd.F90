@@ -318,7 +318,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
-    USE MPI 
+    USE mpi_f08 
 #endif
     !/
     USE W3SERVMD, ONLY: EXTCDE, EXTIOF
@@ -335,9 +335,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-#ifdef W3_MPI
-    use mpi_f08
-#endif
     IMPLICIT NONE
     !
     !/
