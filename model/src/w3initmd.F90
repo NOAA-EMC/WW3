@@ -966,38 +966,29 @@ CONTAINS
     VA(:,:) = 0.
 #ifdef W3_PIO
     if (use_restartnc) then
-      if (runtype == 'continue' )then
-        call set_user_timestring(time,user_timestring)
+      call set_user_timestring(time,user_timestring)
+      if (restart_from_binary) then
+        fname = trim(user_restfname)//trim(user_timestring)
+      else
+        fname = trim(user_restfname)//trim(user_timestring)//'.nc'
+      endif
+      inquire(file=trim(fname), exist=exists)
+      if (exists) then
         if (restart_from_binary) then
-          fname = trim(user_restfname)//trim(user_timestring)
+          call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
         else
-          fname = trim(user_restfname)//trim(user_timestring)//'.nc'
-        endif
-        inquire(file=trim(fname), exist=exists)
-        if (exists) then
-          if (restart_from_binary) then
-            call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
-          else
-            call read_restart(trim(fname), va=va, mapsta=mapsta, mapst2=mapst2)
-          end if
-        else
-          call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
+          call read_restart(trim(fname), va=va, mapsta=mapsta, mapst2=mapst2)
         end if
       else
-        if (restart_from_binary) then
-          call set_user_timestring(time,user_timestring)
-          fname = trim(user_restfname)//trim(user_timestring)
-          inquire(file=trim(fname), exist=exists)
-          if (exists) then
-            call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
-          else
-            call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
-          end if
-        else
+        if (runtype == 'continue') then
+          call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
+        elseif (restart_from_binary) then 
+          call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
+        else 
           call read_restart('none')
-          ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
-          flcold = .true.
-        end if
+         ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
+         flcold = .true.
+        endif 
       end if
     else
 #endif
