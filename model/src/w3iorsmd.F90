@@ -567,7 +567,7 @@ CONTAINS
         END IF
         IF (TYPE.EQ.'FULL') THEN
           RSTYPE = 2
-        ELSE IF (TYPE.EQ.'WIND') THEN
+        ELSE IF (TYPE.EQ.'WIND' .OR. TYPE.EQ.'FTCH') THEN
           RSTYPE = 1
         ELSE IF (TYPE.EQ.'CALM') THEN
           RSTYPE = 4
