@@ -586,12 +586,12 @@ CONTAINS
         Z2=NKT
         UP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
              ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
-             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(1.5) ) &
              * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX &
              + TLTN(ZI) * TAUY )
         VP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
              ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT ( &
-             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(1.5) ) &
              * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX &
              + TLTN(ZI) * TAUY )
         UP(ZI) = UP1(ZI)

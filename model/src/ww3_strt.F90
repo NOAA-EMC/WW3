@@ -381,7 +381,7 @@ PROGRAM W3STRT
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
   READ (NDSI,*,IOSTAT=IERR) ITYPE
   IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
-  IF ( ITYPE.LT.1 .OR. ITYPE.GT.5 ) THEN
+  IF ( ITYPE.LT.1 .OR. ITYPE.GT.6 ) THEN
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) ITYPE
     CALL EXTCDE ( 1 )
   END IF
@@ -828,10 +828,20 @@ PROGRAM W3STRT
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 8.  ITYPE = 5, fetch limited JONSWAP.
     !
-  ELSE
+  ELSE IF ( ITYPE .EQ. 5 ) THEN
     INXOUT = 'CALM'
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,980)
     !
+  ELSE IF ( ITYPE .EQ. 6 ) THEN
+    INXOUT = 'FTCH'
+    
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,IOSTAT=IERR) FETCH
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,961) FETCH
+    
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -976,6 +986,9 @@ PROGRAM W3STRT
   !
 960 FORMAT ( '       Fetch-limited JONSWAP spectra based on local '/ &
        '       wind speed (fetch related to grid increment).')
+  !
+961 FORMAT ( '       Fetch-limited JONSWAP spectra based on local '/ &
+       '       wind speed (manually set fetch / m): ',F11.4/)
   !
 970 FORMAT ( '       User-defined energy spectrum F(f,theta).'//    &
        '       Scale factor             (-) : ',E12.4/)

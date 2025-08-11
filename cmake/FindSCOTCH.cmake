@@ -77,8 +77,46 @@ find_package_handle_standard_args(
     REQUIRED_VARS ptscotchparmetis_lib
     ptscotchparmetis_inc)
 
+
+## Find version of scotch if possible
+if( EXISTS "${scotch_inc}/scotch.h" )
+  
+  file(READ "${scotch_inc}/scotch.h" header_content)
+
+  # Extract the major version number using regex
+  string(REGEX MATCH "SCOTCH_VERSION ([0-9]+)" VERSION_MAJOR_MATCH "${header_content}")
+  if(VERSION_MAJOR_MATCH)
+    set(SCOTCH_VERSION_MAJOR "${CMAKE_MATCH_1}")
+    message(STATUS "SCOTCH_VERSION_MAJOR: ${SCOTCH_VERSION_MAJOR}")
+  else()
+    message(WARNING "Could not find SCOTCH_VERSION in scotch.h")
+  endif()
+
+  # Extract the minor version number using regex
+  string(REGEX MATCH "SCOTCH_RELEASE ([0-9]+)" VERSION_MINOR_MATCH "${header_content}")
+  if(VERSION_MINOR_MATCH)
+    set(SCOTCH_RELEASE "${CMAKE_MATCH_1}")
+    message(STATUS "SCOTCH_RELEASE: ${SCOTCH_RELEASE}")
+  else()
+    message(WARNING "Could not find SCOTCH_RELEASE in scotch.h")
+  endif()
+
+  # Extract the patch version number using regex
+  string(REGEX MATCH "SCOTCH_PATCHLEVEL ([0-9]+)" VERSION_PATCH_MATCH "${header_content}")
+  if(VERSION_PATCH_MATCH)
+    set(SCOTCH_PATCHLEVEL "${CMAKE_MATCH_1}")
+    message(STATUS "SCOTCH_PATCHLEVEL: ${SCOTCH_PATCHLEVEL}")
+  else()
+    message(WARNING "Could not find VERSION_PATCH in scotch.h")
+  endif()
+  set(SCOTCH_VERSION "${SCOTCH_VERSION_MAJOR}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}")
+endif()
+
 message(STATUS "Found SCOTCH: ${scotch_lib}")
 message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
 message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
+message(STATUS "SCOTCH version: ${SCOTCH_VERSION}")
+
+

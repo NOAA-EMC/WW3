@@ -1,0 +1,81 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.0418
+  SPECTRUM%NK        =  31
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  5.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  800.
+  TIMESTEPS%DTXY         =  800.
+  TIMESTEPS%DTKTH        =  800.
+  TIMESTEPS%DTMIN        =  80.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'outer grid'
+  GRID%NML          =  '../i_lowres_multi/namelists_lowres.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -5.
+  GRID%DMIN         =  5.75
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  20
+  RECT%NY           =  20
+  RECT%SX           =  20.E3
+  RECT%SY           =  20.E3
+  RECT%X0           =  100.E3
+  RECT%Y0           =  100.E3
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -2500.
+  DEPTH%FILENAME  =  '../i_lowres_multi/lowres.depth'
+  DEPTH%IDLA      =  4
+/
+
+! -------------------------------------------------------------------- !
+! Define the obstruction map via OBST_NML namelist
+! -------------------------------------------------------------------- !
+&OBST_NML
+  OBST%SF        =  1
+  OBST%FILENAME  =  '../i_lowres_multi/lowres.obst'
+  OBST%IDLA      =  4
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
