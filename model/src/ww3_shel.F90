@@ -2909,7 +2909,11 @@ CONTAINS
     IMPLICIT NONE
 
     ! Parameter list
+#ifdef W3_MPI
+    type(MPI_COMM),INTENT(IN) :: MPICOMM_IN
+#else
     INTEGER, INTENT(IN)   :: MPICOMM_IN
+#endif
     INTEGER, INTENT(OUT)  :: IERR_MPI
     INTEGER, INTENT(IN)   :: NDSO
     INTEGER, INTENT(IN)   :: NDS

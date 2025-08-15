@@ -1847,8 +1847,8 @@ CONTAINS
                 !
 #ifdef W3_MPI
                 IF ( NRQSG1 .GT. 0 ) THEN
-                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
-                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
+                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1:NRQSG1,1), IERR_MPI)
+                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1:NRQSG1,2), IERR_MPI)
                 END IF
 #endif
                 !
@@ -1923,9 +1923,9 @@ CONTAINS
                 !
 #ifdef W3_MPI
                 IF ( NRQSG1 .GT. 0 ) THEN
-                  ALLOCATE ( STATCO(MPI_STATUS_SIZE,NRQSG1) )
-                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1,1), STATCO, IERR_MPI)
-                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1,2), STATCO, IERR_MPI)
+                  ALLOCATE ( STATCO(NRQSG1) )
+                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,1), STATCO, IERR_MPI)
+                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,2), STATCO, IERR_MPI)
                   DEALLOCATE ( STATCO )
                 END IF
 #endif
@@ -3107,7 +3107,7 @@ CONTAINS
 #ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 2 ) THEN
       IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), STATUS, IERR_MPI )
       BSTAT(IBFLOC) = 0
 #endif
 #ifdef W3_MPIT
@@ -3124,7 +3124,7 @@ CONTAINS
       BSTAT(IBFLOC) = 1
       BISPL(IBFLOC) = ISPLOC
       IOFF =  1 + (ISPLOC-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), IERR_MPI )
 #endif
 #ifdef W3_MPIT
       STRT(10:10) = 'g'
