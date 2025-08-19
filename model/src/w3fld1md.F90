@@ -175,7 +175,6 @@ CONTAINS
     USE CONSTANTS, ONLY: GRAV, DWAT, TPI, PI, KAPPA
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
     USE W3ODATMD, ONLY: NDSE
-    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -587,12 +586,12 @@ CONTAINS
         Z2=NKT
         UP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
              ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
-             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(1.5) ) &
              * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX &
              + TLTN(ZI) * TAUY )
         VP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
              ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT ( &
-             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(1.5) ) &
              * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX &
              + TLTN(ZI) * TAUY )
         UP(ZI) = UP1(ZI)
@@ -839,7 +838,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3ODATMD, ONLY: NDSE
     USE W3GDATMD, ONLY: TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
-    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -939,7 +937,6 @@ CONTAINS
     USE CONSTANTS, ONLY: TPI, PI
     USE W3GDATMD, ONLY: NTH, TH, DTH
     USE W3ODATMD, ONLY: NDSE
-    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif

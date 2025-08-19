@@ -71,6 +71,7 @@ PROGRAM W3SHEL
   !/    22-Mar-2021 : Add new coupling fields             ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    02-Feb-2022 : Scalability local                   ( version 7.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -255,21 +256,21 @@ PROGRAM W3SHEL
   USE CONSTANTS, ONLY: LPDLIB
 #endif
   USE W3GDATMD
-  USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
+  USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3SETW
 #ifdef W3_OASIS
   USE W3WDATMD, ONLY: TIME00, TIMEEND
 #endif
 #ifdef W3_NL5
   USE W3WDATMD, ONLY: QI5TBEG
 #endif
-  USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
+  USE W3ADATMD, ONLY: W3NAUX, W3SETA
   USE W3IDATMD
 #ifdef W3_OASIS
   USE W3ODATMD, ONLY: DTOUT, FLOUT
 #endif
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
-       NGRPP, IDOUT, FNMPRE, FNMGRD, FNMPNT, FNMRST, IOSTYP, NOTYPE
+       NGRPP, FNMPRE, FNMGRD, FNMPNT, FNMRST, IOSTYP, NOTYPE
   USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
   !/
   USE W3FLDSMD
@@ -280,8 +281,7 @@ PROGRAM W3SHEL
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
   USE W3IORSMD, ONLY: OARST
-  USE W3IOPOMD
-  USE W3SERVMD, ONLY : NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : NEXTLN, EXTCDE, EXTOPN, EXTIOF
   USE W3TIMEMD
 
 #ifdef W3_OASIS
@@ -341,20 +341,17 @@ PROGRAM W3SHEL
        STARTDATE(8), STOPDATE(8), IHH(-7:10)
   !
 #ifdef W3_OASIS
-  INTEGER             :: OASISED
+  INTEGER             :: OASISED = 1
 #endif
 #ifdef W3_COU
   INTEGER             :: OFL
 #endif
-  INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
-#ifdef W3_MPI
+  INTEGER             :: CLKDT1(8), CLKDT2(8)
   INTEGER             :: IERR_MPI
-#endif
   !
   REAL                :: FACTOR, DTTST, XX, YY,                    &
        HA(NHMAX,-7:10), HD(NHMAX,-7:10),         &
        HS(NHMAX,-7:10)
-  REAL                :: CLKFIN, CLKFEL
   REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),         &
        DATA1(:,:), DATA2(:,:)
   !
@@ -395,13 +392,10 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   LOGICAL             :: L_MASTER
-  LOGICAL             :: FIRST_STEP = .TRUE.
 #endif
   character(len=10)   :: jchar
   integer             :: memunit
 
-  LOGICAL                 :: DIR_EXISTS
-  INTEGER                 :: DIR_STATUS
   !
   !/
   !/ ------------------------------------------------------------------- /
@@ -441,9 +435,6 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 0.  Set up data structures
   !
-#ifdef W3_OASIS
-  OASISED=1
-#endif
 #ifdef W3_PDLIB
   LPDLIB = .TRUE.
 #endif
@@ -500,8 +491,6 @@ PROGRAM W3SHEL
   !
 #ifdef W3_MPI
   CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
-#endif
-#ifdef W3_MPI
   CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
   IAPROC = IAPROC + 1
 #endif
@@ -576,8 +565,10 @@ PROGRAM W3SHEL
   OFILE  = 'output.ww3'
   OFL    = LEN_TRIM(OFILE)
   J      = LEN_TRIM(FNMPRE)
+  IERR = 0
   IF ( IAPROC .EQ. NAPOUT )             &
-       OPEN (333,FILE=FNMPRE(:J)//OFILE(:OFL),ERR=2008,IOSTAT=IERR)
+       OPEN (333,FILE=FNMPRE(:J)//OFILE(:OFL),IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3SHEL', 'OUTPUT', 1008)
 #endif
 
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
@@ -813,8 +804,11 @@ PROGRAM W3SHEL
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
     END DO
 #ifdef W3_COU
-    IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
-    IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
+    IF ( (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) .OR. &
+         (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) ) THEN
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1102)
+      CALL EXTCDE ( 1102 )
+    END IF
 #endif
 
     INFLAGS1(10) = .FALSE.
@@ -853,8 +847,6 @@ PROGRAM W3SHEL
 #ifdef W3_T
     WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
 #endif
-
-
 
     ! 2.2 Time setup
 
@@ -936,7 +928,8 @@ PROGRAM W3SHEL
       END IF
       ODAT(33) = INT(DTMAX)
     ELSE IF (MOD(ODAT(33),INT(DTMAX)) .NE. 0) THEN
-      GOTO 2009
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1009) ODAT(33), NINT(DTMAX)
+      CALL EXTCDE ( 1009 )
     END IF
 #endif
     !
@@ -956,13 +949,14 @@ PROGRAM W3SHEL
           FLDOUT = NML_OUTPUT_TYPE%FIELD%LIST
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLGD,     &
                FLGRD, IAPROC, NAPOUT, IERR )
-          IF ( IERR .NE. 0 ) GOTO 2222
-
+          IF ( IERR .NE. 0 ) & 
+            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
           ! Type 2: point output
         ELSE IF ( J .EQ. 2 ) THEN
           OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
-               FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
+               FORM='FORMATTED', STATUS='OLD', IOSTAT=IERR)
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
 
           ! first loop to count the number of points
           ! second loop to allocate the array and store the points
@@ -976,13 +970,14 @@ PROGRAM W3SHEL
                 ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
                 IPTS = 0 ! reset counter to be reused for next do loop
               ELSE
-                ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                GOTO 2054
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1054)
+                CALL EXTCDE ( 1054 )
               END IF
             END IF
             !
             DO
-              READ (NDSL,*,ERR=2004,IOSTAT=IERR) TMPLINE
+              READ (NDSL,*,IOSTAT=IERR) TMPLINE
+              IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
               ! if end of file or stopstring, then exit
               IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
               ! leading blanks removed and placed on the right
@@ -992,8 +987,10 @@ PROGRAM W3SHEL
                 CYCLE
               ELSE
                 ! otherwise, backup to beginning of line
-                BACKSPACE ( NDSL, ERR=2004, IOSTAT=IERR)
-                READ (NDSL,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                BACKSPACE ( NDSL,IOSTAT=IERR)
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
+                READ (NDSL,*,IOSTAT=IERR) XX, YY, PN
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
               END IF
               IPTS = IPTS + 1
               IF ( ILOOP .EQ. 1 ) CYCLE
@@ -1062,7 +1059,8 @@ PROGRAM W3SHEL
           FLDOUT = NML_OUTPUT_TYPE%COUPLING%SENT
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLG2,  &
                FLGR2, IAPROC, NAPOUT, IERR )
-          IF ( IERR .NE. 0 ) GOTO 2222
+          IF ( IERR .NE. 0 ) &
+            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
           FLDIN = NML_OUTPUT_TYPE%COUPLING%RECEIVED
           CPLT0 = NML_OUTPUT_TYPE%COUPLING%COUPLET0
 #endif
@@ -1075,7 +1073,8 @@ PROGRAM W3SHEL
     FLDRST = NML_OUTPUT_TYPE%RESTART%EXTRA
     CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
          FLOGRR, IAPROC, NAPOUT, IERR )
-    IF ( IERR .NE. 0 ) GOTO 2222
+    IF ( IERR .NE. 0 ) &
+      CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
     ! force minimal allocation to avoid memory seg fault
     IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
@@ -1105,7 +1104,10 @@ PROGRAM W3SHEL
       N_TOT = NML_HOMOG_COUNT%N_TOT
       !
       DO J=JFIRST,10
-        IF ( NH(J) .GT. NHMAX ) GOTO 2006
+        IF ( NH(J) .GT. NHMAX ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006) IDTST, NH(J)
+          CALL EXTCDE ( 1006 )
+        END IF
       END DO
 
 
@@ -1146,7 +1148,8 @@ PROGRAM W3SHEL
           CASE ('MOV')
             J=10
           CASE DEFAULT
-            GOTO 2062
+            IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1062) IDTST
+            CALL EXTCDE ( 1062 )
           END SELECT
           IHH(J)=IHH(J)+1
           READ(NML_HOMOG_INPUT(IH)%DATE,*) THO(:,J,IHH(J))
@@ -1192,7 +1195,10 @@ PROGRAM W3SHEL
            ( FLH(4)  .AND. (NH(4).EQ.0)  ) .OR.                     &
            ( FLH(5)  .AND. (NH(5).EQ.0)  ) .OR.                     &
            ( FLH(6)  .AND. (NH(6).EQ.0)  ) .OR.                     &
-           ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
+           ( FLH(10) .AND. (NH(10).EQ.0) ) ) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
+        CALL EXTCDE ( 1007 )
+      END IF
       !
     END IF ! FLHOM
 
@@ -1273,8 +1279,11 @@ PROGRAM W3SHEL
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
     END DO
 #ifdef W3_COU
-    IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
-    IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
+    IF ( (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) .OR. &
+         (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) ) THEN
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1102)
+      CALL EXTCDE ( 1102 )
+    END IF
 #endif
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2b')
     !
@@ -1315,7 +1324,6 @@ PROGRAM W3SHEL
     WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
 #endif
 
-
     ! 2.2 Time setup
 
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -1344,7 +1352,6 @@ PROGRAM W3SHEL
       FACTOR = 1.E-3
     END IF
 
-
     ! 2.4 Output dates
 
     NPTS   = 0
@@ -1368,16 +1375,19 @@ PROGRAM W3SHEL
         READ(WORDS( 5 ), * ) ODAT(20)
         IF (WORDS(6) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
+          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(8-1)+1,5*8)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
           WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
         END IF
         IF (WORDS(7) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
+          READ (NDSI,'(A)',IOSTAT=IERR) FLDRST
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
         END IF
         CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
              FLOGRR, IAPROC, NAPOUT, IERR )
-        IF ( IERR .NE. 0 ) GOTO 2222
+        IF ( IERR .NE. 0 ) &
+          CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
       ELSE
         !
         !INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
@@ -1385,7 +1395,8 @@ PROGRAM W3SHEL
         !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
           WORDS(1:6)=''
-          !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          !          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          !          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           !
@@ -1409,7 +1420,6 @@ PROGRAM W3SHEL
             READ(WORDS( 6 ), * ) OFILES(J)
           END IF
 
-
 #ifdef W3_COU
         ELSE IF(J .EQ. 7) THEN
           WORDS(1:6)=''
@@ -1430,7 +1440,8 @@ PROGRAM W3SHEL
 #endif
         ELSE
           OFILES(J)=0
-          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(J-1)+1,5*J)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
         END IF
         !          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
         !
@@ -1447,9 +1458,8 @@ PROGRAM W3SHEL
           IF ( J .EQ. 1 ) THEN
             CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
                  FLGRD, IAPROC, NAPOUT, IERR )
-            IF ( IERR .NE. 0 ) GOTO 2222
-
-
+            IF ( IERR .NE. 0 ) &
+              CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 
             ! Type 2: point output
           ELSE IF ( J .EQ. 2 ) THEN
@@ -1470,8 +1480,8 @@ PROGRAM W3SHEL
                   IF ( NPTS.GT.0 ) THEN
                     ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
                   ELSE
-                    ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                    GOTO 2054
+                    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1054)
+                    CALL EXTCDE ( 1054 )
                   END IF
                 END IF
               END IF
@@ -1529,8 +1539,6 @@ PROGRAM W3SHEL
 #endif
             END IF
             !
-
-
             ! Type 3: track output
           ELSE IF ( J .EQ. 3 ) THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -1544,7 +1552,6 @@ PROGRAM W3SHEL
                 WRITE (NDSO,3945) 'input', 'FORMATTED'
               END IF
             END IF
-
 
             ! Type 6: partitioning
           ELSE IF ( J .EQ. 6 ) THEN
@@ -1561,15 +1568,16 @@ PROGRAM W3SHEL
               WRITE (NDSO,6945) IPRT, YESXNO
             END IF
 
-
 #ifdef W3_COU
             ! Type 7: coupling
           ELSE IF ( J .EQ. 7 ) THEN
             CALL W3READFLGRD ( NDSI, NDSO, NDSS, NDSEN, COMSTR, FLG2,     &
                  FLGR2, IAPROC, NAPOUT, IERR )
-            IF ( IERR .NE. 0 ) GOTO 2222
+            IF ( IERR .NE. 0 ) &
+              CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-            READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) FLDIN
+            READ (NDSI,'(A)',IOSTAT=IERR) FLDIN
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
 #endif
 
           END IF ! J
@@ -1592,7 +1600,6 @@ PROGRAM W3SHEL
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
         READ (NDSI,*) IDTST
 
-
         ! Exit if illegal id
         IF ( IDTST.NE.IDSTR(-7) .AND. IDTST.NE.IDSTR(-6) .AND.   &
              IDTST.NE.IDSTR(-5) .AND. IDTST.NE.IDSTR(-4) .AND.   &
@@ -1601,7 +1608,10 @@ PROGRAM W3SHEL
              IDTST.NE.IDSTR(1)  .AND. IDTST.NE.IDSTR(2)  .AND.   &
              IDTST.NE.IDSTR(3)  .AND. IDTST.NE.IDSTR(4)  .AND.   &
              IDTST.NE.IDSTR(5)  .AND. IDTST.NE.IDSTR(6)  .AND.   &
-             IDTST.NE.IDSTR(10)  .AND. IDTST.NE.'STP' ) GOTO 2005
+             IDTST.NE.IDSTR(10)  .AND. IDTST.NE.'STP' ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005) IDTST
+          CALL EXTCDE ( 1005 )
+        END IF
 
         ! Stop conditions
         IF ( IDTST .EQ. 'STP' ) THEN
@@ -1614,7 +1624,10 @@ PROGRAM W3SHEL
         DO J=LBOUND(IDSTR,1), 10
           IF ( IDTST .EQ. IDSTR(J) ) THEN
             NH(J)    = NH(J) + 1
-            IF ( NH(J) .GT. NHMAX ) GOTO 2006
+            IF ( NH(J) .GT. NHMAX ) THEN
+              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006) IDTST, NH(J)
+              CALL EXTCDE ( 1006 )
+            END IF
             IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
               READ (NDSI,*) IDTST,           &
                    THO(1,J,NH(J)), THO(2,J,NH(J)),            &
@@ -1686,16 +1699,14 @@ PROGRAM W3SHEL
            ( FLH(4)  .AND. (NH(4).EQ.0)  ) .OR.                     &
            ( FLH(5)  .AND. (NH(5).EQ.0)  ) .OR.                     &
            ( FLH(6)  .AND. (NH(6).EQ.0)  ) .OR.                     &
-           ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
+           ( FLH(10) .AND. (NH(10).EQ.0) ) ) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
+        CALL EXTCDE ( 1007 )
+      END IF
       !
     END IF ! FLHOM
 
   END IF
-
-
-
-
-
   !
   ! ----------------
   !
@@ -1709,7 +1720,6 @@ PROGRAM W3SHEL
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
          'Preparing input files ...'
     !
-
     DO J=JFIRST, 6
       IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
         IF ( FLH(J) ) THEN
@@ -1719,7 +1729,8 @@ PROGRAM W3SHEL
           CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
                NDSEN, NX, NY, GTYPE,               &
                IERR, FPRE=TRIM(FNMPRE), TIDEFLAGIN=FLAGTIDE )
-          IF ( IERR .NE. 0 ) GOTO 2222
+          IF ( IERR .NE. 0 ) &
+            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
 #ifdef W3_TIDE
           IF (FLAGTIDE.GT.0.AND.J.EQ.1) FLAGSTIDE(1)=.TRUE.
           IF (FLAGTIDE.GT.0.AND.J.EQ.2) FLAGSTIDE(2)=.TRUE.
@@ -1736,7 +1747,8 @@ PROGRAM W3SHEL
         CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
              RCLD(J), NY, NODATA(J),                 &
              IERR, FPRE=TRIM(FNMPRE) )
-        IF ( IERR .NE. 0 ) GOTO 2222
+        IF ( IERR .NE. 0 ) &
+          CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
              RCLD(J), NODATA(J)
       ELSE
@@ -1765,8 +1777,10 @@ PROGRAM W3SHEL
 #endif
   !
   DTTST  = DSEC21 ( TIME0 , TIMEN )
-  IF ( DTTST .LE. 0. ) GOTO 2003
-
+  IF ( DTTST .LE. 0. ) THEN
+    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)
+    CALL EXTCDE ( 1003 )
+  END IF
 
   ! 2.3 Domain setup
 
@@ -1793,7 +1807,6 @@ PROGRAM W3SHEL
       WRITE (NDSO,940) 'IOSTYP NOT RECOGNIZED'
     END IF
   END IF
-
 
   ! 2.4 Output dates
 
@@ -1865,7 +1878,6 @@ PROGRAM W3SHEL
   WRITE (NDST,9041) FLGRD
   WRITE (NDST,9042) IPRT, PRTFRM
 #endif
-
   !
   ! For outputs with non-zero time step, check dates :
   ! If output ends before run start OR output starts after run end,
@@ -1878,13 +1890,11 @@ PROGRAM W3SHEL
     IF ( DTTST .LT. 0 ) THEN
       ODAT(5*(J-1)+3) = 0
       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-      CONTINUE
     END IF
     DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
     IF ( DTTST .LT. 0 ) THEN
       ODAT(5*(J-1)+3) = 0
       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-      CONTINUE
     END IF
   END DO
   !
@@ -1894,13 +1904,11 @@ PROGRAM W3SHEL
   IF ( DTTST .LT. 0 ) THEN
     ODAT(5*(J-1)+3) = 0
     IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-    CONTINUE
   END IF
   DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
   IF ( DTTST .LT. 0 ) THEN
     ODAT(5*(J-1)+3) = 0
     IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-    CONTINUE
   END IF
   !
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 5')
@@ -1908,7 +1916,6 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 5.  Initializations
   !
-
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) 'Wave model ...'
   !
 #ifdef W3_TIDE
@@ -1958,8 +1965,6 @@ PROGRAM W3SHEL
   !
   ALLOCATE ( XXX(NX,NY) )
   !
-
-  !
 #ifdef W3_MPI
   CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 #endif
@@ -1982,7 +1987,6 @@ PROGRAM W3SHEL
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
 #endif
-
 
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 6.  Model without input
@@ -2008,7 +2012,7 @@ PROGRAM W3SHEL
 #endif
         )
     !
-    GOTO 2222
+    CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
     !
   END IF
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2034,728 +2038,632 @@ PROGRAM W3SHEL
   END IF
 #endif
 
-700 CONTINUE
-  !
-  !
-  ! 7.a Determine next time interval and input fields
-  ! 7.a.1 Preparation
-  !
-  TTIME  = TIMEN
-  !
-  CALL STME21 ( TIME0 , DTME21 )
-  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971) DTME21
-  !
-#ifdef W3_T
-  WRITE (NDST,9070) '0-N', TIME0, TTIME,           &
-       IDSTR(-7), INFLAGS1(-7), TI1,     &
-       IDSTR(-6), INFLAGS1(-6), TI2,     &
-       IDSTR(-5), INFLAGS1(-5), TI3,     &
-       IDSTR(-4), INFLAGS1(-4), TI4,     &
-       IDSTR(-3), INFLAGS1(-3), TI5,     &
-       IDSTR(-2), INFLAGS1(-2), TZN,     &
-       IDSTR(-1), INFLAGS1(-1), TTN,     &
-       IDSTR(0), INFLAGS1(0), TVN,       &
-       IDSTR(1), INFLAGS1(1), TLN,       &
-       IDSTR(2), INFLAGS1(2), TC0, TCN,  &
-       IDSTR(3), INFLAGS1(3), TW0, TWN,  &
-       IDSTR(4), INFLAGS1(4), TIN,       &
-       IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-       IDSTR(6), INFLAGS1(6), TR0, TRN,  &
-       IDSTR(7), INFLAGS1(7), T0N,       &
-       IDSTR(8), INFLAGS1(8), T1N,       &
-       IDSTR(9), INFLAGS1(9), T2N,       &
-       IDSTR(10), INFLAGS1(10), TG0, TGN
-#endif
-  !
-  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 7')
-
-  DO J=JFIRST,10
+  ! 700 timestepping
+  DO WHILE ( DTTST .GT. 0.)
     !
-    write(jchar, '(i0)') j
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL UPDATE '//trim(jchar))
-
-    IF ( INFLAGS1(J) ) THEN
-      !
-      ! 7.a.2 Check if update is needed
-      !
-      IF (.NOT.FLAGSC(J)) THEN
-        TTT(1) = TFN(1,J)
-        TTT(2) = TFN(2,J)
-        IF ( TTT(1) .EQ. -1 ) THEN
-          DTTST  = 0.
-        ELSE
-          DTTST  = DSEC21 ( TIME0 , TTT )
-        END IF
-#ifdef W3_OASIS
-      ELSE
-        IF ( DTOUT(7).NE.0 ) THEN
-          ! TFN not initialized at TIME=TIME00, using TIME instead
-          IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
-            ID_OASIS_TIME = 0
-            DTTST=0.
-          ELSE
-            ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
-            IF ( MOD(NINT(DSEC21(TIME00,TIME)), NINT(DTOUT(7))) .EQ. 0 .AND. &
-                 DSEC21 (TFN(:,J), TIMEEND) .GT. 0.0 ) DTTST=0.
-          ENDIF
-        ENDIF
-#endif
-      END IF
-      !
+    !
+    ! 7.a Determine next time interval and input fields
+    ! 7.a.1 Preparation
+    !
+    TTIME  = TIMEN
+    !
+    CALL STME21 ( TIME0 , DTME21 )
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971) DTME21
+    !
 #ifdef W3_T
-      WRITE (NDST,9071) IDSTR(J), DTTST
+    WRITE (NDST,9070) '0-N', TIME0, TTIME,           &
+         IDSTR(-7), INFLAGS1(-7), TI1,     &
+         IDSTR(-6), INFLAGS1(-6), TI2,     &
+         IDSTR(-5), INFLAGS1(-5), TI3,     &
+         IDSTR(-4), INFLAGS1(-4), TI4,     &
+         IDSTR(-3), INFLAGS1(-3), TI5,     &
+         IDSTR(-2), INFLAGS1(-2), TZN,     &
+         IDSTR(-1), INFLAGS1(-1), TTN,     &
+         IDSTR(0), INFLAGS1(0), TVN,       &
+         IDSTR(1), INFLAGS1(1), TLN,       &
+         IDSTR(2), INFLAGS1(2), TC0, TCN,  &
+         IDSTR(3), INFLAGS1(3), TW0, TWN,  &
+         IDSTR(4), INFLAGS1(4), TIN,       &
+         IDSTR(5), INFLAGS1(5), TU0, TUN,  &
+         IDSTR(6), INFLAGS1(6), TR0, TRN,  &
+         IDSTR(7), INFLAGS1(7), T0N,       &
+         IDSTR(8), INFLAGS1(8), T1N,       &
+         IDSTR(9), INFLAGS1(9), T2N,       &
+         IDSTR(10), INFLAGS1(10), TG0, TGN
 #endif
-      !
-      ! 7.a.3 Update time and fields / data
-      !
-      IF ( DTTST .LE. 0. ) THEN
+    !
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 7')
 
-#ifdef W3_TIDE
-        IF ((FLLEVTIDE .AND.(J.EQ.1)).OR.(FLCURTIDE.AND.(J.EQ.2))) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974) IDFLDS(J)
+    DO J=JFIRST,10
+      !
+      write(jchar, '(i0)') j
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL UPDATE '//trim(jchar))
+
+      IF ( INFLAGS1(J) ) THEN
+        !
+        ! 7.a.2 Check if update is needed
+        !
+        IF (.NOT.FLAGSC(J)) THEN
+          TTT(1) = TFN(1,J)
+          TTT(2) = TFN(2,J)
+          IF ( TTT(1) .EQ. -1 ) THEN
+            DTTST  = 0.
+          ELSE
+            DTTST  = DSEC21 ( TIME0 , TTT )
+          END IF
+#ifdef W3_OASIS
         ELSE
+          IF ( DTOUT(7).NE.0 ) THEN
+            ! TFN not initialized at TIME=TIME00, using TIME instead
+            IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
+              ID_OASIS_TIME = 0
+              DTTST=0.
+            ELSE
+              ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
+              IF ( MOD(NINT(DSEC21(TIME00,TIME)), NINT(DTOUT(7))) .EQ. 0 .AND. &
+                   DSEC21 (TFN(:,J), TIMEEND) .GT. 0.0 ) DTTST=0.
+            ENDIF
+          ENDIF
 #endif
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
-#ifdef W3_TIDE
         END IF
+        !
+#ifdef W3_T
+        WRITE (NDST,9071) IDSTR(J), DTTST
 #endif
         !
-        ! IC1 : (in context of IC3 & IC2, this is ice thickness)
-        IF ( J .EQ. -7 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
-          ELSE
-#ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
-#endif
-#ifdef W3_OASICM
-            IF (FLAGSC(J)) FLAGSCI = .TRUE.
-            IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
-#endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1,  &
-                 IERR, FLAGSC(J)                            &
-#ifdef W3_OASICM
-                 , COUPL_COMM                       &
-#endif
-                 )
-          END IF
-          IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+        ! 7.a.3 Update time and fields / data
+        !
+        IF ( DTTST .LE. 0. ) THEN
 
-          ! IC2 : (in context of IC3, this is ice viscosity)
-        ELSE IF ( J .EQ. -6 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2,  &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! IC3 : (in context of IC3, this is ice density)
-        ELSE IF ( J .EQ. -5 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3,  &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! IC4 : (in context of IC3, this is ice modulus)
-        ELSE IF ( J .EQ. -4 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4,  &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! IC5 : ice flow diam.
-        ELSE IF ( J .EQ. -3 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
-          ELSE
-#ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
-#endif
-#ifdef W3_OASICM
-            IF (FLAGSC(J)) FLAGSCI = .TRUE.
-            IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
-#endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5,  &
-                 IERR, FLAGSC(J)                            &
-#ifdef W3_OASICM
-                 , COUPL_COMM                       &
-#endif
-                 )
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! MUD1 : mud density
-        ELSE IF ( J .EQ. -2 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD,   &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! MUD2 : mud thickness
-        ELSE IF ( J .EQ. -1 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT,   &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! MUD3 : mud viscosity
-        ELSE IF ( J .EQ. 0 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
-          ELSE
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV,   &
-                 IERR, FLAGSC(J))
-          END IF
-          IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-
-          ! LEV : water levels
-        ELSE IF ( J .EQ. 1 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
-          ELSE
 #ifdef W3_TIDE
-            IF ( FLLEVTIDE ) THEN
-              IERR=0
-              IF ( TLN(1) .EQ. -1 ) THEN
-                TLN = TIME
+          IF ((FLLEVTIDE .AND.(J.EQ.1)).OR.(FLCURTIDE.AND.(J.EQ.2))) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974) IDFLDS(J)
+          ELSE
+#endif
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
+#ifdef W3_TIDE
+          END IF
+#endif
+          !
+          ! IC1 : (in context of IC3 & IC2, this is ice thickness)
+          IF ( J .EQ. -7 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
+            ELSE
+#ifdef W3_OASIS
+              COUPL_COMM = MPI_COMM
+#endif
+#ifdef W3_OASICM
+              IF (FLAGSC(J)) FLAGSCI = .TRUE.
+              IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
+#endif
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1,  &
+                   IERR, FLAGSC(J)                            &
+#ifdef W3_OASICM
+                   , COUPL_COMM                       &
+#endif
+                   )
+            END IF
+            IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+
+            ! IC2 : (in context of IC3, this is ice viscosity)
+          ELSE IF ( J .EQ. -6 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2,  &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! IC3 : (in context of IC3, this is ice density)
+          ELSE IF ( J .EQ. -5 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3,  &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! IC4 : (in context of IC3, this is ice modulus)
+          ELSE IF ( J .EQ. -4 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4,  &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! IC5 : ice flow diam.
+          ELSE IF ( J .EQ. -3 ) THEN
+            IF ( FLH(J) ) THEN
+               CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
+            ELSE
+#ifdef W3_OASIS
+              COUPL_COMM = MPI_COMM
+#endif
+#ifdef W3_OASICM
+              IF (FLAGSC(J)) FLAGSCI = .TRUE.
+              IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
+#endif
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5,  &
+                   IERR, FLAGSC(J)                            &
+#ifdef W3_OASICM
+                   , COUPL_COMM                       &
+#endif
+                   )
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! MUD1 : mud density
+          ELSE IF ( J .EQ. -2 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD,   &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! MUD2 : mud thickness
+          ELSE IF ( J .EQ. -1 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT,   &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! MUD3 : mud viscosity
+          ELSE IF ( J .EQ. 0 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
+            ELSE
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV,   &
+                   IERR, FLAGSC(J))
+            END IF
+            IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+
+            ! LEV : water levels
+          ELSE IF ( J .EQ. 1 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+            ELSE
+#ifdef W3_TIDE
+              IF ( FLLEVTIDE ) THEN
+                IERR=0
+                IF ( TLN(1) .EQ. -1 ) THEN
+                  TLN = TIME
+                ELSE
+                  CALL TICK21 ( TLN, TIDE_DT )
+                END IF
               ELSE
-                CALL TICK21 ( TLN, TIDE_DT )
-              END IF
-            ELSE
 #endif
+#ifdef W3_OASIS
+                COUPL_COMM = MPI_COMM
+#endif
+#ifdef W3_OASOCM
+                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+#endif
+                CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                     NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                     TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
+                     IERR, FLAGSC(J)                            &
+#ifdef W3_OASOCM
+                     , COUPL_COMM                       &
+#endif
+                     )
+#ifdef W3_TIDE
+              END IF
+#endif
+            END IF
+            IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
+            !could be:    IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+
+            ! CUR : currents
+          ELSE IF ( J .EQ. 2 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+              !
+#ifdef W3_SMC
+              !!Li  Reshape the CX0/N CY0/N space for sea-point only current.
+              !!Li              JGLi26Jun2018.
+            ELSE IF( FSWND ) THEN
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+                   NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TC0, &
+                   CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+              !!Li
+#endif
+            ELSE
+#ifdef W3_TIDE
+              IF ( FLCURTIDE ) THEN
+                IERR=0
+                IF ( TCN(1) .EQ. -1 ) THEN
+                  TCN = TIME
+                END IF
+                TC0(:) = TCN(:)
+                CALL TICK21 ( TCN, TIDE_DT )
+              ELSE
+#endif
+#ifdef W3_OASIS
+                COUPL_COMM = MPI_COMM
+#endif
+#ifdef W3_OASOCM
+                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+#endif
+                CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                     NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                     TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
+                     IERR, FLAGSC(J)                            &
+#ifdef W3_OASOCM
+                     , COUPL_COMM                       &
+#endif
+                     )
+#ifdef W3_TIDE
+              END IF
+#endif
+            END IF
+
+            ! WND : winds
+          ELSE IF ( J .EQ. 3 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+              !
+#ifdef W3_SMC
+              !!Li  Reshape the WX0/N WY0/N space for sea-point only wind.
+              !!Li              JGLi26Jun2018.
+            ELSE IF( FSWND ) THEN
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+                   NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TW0, &
+                   WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+              !!Li
+#endif
+            ELSE
 #ifdef W3_OASIS
               COUPL_COMM = MPI_COMM
 #endif
-#ifdef W3_OASOCM
+#ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
               CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                    NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                   TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
+                   TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                    IERR, FLAGSC(J)                            &
-#ifdef W3_OASOCM
+#ifdef W3_OASACM
                    , COUPL_COMM                       &
 #endif
                    )
-#ifdef W3_TIDE
             END IF
-#endif
-          END IF
-          IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
-          !could be:    IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
 
-          ! CUR : currents
-        ELSE IF ( J .EQ. 2 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
-            !
-#ifdef W3_SMC
-            !!Li  Reshape the CX0/N CY0/N space for sea-point only current.
-            !!Li              JGLi26Jun2018.
-          ELSE IF( FSWND ) THEN
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
-                 NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TC0, &
-                 CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
-            !!Li
-#endif
-          ELSE
-#ifdef W3_TIDE
-            IF ( FLCURTIDE ) THEN
-              IERR=0
-              IF ( TCN(1) .EQ. -1 ) THEN
-                TCN = TIME
-              END IF
-              TC0(:) = TCN(:)
-              CALL TICK21 ( TCN, TIDE_DT )
+            ! ICE : ice conc.
+          ELSE IF ( J .EQ. 4 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
             ELSE
-#endif
 #ifdef W3_OASIS
               COUPL_COMM = MPI_COMM
 #endif
-#ifdef W3_OASOCM
+#ifdef W3_OASICM
+              IF (FLAGSC(J)) FLAGSCI = .TRUE.
+              IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
+#endif
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,    &
+                   TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
+                   IERR, FLAGSC(J)                               &
+#ifdef W3_OASICM
+                   , COUPL_COMM                          &
+#endif
+                   )
+              IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
+              !could be:      IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+            END IF
+
+            ! TAU : atmospheric momentum
+          ELSE IF ( J .EQ. 5 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
+              !
+#ifdef W3_SMC
+              !!Li  Reshape the UX0/N UY0/N space for sea-point only current.
+              !!Li              JGLi26Jun2018.
+            ELSE IF( FSWND ) THEN
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+                   NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TU0, &
+                   UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
+              !!Li
+#endif
+            ELSE
+#ifdef W3_OASIS
+              COUPL_COMM = MPI_COMM
+#endif
+#ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
               CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                    NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                   TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
+                   TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX,    &
                    IERR, FLAGSC(J)                            &
-#ifdef W3_OASOCM
-                   , COUPL_COMM                       &
+#ifdef W3_OASACM
+                   , COUPL_COMM                               &
 #endif
                    )
-#ifdef W3_TIDE
             END IF
-#endif
-          END IF
 
-          ! WND : winds
-        ELSE IF ( J .EQ. 3 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
-            !
+            ! RHO : air density
+          ELSE IF ( J .EQ. 6 ) THEN
+            IF ( FLH(J) ) THEN
+              CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                   TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                   TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
 #ifdef W3_SMC
-            !!Li  Reshape the WX0/N WY0/N space for sea-point only wind.
-            !!Li              JGLi26Jun2018.
-          ELSE IF( FSWND ) THEN
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
-                 NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TW0, &
-                 WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
-            !!Li
+              !!Li  Reshape the RH0/N space for sea-point only current.
+              !!Li              JGLi26Jun2018.
+            ELSE IF( FSWND ) THEN
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+                   NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TR0, &
+                   XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
+              !!Li
 #endif
-          ELSE
+            ELSE
 #ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
+              COUPL_COMM = MPI_COMM
 #endif
 #ifdef W3_OASACM
-            IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+              IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
-                 IERR, FLAGSC(J)                            &
+              CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                   NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                   TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
+                   IERR, FLAGSC(J)                            &
 #ifdef W3_OASACM
-                 , COUPL_COMM                       &
+                   , COUPL_COMM                               &
 #endif
-                 )
-          END IF
+                   )
+              IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
+            END IF
 
-          ! ICE : ice conc.
-        ELSE IF ( J .EQ. 4 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
-          ELSE
-#ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
-#endif
-#ifdef W3_OASICM
-            IF (FLAGSC(J)) FLAGSCI = .TRUE.
-            IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
-#endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,    &
-                 TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
-                 IERR, FLAGSC(J)                               &
-#ifdef W3_OASICM
-                 , COUPL_COMM                          &
-#endif
-                 )
-            IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
-            !could be:      IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
-          END IF
-
-          ! TAU : atmospheric momentum
-        ELSE IF ( J .EQ. 5 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
-            !
-#ifdef W3_SMC
-            !!Li  Reshape the UX0/N UY0/N space for sea-point only current.
-            !!Li              JGLi26Jun2018.
-          ELSE IF( FSWND ) THEN
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
-                 NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TU0, &
-                 UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
-            !!Li
-#endif
-          ELSE
-#ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
-#endif
-#ifdef W3_OASACM
-            IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
-#endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX,    &
-                 IERR, FLAGSC(J)                            &
-#ifdef W3_OASACM
-                 , COUPL_COMM                               &
-#endif
-                 )
-          END IF
-
-          ! RHO : air density
-        ELSE IF ( J .EQ. 6 ) THEN
-          IF ( FLH(J) ) THEN
-            CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
-                 TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                 TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
-#ifdef W3_SMC
-            !!Li  Reshape the RH0/N space for sea-point only current.
-            !!Li              JGLi26Jun2018.
-          ELSE IF( FSWND ) THEN
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
-                 NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TR0, &
-                 XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
-            !!Li
-#endif
-          ELSE
-#ifdef W3_OASIS
-            COUPL_COMM = MPI_COMM
-#endif
-#ifdef W3_OASACM
-            IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
-#endif
-            CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                 NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                 TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
-                 IERR, FLAGSC(J)                            &
-#ifdef W3_OASACM
-                 , COUPL_COMM                               &
-#endif
-                 )
-            IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
-          END IF
-
-          ! Assim data
-        ELSE IF ( J .EQ. 7 ) THEN
-          CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
-               NDSEN, TIME0, T0N, RCLD(J), NDT(J),           &
-               NDTNEW, DATA0, IERR )
-          IF ( IERR .LT. 0 ) THEN
-            INFLAGS1(J) = .FALSE.
-            IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
-          ELSE
-            NDT(J) = NDTNEW
-            IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
-            ALLOCATE ( DATA0(RCLD(J),NDT(J)) )
-            CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
-                 NDSEN, TIME0, T0N, RCLD(J), NDT(J),      &
+            ! Assim data
+          ELSE IF ( J .EQ. 7 ) THEN
+            CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
+                 NDSEN, TIME0, T0N, RCLD(J), NDT(J),           &
                  NDTNEW, DATA0, IERR )
-          END IF
+            IF ( IERR .LT. 0 ) THEN
+              INFLAGS1(J) = .FALSE.
+              IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
+            ELSE
+              NDT(J) = NDTNEW
+              IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
+              ALLOCATE ( DATA0(RCLD(J),NDT(J)) )
+              CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                   NDSEN, TIME0, T0N, RCLD(J), NDT(J),      &
+                   NDTNEW, DATA0, IERR )
+            END IF
 
-          ! Assim data
-        ELSE IF ( J .EQ. 8 ) THEN
-          CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
-               NDSEN, TIME0, T1N, RCLD(J), NDT(J),           &
-               NDTNEW, DATA1, IERR )
-          IF ( IERR .LT. 0 ) THEN
-            INFLAGS1(J) = .FALSE.
-            IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
-          ELSE
-            NDT(J) = NDTNEW
-            IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
-            ALLOCATE ( DATA1(RCLD(J),NDT(J)) )
-            CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
-                 NDSEN, TIME0, T1N, RCLD(J), NDT(J),      &
+            ! Assim data
+          ELSE IF ( J .EQ. 8 ) THEN
+            CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
+                 NDSEN, TIME0, T1N, RCLD(J), NDT(J),           &
                  NDTNEW, DATA1, IERR )
-          END IF
+            IF ( IERR .LT. 0 ) THEN
+              INFLAGS1(J) = .FALSE.
+              IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
+            ELSE
+              NDT(J) = NDTNEW
+              IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
+              ALLOCATE ( DATA1(RCLD(J),NDT(J)) )
+              CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                   NDSEN, TIME0, T1N, RCLD(J), NDT(J),      &
+                   NDTNEW, DATA1, IERR )
+            END IF
 
-          ! Assim data
-        ELSE IF ( J .EQ. 9 ) THEN
-          CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
-               NDSEN, TIME0, T2N, RCLD(J), NDT(J),           &
-               NDTNEW, DATA2, IERR )
-          IF ( IERR .LT. 0 ) THEN
-            INFLAGS1(J) = .FALSE.
-            IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
-          ELSE
-            NDT(J) = NDTNEW
-            IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
-            ALLOCATE ( DATA2(RCLD(J),NDT(J)) )
-            CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
-                 NDSEN, TIME0, T2N, RCLD(J), NDT(J),      &
+            ! Assim data
+          ELSE IF ( J .EQ. 9 ) THEN
+            CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
+                 NDSEN, TIME0, T2N, RCLD(J), NDT(J),           &
                  NDTNEW, DATA2, IERR )
-          END IF
+            IF ( IERR .LT. 0 ) THEN
+              INFLAGS1(J) = .FALSE.
+              IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
+            ELSE
+              NDT(J) = NDTNEW
+              IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
+              ALLOCATE ( DATA2(RCLD(J),NDT(J)) )
+              CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                   NDSEN, TIME0, T2N, RCLD(J), NDT(J),      &
+                   NDTNEW, DATA2, IERR )
+            END IF
 
-          ! Track
-        ELSE IF ( J .EQ. 10 ) THEN
-          CALL W3FLDM (4, NDST, NDSEN, TIME0, TIMEN, NH(4),  &
-               NHMAX, THO, HA, HD, TG0, GA0, GD0,         &
-               TGN, GAN, GDN, IERR)
+            ! Track
+          ELSE IF ( J .EQ. 10 ) THEN
+            CALL W3FLDM (4, NDST, NDSEN, TIME0, TIMEN, NH(4),  &
+                 NHMAX, THO, HA, HD, TG0, GA0, GD0,         &
+                 TGN, GAN, GDN, IERR)
+          END IF
+          !
+          IF ( IERR.GT.0 ) &
+            CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
+          IF ( IERR.LT.0 .AND. IAPROC.EQ.NAPOUT ) WRITE (NDSO,973) IDFLDS(J)
+
+
+        END IF ! DTTST .LE. 0.
+        !
+        ! 7.a.4 Update next ending time
+        !
+        IF ( INFLAGS1(J) ) THEN
+          TTT    = TFN(:,J)
+          DTTST  = DSEC21 ( TTT , TTIME )
+          IF ( DTTST.GT.0. .AND. .NOT.                          &
+               ( (FLLSTL .AND. J.EQ.1) .OR.                   &
+               (FLLST_ALL(J) .AND. J.EQ.-7) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-6) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-5) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-4) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-3) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-2) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.-1) .OR.            &
+               (FLLST_ALL(J) .AND. J.EQ.0 ) .OR.            &
+               (FLLSTI .AND. J.EQ.4) .OR.                   &
+               (FLLSTR .AND. J.EQ.6) ) ) THEN
+            TTIME  = TTT
+            ! notes: if model has run out beyond field input, then this line should not
+            !    be reached.
+          END IF
         END IF
         !
-        IF ( IERR.GT.0 ) GOTO 2222
-        IF ( IERR.LT.0 .AND. IAPROC.EQ.NAPOUT ) WRITE (NDSO,973) IDFLDS(J)
-
-
-      END IF ! DTTST .LE. 0.
+      END IF ! INFLAGSC1(J)
       !
-      ! 7.a.4 Update next ending time
-      !
+    END DO ! J=JFIRST,10
+    !
+    ! update the next assimilation data time
+    !
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 8')
+
+    TDN = TTIME
+    CALL TICK21 ( TDN, 1. )
+    DO J=7, 9
       IF ( INFLAGS1(J) ) THEN
         TTT    = TFN(:,J)
-        DTTST  = DSEC21 ( TTT , TTIME )
-        IF ( DTTST.GT.0. .AND. .NOT.                          &
-             ( (FLLSTL .AND. J.EQ.1) .OR.                   &
-             (FLLST_ALL(J) .AND. J.EQ.-7) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-6) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-5) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-4) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-3) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-2) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.-1) .OR.            &
-             (FLLST_ALL(J) .AND. J.EQ.0 ) .OR.            &
-             (FLLSTI .AND. J.EQ.4) .OR.                   &
-             (FLLSTR .AND. J.EQ.6) ) ) THEN
-          TTIME  = TTT
-          ! notes: if model has run out beyond field input, then this line should not
-          !    be reached.
-        END IF
+        DTTST  = DSEC21 ( TTT , TDN )
+        IF ( DTTST.GT.0. ) TDN = TTT
       END IF
-      !
-    END IF ! INFLAGSC1(J)
-    !
-  END DO ! J=JFIRST,10
-  !
-  ! update the next assimilation data time
-  !
-#ifdef W3_OASIS
-  FIRST_STEP = .FALSE.
-#endif
-
-  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 8')
-
-  TDN = TTIME
-  CALL TICK21 ( TDN, 1. )
-  DO J=7, 9
-    IF ( INFLAGS1(J) ) THEN
-      TTT    = TFN(:,J)
-      DTTST  = DSEC21 ( TTT , TDN )
-      IF ( DTTST.GT.0. ) TDN = TTT
-    END IF
-  END DO
+    END DO
   !
 #ifdef W3_T
-  WRITE (NDST,9072) '0-N', TIME0, TTIME,           &
-       IDSTR(-7), INFLAGS1(-7), TI1,     &
-       IDSTR(-6), INFLAGS1(-6), TI2,     &
-       IDSTR(-5), INFLAGS1(-5), TI3,     &
-       IDSTR(-4), INFLAGS1(-4), TI4,     &
-       IDSTR(-3), INFLAGS1(-3), TI5,     &
-       IDSTR(-2), INFLAGS1(-2), TZN,     &
-       IDSTR(-1), INFLAGS1(-1), TTN,     &
-       IDSTR(0), INFLAGS1(0), TVN,       &
-       IDSTR(1), INFLAGS1(1), TLN,       &
-       IDSTR(2), INFLAGS1(2), TC0, TCN,  &
-       IDSTR(3), INFLAGS1(3), TW0, TWN,  &
-       IDSTR(4), INFLAGS1(4), TIN,       &
-       IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-       IDSTR(6), INFLAGS1(6), TR0, TRN,  &
-       IDSTR(7), INFLAGS1(7), T0N,       &
-       IDSTR(8), INFLAGS1(8), T1N,       &
-       IDSTR(9), INFLAGS1(9), T2N, TDN,  &
-       IDSTR(10), INFLAGS1(10), TG0, TGN
+    WRITE (NDST,9072) '0-N', TIME0, TTIME,           &
+         IDSTR(-7), INFLAGS1(-7), TI1,     &
+         IDSTR(-6), INFLAGS1(-6), TI2,     &
+         IDSTR(-5), INFLAGS1(-5), TI3,     &
+         IDSTR(-4), INFLAGS1(-4), TI4,     &
+         IDSTR(-3), INFLAGS1(-3), TI5,     &
+         IDSTR(-2), INFLAGS1(-2), TZN,     &
+         IDSTR(-1), INFLAGS1(-1), TTN,     &
+         IDSTR(0), INFLAGS1(0), TVN,       &
+         IDSTR(1), INFLAGS1(1), TLN,       &
+         IDSTR(2), INFLAGS1(2), TC0, TCN,  &
+         IDSTR(3), INFLAGS1(3), TW0, TWN,  &
+         IDSTR(4), INFLAGS1(4), TIN,       &
+         IDSTR(5), INFLAGS1(5), TU0, TUN,  &
+         IDSTR(6), INFLAGS1(6), TR0, TRN,  &
+         IDSTR(7), INFLAGS1(7), T0N,       &
+         IDSTR(8), INFLAGS1(8), T1N,       &
+         IDSTR(9), INFLAGS1(9), T2N, TDN,  &
+         IDSTR(10), INFLAGS1(10), TG0, TGN
 #endif
-  !
-  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
-  !
-  ! 7.b Run the wave model for the given interval
-  !
-  TIME0  = TTIME
-  !
-  CALL W3WAVE ( 1, ODAT, TIME0                                    &
+    !
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+    !
+    ! 7.b Run the wave model for the given interval
+    !
+    TIME0  = TTIME
+    !
+    CALL W3WAVE ( 1, ODAT, TIME0                                    &
 #ifdef W3_OASIS
-       , .TRUE., .FALSE., MPI_COMM, TIMEN                         &
+         , .TRUE., .FALSE., MPI_COMM, TIMEN                         &
 #endif
-       )
-  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
-  !
-  ! The following lines prevents us from trying to read past the end
-  ! of the files. This feature existed in v3.14.
-  ! "1" is for water levels
-  ! "4" is for ice concentration:
-  ! "6" is for air density:
-  IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
-  IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
-  IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
+         )
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
+    !
+    ! The following lines prevents us from trying to read past the end
+    ! of the files. This feature existed in v3.14.
+    ! "1" is for water levels
+    ! "4" is for ice concentration:
+    ! "6" is for air density:
+    IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+    IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+    IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
 
-  ! We include something like this for mud and ice parameters also:
-  DO J=-7,0
-    IF (FLLST_ALL(J))THEN
-      INFLAGS1(J)=.FALSE.
-    END IF
-  END DO
+    ! We include something like this for mud and ice parameters also:
+    DO J=-7,0
+      IF (FLLST_ALL(J))THEN
+        INFLAGS1(J)=.FALSE.
+      END IF
+    END DO
 
-  !
-  ! 7.c Run data assimilation at ending time
-  !
-  DTTST  = DSEC21 ( TIME , TDN )
-  IF ( DTTST .EQ. 0 ) THEN
-    CALL STME21 ( TIME0 , DTME21 )
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,975) DTME21
     !
-    FLGDAS(1) = DSEC21(TIME,T0N) .EQ. 0.
-    FLGDAS(2) = DSEC21(TIME,T1N) .EQ. 0.
-    FLGDAS(3) = DSEC21(TIME,T2N) .EQ. 0.
+    ! 7.c Run data assimilation at ending time
     !
-    CALL W3WDAS ( FLGDAS, RCLD, NDT, DATA0, DATA1, DATA2 )
-    !
-    ! 7.d Call wave model again after data assimilation for output only
-    !
-    DTTST  = DSEC21 ( TIME , TIMEN )
+    DTTST  = DSEC21 ( TIME , TDN )
+    IF ( DTTST .EQ. 0 ) THEN
+      CALL STME21 ( TIME0 , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,975) DTME21
+      !
+      FLGDAS(1) = DSEC21(TIME,T0N) .EQ. 0.
+      FLGDAS(2) = DSEC21(TIME,T1N) .EQ. 0.
+      FLGDAS(3) = DSEC21(TIME,T2N) .EQ. 0.
+      !
+      CALL W3WDAS ( FLGDAS, RCLD, NDT, DATA0, DATA1, DATA2 )
+      !
+      ! 7.d Call wave model again after data assimilation for output only
+      !
+      DTTST  = DSEC21 ( TIME , TIMEN )
 
-    IF ( DTTST .EQ. 0. ) THEN
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
-      CALL W3WAVE ( 1, ODAT, TIME0                                 &
+      IF ( DTTST .EQ. 0. ) THEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+        CALL W3WAVE ( 1, ODAT, TIME0                                 &
 #ifdef W3_OASIS
-           , .TRUE., .FALSE., MPI_COMM, TIMEN              &
+             , .TRUE., .FALSE., MPI_COMM, TIMEN              &
 #endif
-           )
+             )
+      END IF
     END IF
-  END IF
-  !
-  ! 7.e Check times
-  !
-  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 10')
+    !
+    ! 7.e Check times
+    !
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 10')
 
-  DTTST  = DSEC21 ( TIME0 , TIMEN )
-  IF ( DTTST .GT. 0. ) GOTO 700
+    DTTST  = DSEC21 ( TIME0 , TIMEN )
+  END DO  ! timestepping
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !     End of shel
   !
-  GOTO 2222
-  !
-  ! Error escape locations
-  !
-2000 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 1000 )
-  !
-2001 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-  CALL EXTCDE ( 1001 )
-  !
-2002 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 1002 )
-  !
-2102 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1102)
-  CALL EXTCDE ( 1102 )
-  !
-2003 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)
-  CALL EXTCDE ( 1003 )
-  !
-2104 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1104) IERR
-  CALL EXTCDE ( 1104 )
-  !
-2004 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004) IERR
-  CALL EXTCDE ( 1004 )
-  !
-2005 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005) IDTST
-  CALL EXTCDE ( 1005 )
-  !
-2006 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006) IDTST, NH(J)
-  CALL EXTCDE ( 1006 )
-  !
-2062 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1062) IDTST
-  CALL EXTCDE ( 1062 )
-  !
-2007 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
-  CALL EXTCDE ( 1007 )
-  !
-2008 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008) IERR
-  CALL EXTCDE ( 1008 )
-  !
-#ifdef W3_COU
-2009 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1009) ODAT(33), NINT(DTMAX)
-  CALL EXTCDE ( 1009 )
-#endif
-  !
-2054 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1054)
-  CALL EXTCDE ( 1054 )
-2222 CONTINUE
-  !
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-#endif
-  !
-  IF ( IAPROC .EQ. NAPOUT ) THEN
-    CALL DATE_AND_TIME ( VALUES=CLKDT3 )
-    CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
-    CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
-    WRITE (NDSO,997) CLKFIN
-    WRITE (NDSO,998) CLKFEL
-    IF ( NDSO .NE. NDS(1) ) THEN
-      WRITE (NDS(1),997) CLKFIN
-      WRITE (NDS(1),998) CLKFEL
-    END IF
-    WRITE (NDSO,999)
-  END IF
-  !
-#ifdef W3_NCO
-  !     IF ( IAPROC .EQ. 1 ) CALL W3TAGE('WAVEFCST')
-#endif
-#ifdef W3_OASIS
-  IF (OASISED.EQ.1) THEN
-    CALL CPL_OASIS_FINALIZE
-  ELSE
-#endif
-#ifdef W3_MPI
-    CALL MPI_FINALIZE  ( IERR_MPI )
-#endif
-#ifdef W3_OASIS
-  END IF
-#endif
-  !
+  CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
   !
   ! Formats
   !
@@ -2829,17 +2737,6 @@ PROGRAM W3SHEL
 #endif
 975 FORMAT (/'  Data assimmilation at ',A)
   !
-997 FORMAT (/'  Initialization time :',F10.2,' s')
-998 FORMAT ( '  Elapsed time        :',F10.2,' s')
-  !
-999 FORMAT(/'  End of program '/                                    &
-       ' ===================================='/               &
-       '         WAVEWATCH III Program shell '/)
-  !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     PREMATURE END OF INPUT FILE'/)
   !
@@ -2854,14 +2751,6 @@ PROGRAM W3SHEL
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     ILLEGAL TIME INTERVAL'/)
   !
-1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN OPENING POINT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN READING FROM POINT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
   !
@@ -2873,10 +2762,6 @@ PROGRAM W3SHEL
   !
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
-  !
-1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN OPENING OUTPUT FILE'/                   &
-       '     IOSTAT =',I5/)
   !
 #ifdef W3_COU
 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
@@ -2955,4 +2840,121 @@ PROGRAM W3SHEL
   !/
   !/ End of W3SHEL ----------------------------------------------------- /
   !/
+  !/
+  !/ Internal subroutine FINALISE--------------------------------------- /
+  !/
+CONTAINS
+  !/ ------------------------------------------------------------------- /
+  !> @brief Stops the execution of the program.
+  !>
+  !> @details Data is read from the grid output file out_pnt.ww3 (raw data)
+  !>  and from the file ww3_ounp.nml or ww3_ounp.inp ( NDSI).
+  !>  Model definition and raw data files are read using WAVEWATCH III
+  !>  subroutines.
+  !>
+  !> @author J.M. Castillo
+  !> @date 04-Jun-2025
+  SUBROUTINE FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS, CLKDT1, CLKDT2)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         04-Jun-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    04-Jun-2025 : First implementation               ( version X.XX )
+    !/
+    !  1. Purpose :
+    !
+    !     Perform a ww3_shel stop with exit messages.
+    !
+    !  2. Method :
+    !
+    !     Machine dependent.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       MPI_COMM  Int.  I  MPI communicator 
+    !       IERR_MPI  Int.  O  MPI error code
+    !       NDSO      Int.  I  Output unit number
+    !       NDS       Int.  I  Dataset unit number
+    !       CLKDT1    Int.  I  Time and date at the start of the run
+    !       CLKDT2    Int.  I  Time and date before timestepping
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !  5. Called by :
+    !
+    !     Any.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  MPI finalise interface if active
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: IAPROC, NAPOUT
+
+    IMPLICIT NONE
+
+    ! Parameter list
+    INTEGER, INTENT(IN)   :: MPI_COMM
+    INTEGER, INTENT(OUT)  :: IERR_MPI
+    INTEGER, INTENT(IN)   :: NDSO
+    INTEGER, INTENT(IN)   :: NDS
+    INTEGER, INTENT(IN)   :: CLKDT1(8), CLKDT2(8)
+
+    ! Local parameters
+    REAL                  :: CLKFIN, CLKFEL
+    INTEGER               :: CLKDT3(8)
+
+#ifdef W3_MPI
+    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+#endif
+    !
+    IF ( IAPROC .EQ. NAPOUT ) THEN
+      CALL DATE_AND_TIME ( VALUES=CLKDT3 )
+      CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
+      CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
+      WRITE (NDSO,997) CLKFIN
+      WRITE (NDSO,998) CLKFEL
+      IF ( NDSO .NE. NDS ) THEN
+        WRITE (NDS,997) CLKFIN
+        WRITE (NDS,998) CLKFEL
+      END IF
+      WRITE (NDSO,999)
+    END IF
+    !
+#ifdef W3_NCO
+!    IF ( IAPROC .EQ. 1 ) CALL W3TAGE('WAVEFCST')
+#endif
+#ifdef W3_OASIS
+  IF (OASISED.EQ.1) THEN
+    CALL CPL_OASIS_FINALIZE
+  ELSE
+#endif
+#ifdef W3_MPI
+    CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+#ifdef W3_OASIS
+  END IF
+#endif
+    !
+    STOP
+    !
+997 FORMAT (/'  Initialization time :',F10.2,' s')
+998 FORMAT ( '  Elapsed time        :',F10.2,' s')
+    !
+999 FORMAT(/'  End of program '/                                    &
+       ' ===================================='/               &
+       '         WAVEWATCH III Program shell '/)
+
+  END SUBROUTINE FINALISE
+
 END PROGRAM W3SHEL
