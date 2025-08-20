@@ -378,7 +378,8 @@ contains
 
       else if (trim(outvars(n)%dims) == 'nk') then                           ! freq + 1 axis for wavenumber
         var3d => var3dnk
-         if(vname .eq.       'WN') call write_var3d_transpose(iodesc3dnk, vname, wn (1:len_nk  ,1:nseal_cpl)   )
+!KWS         if(vname .eq.       'WN') call write_var3d_transpose(iodesc3dnk, vname, wn (1:len_nk  ,1:nseal_cpl)   )
+         if(vname .eq.       'WN') call write_var3d(iodesc3dnk, vname, transpose(wn(1:nk,1:nsea)), global='true')
 
       else if (trim(outvars(n)%dims) == 'k') then                           ! freq axis
         var3d => var3dk
@@ -534,6 +535,83 @@ contains
 
   end subroutine write_history
 
+
+  !===============================================================================
+  !>  Write an array of (nseal,:) points as (nx,ny,:)
+  !!
+  !! @details If init2 is present and true, apply a second initialization to a
+  !! subset of variables for where mapsta==2. If fldir is present and true then
+  !! the directions will be converted to degrees.
+  !!
+  !! @param[in]   iodesc      the PIO decomposition handle
+  !! @param[in]   vname       the variable name
+  !! @param[in]   var         the variable array
+  !! @param[in]   init2       a flag for a second initialization type, optional
+  !! @param[in]   fldir       a flag for unit conversion for direction, optional
+  !! @param[in]    global     a flag for a global variable, optional
+
+  !> author DeniseWorthen@noaa.gov
+  !> @date 08-26-2024
+  subroutine write_var3d(iodesc, vname, var, init2, fldir, global)
+
+    type(io_desc_t),            intent(inout) :: iodesc
+    character(len=*),           intent(in) :: vname
+    real            ,           intent(in) :: var(:,:)
+    character(len=*), optional, intent(in) :: init2
+    character(len=*), optional, intent(in) :: fldir
+    character(len=*), optional, intent(in) :: global
+
+    ! local variables
+    real, allocatable, dimension(:) :: varloc
+    logical                         :: linit2, lfldir, lglobal
+    integer                         :: lb, ub
+
+    linit2 = .false.
+    if (present(init2)) then
+      linit2 = (trim(init2) == "true")
+    end if
+    lfldir = .false.
+    if (present(fldir)) then
+      lfldir = (trim(fldir) == "true")
+    end if
+    lglobal = .false.
+    if (present(global)) then
+      lglobal = (trim(global) == "true")
+    end if
+
+    lb = lbound(var,2)
+    ub = ubound(var,2)
+    allocate(varloc(lb:ub))
+
+    var3d = undef
+    do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
+      ! initialization
+      if (lglobal) then
+        varloc(:) = var(isea,:)
+      else
+        varloc(:) = var(jsea,:)
+      end if
+
+      if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) varloc(:) = undef
+      if (linit2) then
+        if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 2) varloc(:) = undef
+      end if
+      if (lfldir) then
+        if (mapsta(mapsf(isea,2),mapsf(isea,1)) > 0 )  then
+          varloc(:) = mod(630. - rade*varloc(:), 360.)
+        end if
+      end if
+      var3d(jsea,:) = varloc(:)
+    end do
+
+    ierr = pio_inq_varid(pioid,  trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+    call pio_write_darray(pioid, varid, iodesc, var3d, ierr)
+
+    deallocate(varloc)
+  end subroutine write_var3d
 
   !===============================================================================
   !>  Write an array of (:, nseal) points as (nx,ny,:)
@@ -695,7 +773,7 @@ contains
   !!
   !> author DeniseWorthen@noaa.gov
   !> @date 08-26-2024
-  subroutine write_var3d(iodesc, vname, var, init2, fldir)
+  subroutine write_var3d_obsolete(iodesc, vname, var, init2, fldir)
 
     type(io_desc_t),            intent(inout) :: iodesc
     character(len=*),           intent(in) :: vname
