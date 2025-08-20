@@ -554,20 +554,11 @@ contains
     character(len=*),           intent(in) :: vname
     real            ,           intent(in) :: var(:,:)
 
-    ! local variables
-    real, allocatable, dimension(:) :: varloc
-    integer                         :: lb, ub, k
-
-    lb = lbound(var,1)
-    ub = ubound(var,1)
-    allocate(varloc(lb:ub))
 
     var3d = undef
     do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
-      ! initialization
-      varloc(:) = var(:,isea)
-      var3d(jsea,:) = varloc(:)
+      var3d(jsea,:) = var(:,isea)
     end do
 
     ierr = pio_inq_varid(pioid,  trim(vname), varid)
@@ -575,7 +566,6 @@ contains
     call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
     call pio_write_darray(pioid, varid, iodesc, var3d, ierr)
 
-    deallocate(varloc)
   end subroutine write_var3d_transpose
 
 
