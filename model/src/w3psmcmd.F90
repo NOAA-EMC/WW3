@@ -3336,7 +3336,7 @@ CONTAINS
     IF ( BSTAT(IBFLOC) .EQ. 2 ) THEN
       IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
       IF ( NRQSG2 .GT. 0 ) CALL                              &
-           MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),             &
+           MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2),             &
            STATUS, IERR_MPI )
       BSTAT(IBFLOC) = 0
     END IF
@@ -3348,7 +3348,7 @@ CONTAINS
       BISPL(IBFLOC) = ISPLOC
       IOFF =  1 + (ISPLOC-1)*NRQSG2
       IF ( NRQSG2 .GT. 0 ) CALL                              &
-           MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+           MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), IERR_MPI )
     END IF
     !
     ! 2.c Put local spectral densities in store
@@ -3361,7 +3361,7 @@ CONTAINS
     !
     IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
-         MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
+         MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), STATUS, IERR_MPI )
     !
     ! 2.e Convert storage array to field.
     !
@@ -3383,7 +3383,7 @@ CONTAINS
         BISPL(IB0) = IS0
         IOFF       = 1 + (IS0-1)*NRQSG2
         IF ( NRQSG2 .GT. 0 ) CALL                            &
-             MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+             MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), IERR_MPI )
         NPST       = NPST + 1
       END IF
       IF ( NPST .GE. 2 ) EXIT
@@ -3569,7 +3569,7 @@ CONTAINS
     !
     IOFF   = 1 + (ISPLOC-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
-         MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
+         MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), IERR_MPI )
     BSTAT(IBFLOC) = 2
     !
     ! 2.d Save locally stored results
@@ -3589,13 +3589,13 @@ CONTAINS
       IF ( BSTAT(IB0) .EQ. 2 ) THEN
         IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
         IF ( NRQSG2 .GT. 0 ) THEN
-          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF,2), DONE,  &
+          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), DONE,  &
                STATUS, IERR_MPI )
         ELSE
           DONE   = .TRUE.
         END IF
         IF ( DONE .AND. NRQSG2.GT.0 ) CALL                   &
-             MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),       &
+             MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2),       &
              STATUS, IERR_MPI )
         IF ( DONE ) THEN
           BSTAT(IB0) = 0
@@ -3612,7 +3612,7 @@ CONTAINS
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
           IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
           IF ( NRQSG2 .GT. 0 ) CALL                        &
-               MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),       &
+               MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2),       &
                STATUS, IERR_MPI )
           BSTAT(IB0) = 0
         END IF
