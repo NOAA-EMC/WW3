@@ -231,16 +231,16 @@ contains
     end if
 
     ! define the frequency  axis variables for wavenumber(wn) and spectra(ef)
-     if (k_axis) then
-	     ierr = pio_def_var(pioid, 'freq_ef', PIO_DOUBLE, (/ktid/), varid)
-	     call handle_err(ierr,'def_freq')
-	     ierr = pio_put_att(pioid, varid, 'units', 's-1')
-      end if
-      if (nk_axis) then
-	     ierr = pio_def_var(pioid, 'freq_wn', PIO_DOUBLE, (/nktid/), varid)
-	     call handle_err(ierr,'def_freq')
-	     ierr = pio_put_att(pioid, varid, 'units', 's-1')
-      end if
+    if (k_axis) then
+	  ierr = pio_def_var(pioid, 'freq_ef', PIO_DOUBLE, (/ktid/), varid)
+	  call handle_err(ierr,'def_freq')
+	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
+    end if
+    if (nk_axis) then
+	  ierr = pio_def_var(pioid, 'freq_wn', PIO_DOUBLE, (/nktid/), varid)
+	  call handle_err(ierr,'def_freq')
+	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
+    end if
 
     ! define the variables
     dimid3(1:2) = (/xtid, ytid/)
@@ -565,6 +565,7 @@ contains
     real, allocatable, dimension(:) :: varloc
     logical                         :: linit2, lfldir, lglobal
     integer                         :: lb, ub
+    integer                         :: k
 
     linit2 = .false.
     if (present(init2)) then
@@ -599,7 +600,9 @@ contains
       end if
       if (lfldir) then
         if (mapsta(mapsf(isea,2),mapsf(isea,1)) > 0 )  then
-          varloc(:) = mod(630. - rade*varloc(:), 360.)
+          do k=1,size(varloc,1)
+            if (varloc(k).ne.undef) varloc(k)=mod( 630.-rade*varloc(k), 360.)
+          enddo
         end if
       end if
       var3d(jsea,:) = varloc(:)
