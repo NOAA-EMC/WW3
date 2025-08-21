@@ -12,6 +12,7 @@ MODULE W3TIDEMD
   !/    01-Sep-2012 : Origination.                        ( version 4.07 )
   !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
   !/    21-Apr-2020 : Correction of time and implicit none( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !  1. Purpose :
   !
@@ -1161,29 +1162,31 @@ CONTAINS
       do  its=1,30
         do  l=k,1,-1
           nm=l-1
-          IF ((abs(rv1(l))+anorm).eq.anorm)  goto 2
-          IF ((abs(w(nm))+anorm).eq.anorm)  goto 1
+          IF ((abs(rv1(l))+anorm.eq.anorm) .or. &
+              (abs(w(nm)) +anorm.eq.anorm)) exit 
         end do
-1       c=0.0d0
-        s=1.0d0
-        do  i=l,k
-          f=s*rv1(i)
-          rv1(i)=c*rv1(i)
-          IF ((abs(f)+anorm).eq.anorm) goto 2
-          g=w(i)
-          h=dpythag(f,g)
-          w(i)=h
-          h=1.0d0/h
-          c= (g*h)
-          s=-(f*h)
-          do j=1,m
-            y=a(j,nm)
-            z=a(j,i)
-            a(j,nm)=(y*c)+(z*s)
-            a(j,i)=-(y*s)+(z*c)
+        if ((abs(rv1(l))+anorm).ne.anorm) then
+          c=0.0d0
+          s=1.0d0
+          do  i=l,k
+            f=s*rv1(i)
+            rv1(i)=c*rv1(i)
+            IF ((abs(f)+anorm).eq.anorm) exit
+            g=w(i)
+            h=dpythag(f,g)
+            w(i)=h
+            h=1.0d0/h
+            c= (g*h)
+            s=-(f*h)
+            do j=1,m
+              y=a(j,nm)
+              z=a(j,i)
+              a(j,nm)=(y*c)+(z*s)
+              a(j,i)=-(y*s)+(z*c)
+            end do
           end do
-        end do
-2       z=w(k)
+        end if
+        z=w(k)
         IF (l.eq.k)then
           IF (z.lt.0.0d0)then
             w(k)=-z
@@ -1191,7 +1194,7 @@ CONTAINS
               v(j,k)=-v(j,k)
             end do
           endif
-          goto 3
+          exit
         endif
         IF (ITS.eq.30) THEN
           WRITE(6,*) 'no convergence in svdcmp'
@@ -1247,7 +1250,6 @@ CONTAINS
         rv1(k)=f
         w(k)=x
       end do
-3     continue
     end do
     return
   END SUBROUTINE dsvdcmp
@@ -1377,30 +1379,31 @@ CONTAINS
       b(i)=q(i,N2)
     enddo
     ! no need to solve if only rhs has changed
-    IF (ic.eq.2) go to 10
-    ! define a "design matrix" u(=a) and set-up working arrays
-    do j=1,N2
-      do i=1,mm
-        u(i,j)=q(i,j)
+    if (ic.ne.2) then
+      ! define a "design matrix" u(=a) and set-up working arrays
+      do j=1,N2
+        do i=1,mm
+          u(i,j)=q(i,j)
+        enddo
       enddo
-    enddo
-    ! compute svd decomposition of u(=a), with a being replaced by its upper
-    ! matrix u, viz a=u*w*transpose(v), and vector w is output of a diagonal
-    ! matrix of singular values w(i), i=1,n.
-    call dsvdcmp(u,m,n,mm,N2,w,v)
-    ! check for small singular values
-    wmax=0.
-    do j=1,n
-      IF (w(j).gt.wmax) wmax=w(j)
-    enddo
-    thresh=toler*wmax
-    do j=1,n
-      IF (w(j).lt.thresh) then
-        w(j)=0.d0
-        IF (jc.lt.1) jc=j
-      endif
-    enddo
-10  eps=1.d-10
+      ! compute svd decomposition of u(=a), with a being replaced by its upper
+      ! matrix u, viz a=u*w*transpose(v), and vector w is output of a diagonal
+      ! matrix of singular values w(i), i=1,n.
+      call dsvdcmp(u,m,n,mm,N2,w,v)
+      ! check for small singular values
+      wmax=0.
+      do j=1,n
+        IF (w(j).gt.wmax) wmax=w(j)
+      enddo
+      thresh=toler*wmax
+      do j=1,n
+        IF (w(j).lt.thresh) then
+          w(j)=0.d0
+          IF (jc.lt.1) jc=j
+        endif
+      enddo
+    end if
+    eps=1.d-10
     ! compute summation weights (wti, used below)
     do j=1,n
       wti(j)=0.d0
@@ -1717,15 +1720,16 @@ CONTAINS
     INTEGER          :: K
 
     DO  K=1,NTOTAL_CON
-      IF (TIDECON_ALLNAMES(K).eq.KONX) go to 40
+      IF (TIDECON_ALLNAMES(K).eq.KONX) THEN
+        VX=V_ARG(K,ITIME)
+        UX=U_ARG(k,ITIME)
+        FX=F_ARG(K,ITIME)
+        RETURN
+      END IF 
     END DO
     WRITE(NDSET,30) KONX
 30  FORMAT('ERROR IN VUF: STOP.',A5)
     STOP
-40  VX=V_ARG(K,ITIME)
-    UX=U_ARG(k,ITIME)
-    FX=F_ARG(K,ITIME)
-    RETURN
     !
     !***********************************************************************
     !*  THE ASTRONOMICAL ARGUMENTS AND THEIR RATES OF CHANGE,
@@ -1780,8 +1784,8 @@ CONTAINS
 60    FORMAT(6X,A5,1X,6I3,F5.2,I4)
       !WRITE(995,'(I4,A5,1X,6I3,F5.2,I4)') K,TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
       !           NJ(K)
-      IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 100
-70    J1=JBASE+1
+      IF (TIDECON_ALLNAMES(K).eq.KBLANK) exit
+      J1=JBASE+1
       IF (NJ(K).LT.1) THEN
         NJ(K)=1
         JL=J1
@@ -1816,7 +1820,7 @@ CONTAINS
       END IF
       JBASE=JL
     end do
-100 NTIDAL_CON=K-1
+    NTIDAL_CON=K-1
     JLM=JL
 
     !
@@ -1838,11 +1842,11 @@ CONTAINS
       READ(KR,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
 130   FORMAT(6X,A5,I1,2X,4(F5.2,A5,5X))
       !WRITE(995,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
-      IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 170
+      IF (TIDECON_ALLNAMES(K).eq.KBLANK) exit
       JBASE=JBASE+NJ(K)
     end do
 
-170 NTOTAL_CON=K-1
+    NTOTAL_CON=K-1
 
     !  Write out  for cut and paste ...
     !    WRITE(6,*) 'Numbers:',NTIDAL_CON, NTOTAL_CON, JLM, J1, J4
@@ -2285,7 +2289,6 @@ CONTAINS
       SDEV=SDEV/(MEQ-1)
       SDEV=SQRT(SDEV)
       SDEV0(IDEF)=SDEV
-109   CONTINUE
       !
       !   USE SINGULAR-VALUE-DECOMPOSITION TO SOLVE THE OVERDETERMINED SYSTEM
       !

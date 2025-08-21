@@ -500,6 +500,7 @@ implicit none
 !                  Compute size of points on locus, stored in KLOCUS
 !     13/06/2003   Test parameters moved to Q_SETCONFIG
 !     04/09/2003   Routine Q_SETVERSION added
+!     04/07/2025   Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -618,12 +619,12 @@ iq_screen = 0             ! enable output to screen
 !------------------------------------------------------------------------------
 if(iq_type<1 .or. iq_type>3) then
   ierr = 1
-  goto 9999
+  return
 end if
 !
 if(iq_grid<1 .or. iq_grid>3) then
   ierr = 2
-  goto 9999
+  return
 end if
 !
 !  Retrieve size of spectral grid from input
@@ -649,14 +650,14 @@ if(iq_grid==1 .or. iq_grid==2) then
 !
   if(abs(dstep-dgap) < 0.001) then
     ierr = 31
-    goto 9999
+    return
   end if
 !
 !  check if sector is symmetric around zero in the case of sector grid
 !
   if(abs(dird(1)+dird(ndir)) > 0.01) then
     ierr = 32
-    goto 9999
+    return
   end if
 end if
 !
@@ -690,7 +691,7 @@ call z_fileio(trim(qbase)//'.err','DF',iufind,luq_err,iuerr)
 if(iuerr/=0) then
   call q_error('e','FILEIO','Problem in deleting error file *.ERR')
   ierr = 4
-  goto 9999
+  return
 end if
 !
 ! create new files, first create logging file
@@ -720,7 +721,7 @@ if(iproc >=0) write(luq_prt,'(a,i5)') '(MPI) processor number:',iproc
 call q_setconfig(iquad)
 if (iq_err /=0) then
   ierr = 5
-  goto 9999
+  return
 end if
 !---------------------------------------------------------------------------------
 !  check settings for inconsistencies
@@ -728,7 +729,7 @@ end if
 call q_chkconfig
 if (iq_err /=0) then
   ierr = 6
-  goto 9999
+  return
 end if
 !---------------------------------------------------------------------------------
 ! determine minimum size of number of points on locus as stored in database
@@ -761,7 +762,7 @@ do idepth=1,ndepth
     call q_ctrgrid(2,igrid)
     if(iq_err /= 0) then
       ierr = 7
-      goto 9999
+      return
     end if
   end if
 !
@@ -770,16 +771,6 @@ do idepth=1,ndepth
     exit
   end if
 end do
-!
-!
-!  Create or open triplet output data file if iq_triq > 0
-!
-!
-9999 continue
-!
-!! if (iq_log ==0) call z_fileio(trim(qbase)//'.log','DF',iufind,luq_log,iuerr)
-!! if (iq_prt ==0) call z_fileio(trim(qbase)//'.prt','DF',iufind,luq_prt,iuerr)
-!
 !
 return
 end subroutine xnl_init
@@ -843,6 +834,7 @@ implicit none
 !     09/09/2002 Upgrade to release 5
 !     16/09/2002 Parameter IPROC included to take care of MPI processors
 !     27/09/2002 Description of input argument SIGMA corrected
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -937,41 +929,43 @@ if(iquad==1 .or. iquad==2) q_depth=1000.
 if(q_depth < q_mindepth) then
   xnl = 0.
   call q_error('w','DEPTH','Zero transfer returned')
-  goto 9999
-end if
-!
-!  check if iquad has changed since last call, this is no more allowed
-!
-!!if (iquad /= i_qlast .and. i_qmain/=1) then
-!!  call q_error('e','IQUAD','Value of IQUAD differs from initial value')
-!!  ierr = 1
-!!  goto 9999
-!!end if
-!-----------------------------------------------------------------------------+
-!  main choice between various options                                        |
-!-----------------------------------------------------------------------------+
-!
-if(iquad>=1 .and. iquad <=3) then
-!
-  a = aspec
-  call q_xnl4v4(aspec,sigma,angle,nsig,ndir,depth,xnl,diag,ierr)
-!
-  if(ierr/=0) then
-    call q_error('e','wrtvv','Problem in Q_XNL4V4')
-    goto 9999
+  ierr = 1
+else
+  !
+  !  check if iquad has changed since last call, this is no more allowed
+  !
+  !!if (iquad /= i_qlast .and. i_qmain/=1) then
+  !!  call q_error('e','IQUAD','Value of IQUAD differs from initial value')
+  !!  ierr = 1
+  !!end if
+  !-----------------------------------------------------------------------------+
+  !  main choice between various options                                        |
+  !-----------------------------------------------------------------------------+
+  !
+  if(iquad>=1 .and. iquad <=3) then
+  !
+    a = aspec
+    call q_xnl4v4(aspec,sigma,angle,nsig,ndir,depth,xnl,diag,ierr)
+  !
+    if(ierr/=0) then
+      call q_error('e','wrtvv','Problem in Q_XNL4V4')
+    else
+    !------------------------------------------------------------------------------
+    ! compute scale factor to include WAM depth scaling
+    !------------------------------------------------------------------------------
+    !
+      if(iq_dscale ==1) then
+        call q_dscale(aspec,sigma,angle,nsig,ndir,depth,q_grav,q_dfac)
+    !
+        xnl = xnl*q_dfac
+    !
+        if(iq_prt >=1) write(luq_prt,'(a,f7.4)') 'XNL_MAIN depth scale factor:',q_dfac
+      end if
+    end if
   end if
-!------------------------------------------------------------------------------
-! compute scale factor to include WAM depth scaling
-!------------------------------------------------------------------------------
-!
-  if(iq_dscale ==1) then
-    call q_dscale(aspec,sigma,angle,nsig,ndir,depth,q_grav,q_dfac)
-!
-    xnl = xnl*q_dfac
-!
-    if(iq_prt >=1) write(luq_prt,'(a,f7.4)') 'XNL_MAIN depth scale factor:',q_dfac
-  end if
 end if
+
+if(ierr==0) then
 !
 !  check conservation laws
 !
@@ -981,8 +975,7 @@ end if
     write(luq_prt,'(a)')        'XNL_MAIN: Conservation checks'
     write(luq_prt,'(a,4e13.5)') 'XNL_MAIN: E/A/MOMX/MOMY:',sum_e,sum_a,sum_mx,sum_my
   end if
-!
-9999 continue
+end if
 !
 ierr = iq_err
 !
@@ -1702,6 +1695,7 @@ implicit none
 !     12/06/2003  Call to Z_POYAREA added to check POLAR2
 !     08/08/2003  Check on areas only for loci with k3m/k1m < 100
 !                 Otherwise machine accuracy plays a role
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -1833,7 +1827,10 @@ else
 !------------------------------------------------------------------------------
 !
   call q_locpos(ka,kb,km,kw,loclen)
-  if(iq_err/=0) goto 9999
+  if(iq_err/=0) then
+    call q_stack('-q_cmplocus')
+    return
+  end if
 !
 !  compute position of start and end point for tracing
 !  the locus
@@ -1860,7 +1857,8 @@ else
     call q_error('e','LOCUS','Severe problem in POLAR2')
     write(luq_err,'(a)') 'Q_CMPLOCUS: ratio > 1.5'
 !
-    goto 9999
+    call q_stack('-q_cmplocus')
+    return
   end if
 !
 !  01/10/2001
@@ -1922,8 +1920,6 @@ do iloc=1,nlocus1
 !
 end do
 !
-!
-9999 continue
 !
 call q_stack('-q_cmplocus')
 !
@@ -2011,6 +2007,7 @@ implicit none
 !     09/09/2003  Bug fixed in assigning IGRID=0 when BQF still in memory
 !     13/09/2003  When BFQ incorrupt, it is deleted and a new one is created
 !                 Bug fixed in setting of s_depth  when iq_disp==1
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -2142,7 +2139,8 @@ elseif(iq_disp==2) then
 else
   call q_error('e','DISPER','Incorrect value for IQ_DISP')
   write(luq_err,'(a,i4)') 'IQ_DISP=',iq_disp
-  goto 9999
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !
 !
@@ -2154,7 +2152,8 @@ end if
 if(lastquadfile==bqname) then
   if(iq_screen>0) write(iscreen,'(2a)')   'Q_CTRGRID: Rereading of bqfile skipped: ',lastquadfile
   igrid = 0
-  goto 9999
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !-------------------------------------------------------------------------------------------
 if(iq_prt >= 2) then
@@ -2240,7 +2239,7 @@ if(luq_bqf > 0 .and. iuerr ==0) then
 ! check spectral interaction grid and depth for consistency
 !---------------------------------------------------------------------------------------
   if(.not. lq_grid) then
-az: do iaz = 1,naz
+    do iaz = 1,naz
       if(abs(q_ad(iaz)-z_ad(iaz)) > 0.01) then
         write(luq_prt,'(a)') 'Q_CTRGRID: Directions do not agree'
         do jaz=1,naz
@@ -2248,13 +2247,13 @@ az: do iaz = 1,naz
         end do
         lq_grid = .true.
         igrid = 2
-        exit az
+        exit
       end if
-    end do az
+    end do
   end if
 !
   if(.not. lq_grid) then
-ak: do ikz = 1,nkz
+    do ikz = 1,nkz
       if(abs(q_sig(ikz)-z_sig(ikz)) > 0.01) then
         write(luq_prt,'(a)') 'Q_CTRGRID: Wave numbers do not agree'
         do jkz=1,nkz
@@ -2262,9 +2261,9 @@ ak: do ikz = 1,nkz
         end do
         lq_grid = .true.
         igrid = 2
-        exit ak
+        exit
       end if
-    end do ak
+    end do
   end if
 !
 !  compare water depths
@@ -2288,7 +2287,9 @@ end if
 !------------------------------------------------------------------------------
 if(itask==1) then
   if(luq_bqf>0) call z_fclose(luq_bqf)
-  goto 9999
+  if (allocated(z_ad)) deallocate(z_ad,z_sig)
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !-----------------------------------------------------------------------------
 !  if lq_grid==true  a new grid has to be generated
@@ -2316,8 +2317,10 @@ if(lq_grid .or. iq_make==2 .or. iq_make==3) then
   q_depth = q_depth_saved
 !
   if(iq_err /=0) then
-     lastquadfile = 'quad_err_.bqf'
-     goto 9999
+    lastquadfile = 'quad_err_.bqf'
+    if (allocated(z_ad)) deallocate(z_ad,z_sig)
+    call q_stack('-q_ctrgrid')
+    return
   end if
 !
   igrid = 0
@@ -2362,10 +2365,7 @@ else
 
 end if
 !
-9999 continue
-!
 if (allocated(z_ad)) deallocate(z_ad,z_sig)
-!
 !
 call q_stack('-q_ctrgrid')
 !
@@ -2781,6 +2781,7 @@ implicit none
 !    13/06/2003  Parameter t_cple, t_jac and t_sym assigned
 !                Bug fixed in nearest bin approach, symmetry regained
 !    27/08/2003  Short-cut when number of points on locus is ZERO
+!    04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -2923,7 +2924,8 @@ end if
 if (amem > iamax) then
   ifnd = 0
   call q_error('e','MEMORY','Incorrect addres')
-  goto 9999
+  call q_stack('-q_getlocus')
+  return
 end if
 !
 !-----------------------------------------------------------------------------
@@ -2937,7 +2939,10 @@ nlocusx = nloc
 !
 !  short-cut when number of NON-ZERO points on locus is ZERO [27/8/2003]
 !
-if(nlocusx==0) goto 9999
+if(nlocusx==0) then
+  call q_stack('-q_getlocus')
+  return
+end if
 !
 r_ik2(1:nloc)  = quad_ik2(kmem,amem,1:nloc)
 r_ia2(1:nloc)  = quad_ia2(kmem,amem,1:nloc)
@@ -3090,8 +3095,6 @@ t_zz(1:nloc)   = lambda*c_lambda/j_lambda * r_zz(1:nloc)
 ifnd = 1
 !
 !------------------------------------------------------------------------------
-!
-9999 continue
 !
 call q_stack('-q_getlocus')
 !
@@ -3434,6 +3437,7 @@ implicit none
 !     09/08/2002  Upgrade to release 4.0
 !     29/08/2002  Error handling z_root2 relaxed and some write statements modified
 !     07/10/2002  Initialisation of QSQ replaced
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -3595,7 +3599,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start kb','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridders method
@@ -3626,7 +3631,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start ka','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridder's method
@@ -3652,7 +3658,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start kb','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridders method
@@ -3742,9 +3749,6 @@ else
   loclen = 4.*max(aa,bb)*((1. + a1*mm1 + a2*mm1**2) + (b1*mm1 + b2*mm1**2)*log(1/mm1))
 end if
 !
-!
-9999 continue
-!
 call q_stack('-q_locpos')
 !
 return
@@ -3798,6 +3802,7 @@ use serv_xnl4v5
 !     10/09/2002  Upgrade to release 5
 !                 Value of LASTQUADFILE set
 !     10/06/2003  Output to GRD file always without compacting
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -3862,6 +3867,7 @@ real tfac        ! combined tail factor
 !
 logical lwrite   ! indicator if binary interaction grid has been written successfully
 real smax        ! maximum s-value
+logical failed   ! indicates if the calculation failed
 !
 real, allocatable :: xloc(:),yloc(:)
 real qq
@@ -3895,78 +3901,87 @@ jaq1 = 1               ! index of direction of k1 in grid matrix
 !  compute components of reference wave number,
 !  for setting up interaction grid
 !-------------------------------------------------------------------------------------
-k1: do ikq1=1,nkq1
-!
+failed = .false.
+do ikq1=1,nkq1
+  !
   if(iq_screen==2) write(iscreen,*) 'k1-ring:',ikq1
-!
+  !
   aa1   = q_ad(iaref)
   kk1   = q_k(ikq1)
   krefx = kk1*cos(q_ad(iaref)*dera)
   krefy = kk1*sin(q_ad(iaref)*dera)
-!
+  !
   k1x  = krefx
   k1y  = krefy
-!
-
-k3: do ikq3 = ikq1,nkq   !
-   if(iq_screen==2) write(iscreen,*) 'k1-k3 indices:',ikq1,ikq3
-!
+  !
+  do ikq3 = ikq1,nkq   !
+    if(iq_screen==2) write(iscreen,*) 'k1-k3 indices:',ikq1,ikq3
+    !
     kk3 = q_k(ikq3)
-!
-!
-a3: do iaq3 = iag1,iag2
-!
+    !
+    !
+    do iaq3 = iag1,iag2
+      !
       if(iaq3 == iag1 .and. ikq3 == ikq1) cycle
-!
+      !
       aa3 = q_ad(iaq3)
       k3x = kk3*cos(aa3*dera)
       k3y = kk3*sin(aa3*dera)
-!------------------------------------------------------------------------------
-!   compute locus for a specified combination of k1 and k3
-!
-!-----------------------------------------------------------------------------
+      !------------------------------------------------------------------------------
+      !   compute locus for a specified combination of k1 and k3
+      !
+      !-----------------------------------------------------------------------------
       ia_k1 = iaq1; ik_k1 = ikq1
       ia_k3 = iaq3; ik_k3 = ikq3
       call q_cmplocus(ka,kb,km,kw,crf1)
-!
-      if(iq_err/=0) goto 9999
-!------------------------------------------------------------------------------
-!     redistibute or filter data points along locus
-!
+      !
+      if(iq_err/=0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !     redistibute or filter data points along locus
+      !
       call q_modify
-      if(iq_err > 0) goto 9999
-!------------------------------------------------------------------------------
-!     compute weights for interpolation in computational grid
-!
+      if(iq_err > 0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !     compute weights for interpolation in computational grid
+      !
       call q_weight
-      if(iq_err > 0) goto 9999
-!------------------------------------------------------------------------------
-!    special storing mechanism for interactions per combination of k1 and k3
-!
+      if(iq_err > 0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !    special storing mechanism for interactions per combination of k1 and k3
+      !
       kmem  = (ikq3-ikq1+1) - (ikq1-2*nkq-2)*(ikq1-1)/2;
       jaq3  = iaq3-iaref+1        ! ensure that data stored in matrix start at index (1,1)
       amem  = jaq3                ! index of direction
-!
-!
-!-------------------------------------------------------------------------------
-!     Convert real indices to integer indexing and real weights
-!
-!    3-----------4 ja2p         w1 = (1-wk)*(1-wa)
-!    |    .      |              w2 = wk*(1-wa)
-!    |. . + . . .| wa2   A      w3 = (1-wk)*wa
-!    |    .      |       |      w4 = wk*wa
-!    |    .      |       wa
-!    |    .      |       |
-!    1-----------2 ja2   V
-!   jk2  wk2  jk2p
-!
-!    <-wk->
-!
-!-------------------------------------------------------------------------------
+      !
+      !
+      !-------------------------------------------------------------------------------
+      !     Convert real indices to integer indexing and real weights
+      !
+      !    3-----------4 ja2p         w1 = (1-wk)*(1-wa)
+      !    |    .      |              w2 = wk*(1-wa)
+      !    |. . + . . .| wa2   A      w3 = (1-wk)*wa
+      !    |    .      |       |      w4 = wk*wa
+      !    |    .      |       wa
+      !    |    .      |       |
+      !    1-----------2 ja2   V
+      !   jk2  wk2  jk2p
+      !
+      !    <-wk->
+      !
+      !-------------------------------------------------------------------------------
       nzloc = 0
-!
-loc:  do iloc = 1,nlocus
-!
+      !
+      do iloc = 1,nlocus
+        !
         ik2  = floor(wk_k2(iloc))
         ia2  = floor(wa_k2(iloc))
         wk   = wk_k2(iloc)-real(ik2)
@@ -3975,7 +3990,7 @@ loc:  do iloc = 1,nlocus
         w2k2 = wk*(1.-wa)
         w3k2 = (1.-wk)*wa
         w4k2 = wk*wa
-!
+        !
         ik4  = floor(wk_k4(iloc))
         ia4  = floor(wa_k4(iloc))
         wk   = wk_k4(iloc)-real(ik4)
@@ -3984,11 +3999,11 @@ loc:  do iloc = 1,nlocus
         w2k4 = wk*(1.-wa)
         w3k4 = (1.-wk)*wa
         w4k4 = wk*wa
-!
-!  Take care of points that lie below lowest wave number
-!  when no geometric scaling is applied, then modify weights
-!  such that directional position is retained
-!
+        !
+        !  Take care of points that lie below lowest wave number
+        !  when no geometric scaling is applied, then modify weights
+        !  such that directional position is retained
+        !
         if(iq_geom==0) then
           if(ik2 ==0) then
             ik2  = 1
@@ -4005,17 +4020,17 @@ loc:  do iloc = 1,nlocus
             w4k4 = 0.
           end if
         end if
-!
-!  compute combined tail factor and product of coupling coefficient, step size,
-!  symmetry factor, and tail factor divided by jacobian
-!
+        !
+        !  compute combined tail factor and product of coupling coefficient, step size,
+        !  symmetry factor, and tail factor divided by jacobian
+        !
         tfac = wt_k2(iloc)*wt_k4(iloc)
         quad_zz(kmem,amem,iloc)   = cple_mod(iloc)*ds_mod(iloc)*sym_mod(iloc)/jac_mod(iloc)*tfac
-!
-!----------------------------------------------------------------------------------------
-!  compact data by elimating zero-contribution on locus
-!----------------------------------------------------------------------------------------
-!
+        !
+        !----------------------------------------------------------------------------------------
+        !  compact data by elimating zero-contribution on locus
+        !----------------------------------------------------------------------------------------
+        !
         if(iq_compact==1 .and. abs(quad_zz(kmem,amem,iloc)) > 1.e-15) then
           nzloc = nzloc + 1
           jloc  = nzloc
@@ -4024,83 +4039,86 @@ loc:  do iloc = 1,nlocus
           jloc = iloc
         end if
         nztot2 = nztot2 + 1
-!
-!  shift data
-!
+        !
+        !  shift data
+        !
         quad_zz(kmem,amem,jloc)  = quad_zz(kmem,amem,iloc)
-!
+        !
         quad_ik2(kmem,amem,jloc) = ik2           ! lower wave number index of k2
         quad_ia2(kmem,amem,jloc) = ia2           ! lower direction index of k2
         quad_ik4(kmem,amem,jloc) = ik4           ! lower wave number index of k4
         quad_ia4(kmem,amem,jloc) = ia4           ! lower direction index of k4
-!
+        !
         quad_w1k2(kmem,amem,jloc) = w1k2         ! weight 1 of k2
         quad_w2k2(kmem,amem,jloc) = w2k2         ! weight 2 of k2
         quad_w3k2(kmem,amem,jloc) = w3k2         ! weight 3 of k2
         quad_w4k2(kmem,amem,jloc) = w4k2         ! weight 4 of k2
-!
+        !
         quad_w1k4(kmem,amem,jloc) = w1k4         ! weight 1 of k4
         quad_w2k4(kmem,amem,jloc) = w2k4         ! weight 2 of k4
         quad_w3k4(kmem,amem,jloc) = w3k4         ! weight 3 of k4
         quad_w4k4(kmem,amem,jloc) = w4k4         ! weight 4 of k4
-!
-!
-      end do loc
-!
+        !
+        !
+      end do
+      !
       if(iq_compact==1) then
         quad_nloc(kmem,amem) = nzloc                ! store compacted number of points on locus
       else
         quad_nloc(kmem,amem) = nlocus               ! store number of points on locus
         nzloc = nlocus
       end if
+      !
+      !     write(luq_prt,'(a,4i5)') 'Q_MAKEGRID kmem amem nlocus:',kmem,amem,nlocus,nzloc
+      !
+    end do
+    if (failed) exit
+  end do
+  if (failed) exit
+end do
 !
-!     write(luq_prt,'(a,4i5)') 'Q_MAKEGRID kmem amem nlocus:',kmem,amem,nlocus,nzloc
-!
-    end do a3
-  end do k3
-end do k1
-!------------------------------------------------------------------------------
-!  Write locus information to binary file
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) q_header
-!
-!------------------------------------------------------------------------------
-! spectral interaction grid
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) naq,nkq
-write(luq_bqf) q_sig
-write(luq_bqf) q_ad
-write(luq_bqf) iq_geom,iq_disp,iq_geom
-write(luq_bqf) q_depth
-!
-!------------------------------------------------------------------------------
-! interaction grid
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) quad_nloc
-write(luq_bqf) quad_ik2
-write(luq_bqf) quad_ia2
-write(luq_bqf) quad_ik4
-write(luq_bqf) quad_ia4
-write(luq_bqf) quad_w1k2
-write(luq_bqf) quad_w2k2
-write(luq_bqf) quad_w3k2
-write(luq_bqf) quad_w4k2
-write(luq_bqf) quad_w1k4
-write(luq_bqf) quad_w2k4
-write(luq_bqf) quad_w3k4
-write(luq_bqf) quad_w4k4
-write(luq_bqf) quad_zz
-!
-!
-lwrite = .true.
-lastquadfile = bqname
-!
-if(iq_screen >= 1 .and. iq_test>=1) write(iscreen,'(2a)') 'q_makegrid: LASTQUADFILE: ',lastquadfile
-!
-9999 continue
+if (.not. failed) then
+  !------------------------------------------------------------------------------
+  !  Write locus information to binary file
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) q_header
+  !
+  !------------------------------------------------------------------------------
+  ! spectral interaction grid
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) naq,nkq
+  write(luq_bqf) q_sig
+  write(luq_bqf) q_ad
+  write(luq_bqf) iq_geom,iq_disp,iq_geom
+  write(luq_bqf) q_depth
+  !
+  !------------------------------------------------------------------------------
+  ! interaction grid
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) quad_nloc
+  write(luq_bqf) quad_ik2
+  write(luq_bqf) quad_ia2
+  write(luq_bqf) quad_ik4
+  write(luq_bqf) quad_ia4
+  write(luq_bqf) quad_w1k2
+  write(luq_bqf) quad_w2k2
+  write(luq_bqf) quad_w3k2
+  write(luq_bqf) quad_w4k2
+  write(luq_bqf) quad_w1k4
+  write(luq_bqf) quad_w2k4
+  write(luq_bqf) quad_w3k4
+  write(luq_bqf) quad_w4k4
+  write(luq_bqf) quad_zz
+  !
+  !
+  lwrite = .true.
+  lastquadfile = bqname
+  !
+  if(iq_screen >= 1 .and. iq_test>=1) write(iscreen,'(2a)') 'q_makegrid: LASTQUADFILE: ',lastquadfile
+end if
 !
 if(allocated(xloc)) deallocate(xloc,yloc)
 !
@@ -4178,6 +4196,7 @@ implicit none
 !       6/06/2003  Activate output to XDIA configuration file
 !      10/06/2003  Conversion to new indexing and lumping debugged
 !      11/06/2003  Call to subroutine Q_SYMMETRY added
+!      04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4466,7 +4485,9 @@ else
     if(jerr > 0) then
       iq_err = iq_err + 1
       call q_error('e','INTER','Problem in interpolation process')
-      goto 9999
+      if(allocated(sold)) deallocate(sold,snew)
+      call q_stack('-q_modify')
+      return
     end if
   end if
 !
@@ -4502,9 +4523,6 @@ do iloc=1,nlocus
 !
 !
 end do
-!
-!
-9999 continue
 !
 if(allocated(sold)) deallocate(sold,snew)
 !
@@ -4558,6 +4576,7 @@ implicit none
 !     08/08/2003  Check included for maximum number of IPOL by using MPOL
 !                    MPOL=MLOCUS/2+1-1  (-1 added regarding IPOL=IPOL+1 in Q_MODIFY)
 !                 Check included on ARG=0 for IQ_LOCUS=2 and parameter dke added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4767,9 +4786,6 @@ do ipol=1,nlocus1
   y2_loc(ipol) = k_pol(ipol)*sin(a_pol(ipol))
 end do
 !
-!
-9999 continue
-!
 call q_stack('-q_polar2')
 !
 return
@@ -4832,6 +4848,7 @@ implicit none
 !     13/06/2003  Set test output, from XNL_INIT
 !     16/06/2003  Switch IQ_SYM added
 !     09/09/2003  Variable ID_FACMAX added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4945,7 +4962,8 @@ else
   if(iq_screen>0) write(iscreen,'(a,i4)') 'Q_SETCONFIG: iquad=',iquad
   call q_error('e','IQUAD','No valid value of iquad has been given, default settings')
   write(luq_err,'(a,i4)') 'Q_SETCONFIG: Value of IQUAD:',iquad
-  goto 9999
+  call q_stack('-q_setconfig')
+  return
 end if
 !-------------------------------------------------------------------------------------------------
 !
@@ -5028,8 +5046,6 @@ else
   end if
 end if
 !
-9999 continue
-!
 call q_stack('-q_setconfig')
 !
 return
@@ -5069,6 +5085,7 @@ implicit none
 !      5/09/2003  Search algorithm improved
 !     09/09/2003  factor ID_FACMAX introduced and extra test output created
 !                 Input water depth saved for output
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5144,7 +5161,11 @@ if(igrid==0) then
   if(iq_screen>=1) write(iscreen,'(a)') 'Q_SEARCHGRID: grid accepted, read whole database'
 !
   call q_ctrgrid(2,igrid)
-  goto 9999
+  !
+  !  restore water depth
+  q_depth = s_depth
+  call q_stack('-q_searchgrid')
+  return
 end if
 !
 ! save depth for which nearest grid file is to be found
@@ -5231,7 +5252,11 @@ elseif(r_lower < 0 .and. r_upper > 0) then
   q_depth = d_upper
 else
   call q_error('e','SEARCHGRID','No valid nearest grid could be found')
-  goto 9999
+  !
+  !  restore water depth
+  q_depth = s_depth
+  call q_stack('-q_searchgrid')
+  return
 end if
 !
 !-----------------------------------------------------------------------------------------------
@@ -5255,8 +5280,6 @@ if(iq_prt>=2) then
   write(luq_prt,'(a,f12.2)') 'Q_SEARCHGRID: Q_CTRGRID called with depth:',q_depth
   write(luq_prt,'(a,i4)') 'Q_SEARCHGRID: igrid of nearest grid operation:',igrid
 end if
-!
-9999 continue
 !
 !  restore water depth
 !
@@ -5327,6 +5350,7 @@ implicit none
 !     13/10/1999  Error handling improved
 !     08/08/2002  Upgrade to release 4
 !     11/06/2003  Extra check on output to print or test file
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5389,7 +5413,7 @@ if(mod_task(1:1) == '+') then
 !
   if(iq_stack > mq_stack) then
     call q_error('e','STACKMAX',' ')
-    goto 9999
+    return
   else
     cstack(iq_stack) = mod_name(2:mod_len)
   end if
@@ -5403,16 +5427,11 @@ elseif(mod_task(1:1) == '-') then
   else
     write(luq_err,'(a)') 'Module name:',mod_name
     call q_error('e','STACKNAME',' ')
-    goto 9999
+    return
   end if
 else
   call q_error('e','STACKCALL',' ')
-  goto 9999
 end if
-!
-!!\Z
-!
-9999 continue
 !
 return
 end subroutine
@@ -5450,6 +5469,7 @@ implicit none
 !     11/06/2003  Initial version
 !                 Parameter iq_space removed
 !     16/06/2003  Switch IQ_SYM added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5621,8 +5641,6 @@ if (iq_prt > 0) then
   write(luq_prt,'(a)')   '----------------------------------------------'
 end if
 !
-9999 continue
-!
 call q_stack('-q_summary')
 !
 return
@@ -5776,6 +5794,7 @@ implicit none
 !                 diagonal term
 !     27/08/2003  Short-cut when number of non-zero points on locus is ZERO
 !     05/09/2003  Switches for test output in nearest bin approach modified
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5859,7 +5878,10 @@ diagk1 = 0.
 diagk3 = 0.
 !
 !
-if(ik1==ik3 .and. ia1==ia3) goto 9999  ! skip routine if k1=k3
+if(ik1==ik3 .and. ia1==ia3) then  ! skip routine if k1=k3
+  call q_stack('-q_t13v4')
+  return
+end if
 !
 !  obtain information requested locus based on a information
 !  about a precomputed locus, as stored in the database file
@@ -5868,7 +5890,8 @@ call q_getlocus(ik1,ia1,ik3,ia3,ifnd)
 !
 if(ifnd==0 .or. nlocusx==0) then
   t13 = 0.
-  goto 9999
+  call q_stack('-q_t13v4')
+  return
 end if
 !---------------------------------------------------------------------------------------
 qn1 = nspec(ik1,ia1)
@@ -5978,8 +6001,6 @@ end do
 !!if(iq_integ==3) write(luq_int,'(4i3,i5,1000e13.5)') ik1,ia1,ik3,ia3,nloc, &
 !!& t_s(nloc),t13,(dt13(iloc),iloc=1,nloc)
 !
-9999 continue
-!
 call q_stack('-q_t13v4')
 !
 return
@@ -6017,6 +6038,7 @@ implicit none
 !     09/08/2002  Modification of weights
 !     13/08/2002  storage of log-spacing replace by linear spacing
 !     20/08/2002  Bug fixed when geometric scaling is assumed
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6190,8 +6212,6 @@ do iloc=1,nlocus
 !
 !
 end do
-!
-9999 continue
 !
 call q_stack('-q_weight')
 !
@@ -6402,6 +6422,7 @@ implicit none
 !                Allocation of dynamic data array's moved to Q_ALLOCATE
 !     24/06/2003 Range of loop for IK3 made dependent on value of IQ_SYM
 !     25/06/2003 Bug fixed in assigment of contribution of diagonal term
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6535,16 +6556,21 @@ if(iq_screen >= 1) write(iscreen,'(a)') 'Q_XNL4V4: Checking interaction grid '
 if(iq_search==0 .or. iq_type/=3) then
   call q_init
   call q_ctrgrid(2,igrid)
-  if(iq_err /= 0) goto 9999
+  if(iq_err /= 0) then
+    call q_stack('-q_xnl4v4')
+    return
+  end if
 !
   if(igrid/=0) then
     call q_error('e','NOGRID','No proper grid exists')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !
   if(iq_make ==3) then
     call q_error('e','MAKEGRID','Only computation of grid')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !------------------------------------------------------------------------------
 !  set overall scale factor resulting from optional SEARCH for nearest grid
@@ -6562,10 +6588,14 @@ else
 
   if(igrid/=0) then
     call q_error('e','NOGRID','No proper grid exists')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !
-  if(iq_err /=0) goto 9999
+  if(iq_err /=0) then
+    call q_stack('-q_xnl4v4')
+    return
+  end if
 end if
 !
 !------------------------------------------------------------------------------
@@ -6643,7 +6673,10 @@ do ik1 = 1,nkq
           call q_t13v4(ik1,ia1,ik3,ia3,t13,diagk1,diagk3)
 !
 !
-          if(iq_err /= 0) goto 9999
+          if(iq_err /= 0) then
+            call q_stack('-q_xnl4v4')
+            return
+          end if
 !
 !  check contribution T13 with the computed with triplet method
 !
@@ -6730,8 +6763,6 @@ do ikq=1,nkq
   end do
 end do
 !                                                   !
-9999 continue
-!
 call q_stack('-q_xnl4v4')
 !
 return
@@ -6870,6 +6901,7 @@ implicit none
 !                 type and depth via interface
 !     09/08/2002  Upgrade to release 4.0
 !     10/09/2002  g included in interface
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6923,7 +6955,7 @@ real, intent(in) ::       grav    !  Gravitational acceleration
 !------------------------------------------------------------------------------
 if (iq_cple < 1 .or. iq_cple > 4) then
   x_cple = 0.
-  goto 9999
+  return
 end if
 !
 select case(iq_cple)
@@ -6942,8 +6974,6 @@ case(2)
 ! x_cple = xc_hh2(k1x,k1y,k2x,k2y,k3x,k3y,depth,grav)
 !
 end select
-!
-9999 continue
 !
 return
 end function
