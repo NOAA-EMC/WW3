@@ -129,7 +129,7 @@ contains
 
     integer :: lmap(nseal_cpl)
 
-    double precision, allocatable  :: freq_wn(:), freq_ef(:)
+    real, allocatable  :: freq_wn(:), freq_ef(:)
 
     ! -------------------------------------------------------------
     ! create the netcdf file
@@ -232,12 +232,12 @@ contains
 
     ! define the frequency  axis variables for wavenumber(wn) and spectra(ef)
     if (k_axis) then
-	  ierr = pio_def_var(pioid, 'freq_ef', PIO_DOUBLE, (/ktid/), varid)
+	  ierr = pio_def_var(pioid, 'freq_ef', PIO_REAL, (/ktid/), varid)
 	  call handle_err(ierr,'def_freq')
 	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
     end if
     if (nk_axis) then
-	  ierr = pio_def_var(pioid, 'freq_wn', PIO_DOUBLE, (/nktid/), varid)
+	  ierr = pio_def_var(pioid, 'freq_wn', PIO_REAL, (/nktid/), varid)
 	  call handle_err(ierr,'def_freq')
 	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
     end if
