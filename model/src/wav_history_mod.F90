@@ -534,87 +534,7 @@ contains
 
   end subroutine write_history
 
-
-  !===============================================================================
-  !>  Write an array of (nseal,:) points as (nx,ny,:)
-  !!
-  !! @details If init2 is present and true, apply a second initialization to a
-  !! subset of variables for where mapsta==2. If fldir is present and true then
-  !! the directions will be converted to degrees.
-  !!
-  !! @param[in]   iodesc      the PIO decomposition handle
-  !! @param[in]   vname       the variable name
-  !! @param[in]   var         the variable array
-  !! @param[in]   init2       a flag for a second initialization type, optional
-  !! @param[in]   fldir       a flag for unit conversion for direction, optional
-  !! @param[in]    global     a flag for a global variable, optional
-
-  !> author DeniseWorthen@noaa.gov
-  !> @date 08-26-2024
-  subroutine write_var3d(iodesc, vname, var, init2, fldir, global)
-
-    type(io_desc_t),            intent(inout) :: iodesc
-    character(len=*),           intent(in) :: vname
-    real            ,           intent(in) :: var(:,:)
-    character(len=*), optional, intent(in) :: init2
-    character(len=*), optional, intent(in) :: fldir
-    character(len=*), optional, intent(in) :: global
-
-    ! local variables
-    real, allocatable, dimension(:) :: varloc
-    logical                         :: linit2, lfldir, lglobal
-    integer                         :: lb, ub
-    integer                         :: k
-
-    linit2 = .false.
-    if (present(init2)) then
-      linit2 = (trim(init2) == "true")
-    end if
-    lfldir = .false.
-    if (present(fldir)) then
-      lfldir = (trim(fldir) == "true")
-    end if
-    lglobal = .false.
-    if (present(global)) then
-      lglobal = (trim(global) == "true")
-    end if
-
-    lb = lbound(var,2)
-    ub = ubound(var,2)
-    allocate(varloc(lb:ub))
-
-    var3d = undef
-    do jsea = 1,nseal_cpl
-      call init_get_isea(isea, jsea)
-      ! initialization
-      if (lglobal) then
-        varloc(:) = var(isea,:)
-      else
-        varloc(:) = var(jsea,:)
-      end if
-
-      if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) varloc(:) = undef
-      if (linit2) then
-        if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 2) varloc(:) = undef
-      end if
-      if (lfldir) then
-        if (mapsta(mapsf(isea,2),mapsf(isea,1)) > 0 )  then
-          do k=1,size(varloc,1)
-            if (varloc(k).ne.undef) varloc(k)=mod( 630.-rade*varloc(k), 360.)
-          enddo
-        end if
-      end if
-      var3d(jsea,:) = varloc(:)
-    end do
-
-    ierr = pio_inq_varid(pioid,  trim(vname), varid)
-    call handle_err(ierr, 'inquire variable '//trim(vname))
-    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-    call pio_write_darray(pioid, varid, iodesc, var3d, ierr)
-
-    deallocate(varloc)
-  end subroutine write_var3d
-
+  
   !===============================================================================
   !>  Write an array of (nseal) points as (nx,ny)
   !!
@@ -725,6 +645,86 @@ contains
     call handle_err(ierr, 'put variable '//trim(vname))
 
   end subroutine write_var2d
+
+  !===============================================================================
+  !>  Write an array of (nseal,:) points as (nx,ny,:)
+  !!
+  !! @details If init2 is present and true, apply a second initialization to a
+  !! subset of variables for where mapsta==2. If fldir is present and true then
+  !! the directions will be converted to degrees.
+  !!
+  !! @param[in]   iodesc      the PIO decomposition handle
+  !! @param[in]   vname       the variable name
+  !! @param[in]   var         the variable array
+  !! @param[in]   init2       a flag for a second initialization type, optional
+  !! @param[in]   fldir       a flag for unit conversion for direction, optional
+  !! @param[in]    global     a flag for a global variable, optional
+
+  !> author DeniseWorthen@noaa.gov
+  !> @date 08-26-2024
+  subroutine write_var3d(iodesc, vname, var, init2, fldir, global)
+
+    type(io_desc_t),            intent(inout) :: iodesc
+    character(len=*),           intent(in) :: vname
+    real            ,           intent(in) :: var(:,:)
+    character(len=*), optional, intent(in) :: init2
+    character(len=*), optional, intent(in) :: fldir
+    character(len=*), optional, intent(in) :: global
+
+    ! local variables
+    real, allocatable, dimension(:) :: varloc
+    logical                         :: linit2, lfldir, lglobal
+    integer                         :: lb, ub
+    integer                         :: k
+
+    linit2 = .false.
+    if (present(init2)) then
+      linit2 = (trim(init2) == "true")
+    end if
+    lfldir = .false.
+    if (present(fldir)) then
+      lfldir = (trim(fldir) == "true")
+    end if
+    lglobal = .false.
+    if (present(global)) then
+      lglobal = (trim(global) == "true")
+    end if
+
+    lb = lbound(var,2)
+    ub = ubound(var,2)
+    allocate(varloc(lb:ub))
+
+    var3d = undef
+    do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
+      ! initialization
+      if (lglobal) then
+        varloc(:) = var(isea,:)
+      else
+        varloc(:) = var(jsea,:)
+      end if
+
+      if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) varloc(:) = undef
+      if (linit2) then
+        if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 2) varloc(:) = undef
+      end if
+      if (lfldir) then
+        if (mapsta(mapsf(isea,2),mapsf(isea,1)) > 0 )  then
+          do k=1,size(varloc,1)
+            if (varloc(k).ne.undef) varloc(k)=mod( 630.-rade*varloc(k), 360.)
+          enddo
+        end if
+      end if
+      var3d(jsea,:) = varloc(:)
+    end do
+
+    ierr = pio_inq_varid(pioid,  trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+    call pio_write_darray(pioid, varid, iodesc, var3d, ierr)
+
+    deallocate(varloc)
+  end subroutine write_var3d
 
   !===============================================================================
   !> Scan through all possible fields to determine a list of requested variables
