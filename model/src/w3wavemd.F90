@@ -493,7 +493,7 @@ CONTAINS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
     !
-#ifdef W3_MPI
+#if defined(W3_MPI) || defined(W3_OASIS)
     use mpi_f08
 #endif
     !/
@@ -503,7 +503,7 @@ CONTAINS
     INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
     LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 #ifdef W3_OASIS
-    INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
+    type(MPI_COMM), INTENT(IN), OPTIONAL :: ID_LCOMM
     INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2)
 #endif
     !/

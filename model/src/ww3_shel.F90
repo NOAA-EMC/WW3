@@ -308,7 +308,7 @@ PROGRAM W3SHEL
 #ifdef W3_OMPG
   USE OMP_LIB
 #endif
-#ifdef W3_MPI
+#if defined(W3_MPI) || defined(W3_OASIS)
   use mpi_f08
 #endif
   !
@@ -340,7 +340,8 @@ PROGRAM W3SHEL
        STARTDATE(8), STOPDATE(8), IHH(-7:10)
   !
 #ifdef W3_OASIS
-  INTEGER             :: OASISED = 1
+  INTEGER             :: OASISED = 1, mpicomm_int
+  type(MPI_COMM)      :: COUPL_COMM
 #endif
 #ifdef W3_COU
   INTEGER             :: OFL
@@ -468,7 +469,8 @@ PROGRAM W3SHEL
 
 #ifdef W3_OASIS
   IF (OASISED.EQ.1) THEN
-    CALL CPL_OASIS_INIT(MPICOMM)
+    CALL CPL_OASIS_INIT(mpicomm_int)
+    COUPL_COMM%mpi_val = mpicomm_int
   ELSE
 #endif
 #ifdef W3_OMPH
@@ -1988,7 +1990,7 @@ PROGRAM W3SHEL
   ENDIF
   ! Estimate the weights for the spatial interpolation
   IF (DTOUT(7).NE.0) THEN
-    CALL CPL_OASIS_GRID(L_MASTER,MPICOMM)
+    CALL CPL_OASIS_GRID(L_MASTER,COUPL_COMM%mpi_val)
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
 #endif
@@ -2013,7 +2015,7 @@ PROGRAM W3SHEL
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
     CALL W3WAVE ( 1, ODAT, TIMEN                      &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., MPICOMM, TIMEN     &
+         , .TRUE., .FALSE., COUPL_COMM, TIMEN     &
 #endif
         )
     !
@@ -2137,9 +2139,6 @@ PROGRAM W3SHEL
                    TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                    TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
               IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
@@ -2204,9 +2203,6 @@ PROGRAM W3SHEL
                    TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                    TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
               IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
@@ -2281,9 +2277,6 @@ PROGRAM W3SHEL
                 END IF
               ELSE
 #endif
-#ifdef W3_OASIS
-                COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASOCM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
@@ -2329,9 +2322,6 @@ PROGRAM W3SHEL
                 CALL TICK21 ( TCN, TIDE_DT )
               ELSE
 #endif
-#ifdef W3_OASIS
-                COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASOCM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
@@ -2365,9 +2355,6 @@ PROGRAM W3SHEL
               !!Li
 #endif
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
@@ -2388,9 +2375,6 @@ PROGRAM W3SHEL
                    TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                    TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASICM
               IF (FLAGSC(J)) FLAGSCI = .TRUE.
               IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
@@ -2424,9 +2408,6 @@ PROGRAM W3SHEL
               !!Li
 #endif
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
@@ -2456,9 +2437,6 @@ PROGRAM W3SHEL
               !!Li
 #endif
             ELSE
-#ifdef W3_OASIS
-              COUPL_COMM = MPICOMM
-#endif
 #ifdef W3_OASACM
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
@@ -2609,7 +2587,7 @@ PROGRAM W3SHEL
     !
     CALL W3WAVE ( 1, ODAT, TIME0                                    &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., MPICOMM, TIMEN                         &
+         , .TRUE., .FALSE., COUPL_COMM, TIMEN                       &
 #endif
          )
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
@@ -2652,7 +2630,7 @@ PROGRAM W3SHEL
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
         CALL W3WAVE ( 1, ODAT, TIME0                                 &
 #ifdef W3_OASIS
-             , .TRUE., .FALSE., MPICOMM, TIMEN              &
+             , .TRUE., .FALSE., COUPL_COMM, TIMEN              &
 #endif
              )
       END IF
