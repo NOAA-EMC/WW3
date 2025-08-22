@@ -136,7 +136,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE W3ODATMD, ONLY: NDSE
-    USE W3SERVMD, ONLY: EXTCDE
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN2
     USE W3GDATMD, ONLY: DTMIN, TH, DTH, ECOS, DTMIN
     USE W3GDATMD, ONLY: IS1C1, IS1C2

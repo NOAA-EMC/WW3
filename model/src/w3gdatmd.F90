@@ -240,6 +240,7 @@ MODULE W3GDATMD
   !                               for individual grid points.
   !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
   !      IICESMOOTH Log.  Public   Flag to smooth the ice covered dispertion relation in broken ice.
+  !      IC_NUMERICS Log. Public  Turn on/off IC numerics fix
   !
   !
   !      GNAME     C*30  Public   Grid name.
@@ -669,7 +670,7 @@ MODULE W3GDATMD
          DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
          PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
          IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
-         IICEDDISP, IICEFDISP, BTBETA, AAIRCMIN, AAIRGB
+         IICEDDISP, IICEFDISP, BTBETA, AAIRCMIN, AAIRGB, FETCH
 
     REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
@@ -700,6 +701,7 @@ MODULE W3GDATMD
 
     LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
          IICESMOOTH
+    LOGICAL          :: IC_NUMERICS
     LOGICAL          :: FLAGLL
     LOGICAL          :: CMPRTRCK
     LOGICAL, POINTER :: FLAGST(:)
@@ -1192,7 +1194,7 @@ MODULE W3GDATMD
        FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
        IICEHMIN, IICEHINIT, ICESCALES(:),    &
        IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP, &
-       BTBETA, AAIRCMIN, AAIRGB
+       BTBETA, AAIRCMIN, AAIRGB, FETCH
   REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 #ifdef W3_RTD
   REAL, POINTER         :: PoLat, PoLon
@@ -1223,6 +1225,7 @@ MODULE W3GDATMD
 
   LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
        IICESMOOTH
+  LOGICAL, POINTER :: IC_NUMERICS
   LOGICAL, POINTER :: FLAGLL
   LOGICAL, POINTER :: CMPRTRCK
   LOGICAL, POINTER :: FLAGST(:)
@@ -2384,6 +2387,7 @@ CONTAINS
     STEDU  => GRIDS(IMOD)%STEDU
     BTBETA => GRIDS(IMOD)%BTBETA
     AAIRGB => GRIDS(IMOD)%AAIRGB
+    FETCH  => GRIDS(IMOD)%FETCH
     AAIRCMIN => GRIDS(IMOD)%AAIRCMIN
     !
     GINIT  => GRIDS(IMOD)%GINIT
@@ -2396,6 +2400,7 @@ CONTAINS
     FLSOU  => GRIDS(IMOD)%FLSOU
     IICEDISP => GRIDS(IMOD)%IICEDISP
     IICESMOOTH => GRIDS(IMOD)%IICESMOOTH
+    IC_NUMERICS => GRIDS(IMOD)%IC_NUMERICS
     !
     GNAME  => GRIDS(IMOD)%GNAME
     FILEXT => GRIDS(IMOD)%FILEXT

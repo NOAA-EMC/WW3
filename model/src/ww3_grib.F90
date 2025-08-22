@@ -61,6 +61,7 @@ PROGRAM W3GRIB
   !/                  (J.H. Alves)
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
   !/    09-Jun-2021 : remove grib1 support (NCEP1)        ( version 7.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -97,6 +98,8 @@ PROGRAM W3GRIB
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -143,7 +146,7 @@ PROGRAM W3GRIB
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -240,8 +243,10 @@ PROGRAM W3GRIB
   CALL STRACE (IENT, 'W3GRIB')
 #endif
   !
-  OPEN (NDSI,FILE='ww3_grib.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+  OPEN (NDSI,FILE='ww3_grib.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRIB','INPUT',3)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRIB','INPUT',4)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -258,7 +263,12 @@ PROGRAM W3GRIB
   CALL W3IOGR ( 'READ', NDSM )
   WRITE (NDSO,920) GNAME
   !
-  IF ( .NOT. FLAGLL ) GOTO 810
+  IF ( .NOT. FLAGLL ) THEN
+    IF ( .NOT. FLAGLL ) THEN
+      WRITE (NDSE,1010)
+      CALL EXTCDE ( 10 )
+    END IF
+  END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read requests from input file.
@@ -389,7 +399,8 @@ PROGRAM W3GRIB
   ! ... GRIB specific parameters
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) FTIME, CID, PID, GID, GDS, GDTN
+  READ (NDSI,*,IOSTAT=IERR) FTIME, CID, PID, GID, GDS, GDTN
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRIB','INPUT',4)
   !
   ! Check if grid type is curvilinear, and only go on if Lambert conformal
   ! or PolarStereo
@@ -415,15 +426,14 @@ PROGRAM W3GRIB
   IF ( GDTN .EQ. 30 ) THEN
     ! This is a Lambert conformal grid, read projection parameters
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          &
+    READ (NDSI,*,IOSTAT=IERR) LATAN1, LONV, DSX, DSY,          &
          SCNMOD, LATIN1, LATIN2, LATSP, LONSP
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRIB','INPUT',4)
   ELSEIF ( GDTN .EQ. 20 ) THEN
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,   &
+    READ (NDSI,*,IOSTAT=IERR) LATAN1, LONV, DSX, DSY,   &
          SCNMOD
-#endif
-
-#ifdef W3_NCEP2
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRIB','INPUT',4)
   ENDIF
 #endif
   !
@@ -762,7 +772,7 @@ PROGRAM W3GRIB
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,942)
-        GOTO 888
+        EXIT
       END IF
       CYCLE
     END IF
@@ -800,34 +810,7 @@ PROGRAM W3GRIB
     IF ( IOUT .GE. NOUT ) EXIT
   END DO
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 3 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 4 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 5 )
-  !
-810 CONTINUE
-  IF ( .NOT. FLAGLL ) THEN
-    WRITE (NDSE,1010)
-    CALL EXTCDE ( 10 )
-  END IF
-  !
-888 CONTINUE
   WRITE (NDSO,999)
-  !
-#ifdef W3_NCO
-  !     CALL W3TAGE('WAVEGRIB')
-#endif
   !
   ! Formats
   !
@@ -881,17 +864,6 @@ PROGRAM W3GRIB
        '                      ',6I6)
 #endif
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRIB : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRIB : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRIB : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRIB : '/          &
        '     GRIB REQUIRES SPHERICAL GRID'/)
 #ifdef W3_NCEP2
@@ -930,6 +902,7 @@ CONTAINS
     !/    16-Jul-2007 : Adding GRIB2 capability             ( version 3.11 )
     !/                  (A. Chawla)
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -1570,16 +1543,28 @@ CONTAINS
             END DO
 #ifdef W3_NCEP2
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
                  200,YY(:,0), NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
             !
@@ -1597,16 +1582,28 @@ CONTAINS
                 END DO
 #ifdef W3_NCEP2
                 CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-                IF (IO .NE. 0) GOTO 810
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1010) IO
+                  CALL EXTCDE ( 20 )
+                END IF
                 CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
                      IDEFNUM, IO)
-                IF (IO .NE. 0) GOTO 820
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1020) IO
+                  CALL EXTCDE ( 30 )
+                END IF
                 CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
                      COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
                      200,YY(:,I), NDATA, IBMP, BITMAP, IO)
-                IF (IO .NE. 0) GOTO 820
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1020) IO
+                  CALL EXTCDE ( 30 )
+                END IF
                 CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-                IF (IO .NE. 0) GOTO 830
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1030) IO
+                  CALL EXTCDE ( 40 )
+                END IF
                 CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
               END DO
@@ -1624,16 +1621,28 @@ CONTAINS
                 END DO
 #ifdef W3_NCEP2
                 CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-                IF (IO .NE. 0) GOTO 810
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1010) IO
+                  CALL EXTCDE ( 20 )
+                END IF
                 CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
                      IDEFNUM, IO)
-                IF (IO .NE. 0) GOTO 820
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1020) IO
+                  CALL EXTCDE ( 30 )
+                END IF
                 CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
                      COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
                      200,YY(:,I), NDATA, IBMP, BITMAP, IO)
-                IF (IO .NE. 0) GOTO 820
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1020) IO
+                  CALL EXTCDE ( 30 )
+                END IF
                 CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-                IF (IO .NE. 0) GOTO 830
+                IF (IO .NE. 0) THEN
+                  WRITE (NDSE,1030) IO
+                  CALL EXTCDE ( 40 )
+                END IF
                 CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
               END DO
@@ -1653,16 +1662,28 @@ CONTAINS
             !
 #ifdef W3_NCEP2
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
                  200,X1, NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
             !
@@ -1673,58 +1694,106 @@ CONTAINS
             END DO
 #ifdef W3_NCEP2
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200, &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
                  200,X1, NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
 
 #ifdef W3_NCEP2
             KPDS(2) = 0
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
                  200,X2, NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
             KPDS(2) = 2
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
                  200,XX, NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
             KPDS(2) = 3
             CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-            IF (IO .NE. 0) GOTO 810
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1010) IO
+              CALL EXTCDE ( 20 )
+            END IF
             CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
                  IDEFNUM, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
                  COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
                  200,XY, NDATA, IBMP, BITMAP, IO)
-            IF (IO .NE. 0) GOTO 820
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1020) IO
+              CALL EXTCDE ( 30 )
+            END IF
             CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-            IF (IO .NE. 0) GOTO 830
+            IF (IO .NE. 0) THEN
+              WRITE (NDSE,1030) IO
+              CALL EXTCDE ( 40 )
+            END IF
             CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 #endif
             !
@@ -1742,30 +1811,10 @@ CONTAINS
     !
     RETURN
     !
-    ! Error escape locations
-    !
-#ifdef W3_NCEP2
-810 CONTINUE
-    WRITE (NDSE,1010) IO
-    CALL EXTCDE ( 20 )
-820 CONTINUE
-    WRITE (NDSE,1020) IO
-    CALL EXTCDE ( 30 )
-830 CONTINUE
-    WRITE (NDSE,1030) IO
-    CALL EXTCDE ( 40 )
-#endif
-    !
     ! Formats
     !
 999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB :'/                &
          '     PLEASE UPDATE FIELDS !!! '/)
-    !
-#ifdef W3_NCEP2
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
-#endif
     !
 #ifdef W3_NCEP2
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &

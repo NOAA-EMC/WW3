@@ -38,6 +38,7 @@ MODULE W3SNL3MD
   !/    01-Dec-2009 : Bug fix frequency filtering.        ( version 3.13 )
   !/    13-Aug-2010 : Move to NL3.                        ( version 3.15 )
   !/    13-Jul-2012 : Moved from version 3.15 to 4.08.    ( version 4.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2008-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -920,7 +921,10 @@ CONTAINS
     !
     XFRLN  = LOG(XFR)
     !
-    IF ( LAMMAX.LE.0. .OR. LAMMAX.GT.0.5 .OR. DELTHM.LT.0. ) GOTO 800
+    IF ( LAMMAX.LE.0. .OR. LAMMAX.GT.0.5 .OR. DELTHM.LT.0. ) THEN
+      WRITE (NDSE,1000) LAMMAX, DELTHM
+      CALL EXTCDE ( 1000 )
+    END IF
     !
     ! 1.b Set up relative depths
     !
@@ -971,12 +975,19 @@ CONTAINS
         !
         IF ( TH12 .LT. 0. ) THEN
           IF ( OFF12.LT.0. .OR. OFF12.GT.0.5 .OR.                 &
-               OFF34.LT.0. .OR. OFF34.GT.0.5 ) GOTO 801
+               OFF34.LT.0. .OR. OFF34.GT.0.5 ) THEN
+            WRITE (NDSE,1001) OFF12, OFF34
+            CALL EXTCDE ( 1001 )
+          END IF
         ELSE
           IF ( SNLT(IQ).GT.DELTHM .OR. OFF12.LT.0. .OR.           &
                OFF12.GE.1.                                        &
                .OR.  OFF34.LT.MINLAM(OFF12,SNLT(IQ)) .OR.         &
-               OFF34.GT.MAXLAM(OFF12,SNLT(IQ)) ) GOTO 802
+               OFF34.GT.MAXLAM(OFF12,SNLT(IQ)) ) THEN
+            WRITE (NDSE,1002) OFF12, OFF34, SNLT(IQ),             &
+                 MINLAM(OFF12,SNLT(IQ)), MAXLAM(OFF12,SNLT(IQ))
+            CALL EXTCDE ( 1002 )
+          END IF
         END IF
         !
 #ifdef W3_T1
@@ -1429,35 +1440,16 @@ CONTAINS
     !
     QST4 = AST1*NTHEXP + AST2
     !
-    IF ( NTHMAX .LT. NTHMX2 ) GOTO 810
-    IF ( NQA .NE. SIZE(AST1(1,:,1)) ) GOTO 811
+    IF ( NTHMAX .LT. NTHMX2 ) THEN
+      WRITE (NDSE,1010) NTHMAX, NTHMX2
+      CALL EXTCDE ( 1010 )
+    END IF
+    IF ( NQA .NE. SIZE(AST1(1,:,1)) ) THEN
+      WRITE (NDSE,1011) NQA, SIZE(AST1(1,:,1))
+      CALL EXTCDE ( 1011 )
+    END IF
     !
     DEALLOCATE ( AST1, AST2 )
-    !
-    RETURN
-    !
-    ! Error escape locations
-    !
-800 CONTINUE
-    WRITE (NDSE,1000) LAMMAX, DELTHM
-    CALL EXTCDE ( 1000 )
-    !
-801 CONTINUE
-    WRITE (NDSE,1001) OFF12, OFF34
-    CALL EXTCDE ( 1001 )
-    !
-802 CONTINUE
-    WRITE (NDSE,1002) OFF12, OFF34, SNLT(IQ),                       &
-         MINLAM(OFF12,SNLT(IQ)), MAXLAM(OFF12,SNLT(IQ))
-    CALL EXTCDE ( 1002 )
-    !
-810 CONTINUE
-    WRITE (NDSE,1010) NTHMAX, NTHMX2
-    CALL EXTCDE ( 1010 )
-    !
-811 CONTINUE
-    WRITE (NDSE,1011) NQA, SIZE(AST1(1,:,1))
-    CALL EXTCDE ( 1011 )
     !
     RETURN
     !
