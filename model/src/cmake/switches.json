@@ -732,7 +732,8 @@
         "description": "use of the coupler",
         "valid-options": [
             {
-                "name": "COU"
+                "name": "COU",
+                "requires": ["MPI"]
             }
         ]
     },
