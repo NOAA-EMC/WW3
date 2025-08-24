@@ -308,7 +308,7 @@ PROGRAM W3SHEL
 #ifdef W3_OMPG
   USE OMP_LIB
 #endif
-#if defined(W3_MPI) || defined(W3_OASIS)
+#ifdef W3_MPI
   use mpi_f08
 #endif
   !
@@ -340,8 +340,7 @@ PROGRAM W3SHEL
        STARTDATE(8), STOPDATE(8), IHH(-7:10)
   !
 #ifdef W3_OASIS
-  INTEGER             :: OASISED = 1, mpicomm_int
-  type(MPI_COMM)      :: COUPL_COMM
+  INTEGER             :: OASISED = 1
 #endif
 #ifdef W3_COU
   INTEGER             :: OFL
@@ -469,8 +468,7 @@ PROGRAM W3SHEL
 
 #ifdef W3_OASIS
   IF (OASISED.EQ.1) THEN
-    CALL CPL_OASIS_INIT(mpicomm_int)
-    COUPL_COMM%mpi_val = mpicomm_int
+    CALL CPL_OASIS_INIT(MPICOMM)
   ELSE
 #endif
 #ifdef W3_OMPH
@@ -1990,7 +1988,7 @@ PROGRAM W3SHEL
   ENDIF
   ! Estimate the weights for the spatial interpolation
   IF (DTOUT(7).NE.0) THEN
-    CALL CPL_OASIS_GRID(L_MASTER,COUPL_COMM%mpi_val)
+    CALL CPL_OASIS_GRID(L_MASTER,MPICOMM)
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
 #endif
@@ -2015,7 +2013,7 @@ PROGRAM W3SHEL
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
     CALL W3WAVE ( 1, ODAT, TIMEN                      &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., COUPL_COMM, TIMEN     &
+         , .TRUE., .FALSE., MPICOMM, TIMEN     &
 #endif
         )
     !
@@ -2148,7 +2146,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1,  &
                    IERR, FLAGSC(J)                            &
 #ifdef W3_OASICM
-                   , COUPL_COMM                       &
+                   , MPICOMM                       &
 #endif
                    )
             END IF
@@ -2212,7 +2210,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5,  &
                    IERR, FLAGSC(J)                            &
 #ifdef W3_OASICM
-                   , COUPL_COMM                       &
+                   , MPICOMM                                  &
 #endif
                    )
             END IF
@@ -2285,7 +2283,7 @@ PROGRAM W3SHEL
                      TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
                      IERR, FLAGSC(J)                            &
 #ifdef W3_OASOCM
-                     , COUPL_COMM                       &
+                     , MPICOMM                       &
 #endif
                      )
 #ifdef W3_TIDE
@@ -2330,7 +2328,7 @@ PROGRAM W3SHEL
                      TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
                      IERR, FLAGSC(J)                            &
 #ifdef W3_OASOCM
-                     , COUPL_COMM                       &
+                     , MPICOMM                                  &
 #endif
                      )
 #ifdef W3_TIDE
@@ -2363,7 +2361,7 @@ PROGRAM W3SHEL
                    TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                    IERR, FLAGSC(J)                            &
 #ifdef W3_OASACM
-                   , COUPL_COMM                       &
+                   , MPICOMM                                  &
 #endif
                    )
             END IF
@@ -2384,7 +2382,7 @@ PROGRAM W3SHEL
                    TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
                    IERR, FLAGSC(J)                               &
 #ifdef W3_OASICM
-                   , COUPL_COMM                          &
+                   , MPICOMM                                     &
 #endif
                    )
               IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
@@ -2416,7 +2414,7 @@ PROGRAM W3SHEL
                    TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX,    &
                    IERR, FLAGSC(J)                            &
 #ifdef W3_OASACM
-                   , COUPL_COMM                               &
+                   , MPICOMM                                  &
 #endif
                    )
             END IF
@@ -2445,7 +2443,7 @@ PROGRAM W3SHEL
                    TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
                    IERR, FLAGSC(J)                            &
 #ifdef W3_OASACM
-                   , COUPL_COMM                               &
+                   , MPICOMM                                  &
 #endif
                    )
               IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
@@ -2587,7 +2585,7 @@ PROGRAM W3SHEL
     !
     CALL W3WAVE ( 1, ODAT, TIME0                                    &
 #ifdef W3_OASIS
-         , .TRUE., .FALSE., COUPL_COMM, TIMEN                       &
+         , .TRUE., .FALSE., MPICOMM, TIMEN                          &
 #endif
          )
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
@@ -2630,7 +2628,7 @@ PROGRAM W3SHEL
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
         CALL W3WAVE ( 1, ODAT, TIME0                                 &
 #ifdef W3_OASIS
-             , .TRUE., .FALSE., COUPL_COMM, TIMEN              &
+             , .TRUE., .FALSE., MPICOMM, TIMEN                       &
 #endif
              )
       END IF

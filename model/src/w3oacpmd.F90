@@ -130,8 +130,11 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !
+#ifdef W3_MPI
+    use mpi_f08
+#endif
     ! * Argument
-    INTEGER, INTENT(OUT) :: ID_LCOMM                   ! Model local communicator
+    type(MPI_COMM), INTENT(OUT)       :: ID_LCOMM      ! Model local communicator
     !
     !----------------------------------------------------------------------
     ! * Executable part
@@ -213,7 +216,7 @@ CONTAINS
     !/ Parameter list
     !/
     LOGICAL, INTENT(IN) :: LD_MASTER    ! MASTER process or not
-    INTEGER, INTENT(IN) :: ID_LCOMM     ! Model local communicator
+    type(MPI_COMM), INTENT(IN)       :: ID_LCOMM ! Model local communicator 
     !
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
