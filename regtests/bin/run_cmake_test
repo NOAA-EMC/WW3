@@ -428,6 +428,7 @@ then
                   sed 's/B4B //'     | sed 's/METIS //' | \
                   sed 's/OASIS //'   | sed 's/OASACM //' | \
                   sed 's/OASOCM //'  | sed 's/OASICM //' | \
+                  sed 's/COU //'  | \
                   sed 's/SCOTCH //'  > $path_build/switch
   else
     cat $file_c | sed 's/SCRIPMPI //'| \
@@ -437,6 +438,7 @@ then
                   sed 's/B4B //'     | sed 's/METIS //' | \
                   sed 's/OASIS //'   | sed 's/OASACM //' | \
                   sed 's/OASOCM //'  | sed 's/OASICM //' | \
+                  sed 's/COU //'  | \
                   sed 's/SCOTCH //'  > $path_build/switch
   fi
 
