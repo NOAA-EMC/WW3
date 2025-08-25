@@ -232,14 +232,14 @@ contains
 
     ! define the frequency  axis variables for wavenumber(wn) and spectra(ef)
     if (k_axis) then
-	  ierr = pio_def_var(pioid, 'freq_ef', PIO_REAL, (/ktid/), varid)
-	  call handle_err(ierr,'def_freq')
-	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
+      ierr = pio_def_var(pioid, 'freq_ef', PIO_REAL, (/ktid/), varid)
+      call handle_err(ierr,'def_freq')
+      ierr = pio_put_att(pioid, varid, 'units', 's-1')
     end if
     if (nk_axis) then
-	  ierr = pio_def_var(pioid, 'freq_wn', PIO_REAL, (/nktid/), varid)
-	  call handle_err(ierr,'def_freq')
-	  ierr = pio_put_att(pioid, varid, 'units', 's-1')
+      ierr = pio_def_var(pioid, 'freq_wn', PIO_REAL, (/nktid/), varid)
+      call handle_err(ierr,'def_freq')
+      ierr = pio_put_att(pioid, varid, 'units', 's-1')
     end if
 
     ! define the variables
@@ -320,7 +320,7 @@ contains
       call handle_err(ierr, 'put freq WN')  
      end if
  
-   if (gtype .eq. ungtype) then
+    if (gtype .eq. ungtype) then
       ierr = pio_inq_varid(pioid,  'nconn', varid)
       call handle_err(ierr, 'inquire variable nconn ')
       ierr = pio_put_var(pioid, varid, trigp)
@@ -345,7 +345,7 @@ contains
 
     ! write the requested variables
     do n = 1,size(outvars)
-       vname = trim(outvars(n)%var_name)
+      vname = trim(outvars(n)%var_name)
       if (trim(outvars(n)%dims) == 's') then
         var3d => var3ds
         ! Group 4
@@ -384,7 +384,6 @@ contains
         var3d => var3dk
         ! Group 3
         if(vname .eq.       'EF')  call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,1):e3df(3,1)) )
-
 
         if(vname .eq.     'TH1M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,2):e3df(3,2)) )
         if(vname .eq.    'STH1M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,3):e3df(3,3)) )
