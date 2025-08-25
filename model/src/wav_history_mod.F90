@@ -300,25 +300,25 @@ contains
     ierr = pio_put_var(pioid, varid, (/1/), real(elapsed_secs,8))
     call handle_err(ierr, 'put time')
      
-     if (k_axis) then
+    if (k_axis) then
       do k=1,len_k
-       freq_ef(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
+        freq_ef(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
       enddo
       ierr = pio_inq_varid(pioid,  'freq_ef', varid)
       call handle_err(ierr, 'inquire variable freq EF')
       ierr = pio_put_var(pioid, varid, freq_ef(1:len_k)  )
       call handle_err(ierr, 'put freq EF')  
-     end if
+    end if
 
-     if (nk_axis) then
+    if (nk_axis) then
       do k=1,len_nk
-       freq_wn(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
+        freq_wn(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
       enddo
       ierr = pio_inq_varid(pioid,  'freq_wn', varid)
       call handle_err(ierr, 'inquire variable freq WN')
       ierr = pio_put_var(pioid, varid, freq_wn(1:len_nk)  )
       call handle_err(ierr, 'put freq WN')  
-     end if
+    end if
  
     if (gtype .eq. ungtype) then
       ierr = pio_inq_varid(pioid,  'nconn', varid)
@@ -378,7 +378,7 @@ contains
 
       else if (trim(outvars(n)%dims) == 'nk') then                           ! freq + 1 axis for wavenumber
         var3d => var3dnk
-         if(vname .eq.       'WN') call write_var3d(iodesc3dnk, vname, transpose(wn(1:nk,1:nsea)), global='true')
+        if(vname .eq.       'WN') call write_var3d(iodesc3dnk, vname, transpose(wn(1:nk,1:nsea)), global='true')
 
       else if (trim(outvars(n)%dims) == 'k') then                           ! freq axis
         var3d => var3dk
