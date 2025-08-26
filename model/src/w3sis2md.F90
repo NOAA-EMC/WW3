@@ -741,7 +741,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3ODATMD, ONLY: NDSE
     USE CONSTANTS, ONLY: TPIINV, PI, TPI, GRAV, DWAT
-    USE W3SERVMD, ONLY: EXTCDE
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN, IS2PARS, XFR, &
          IICEHMIN,IICESMOOTH
 #ifdef W3_T

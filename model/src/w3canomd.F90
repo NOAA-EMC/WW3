@@ -32,6 +32,7 @@ MODULE W3CANOMD
   !/    XX-Jul-2010 : Origination by  PAEM JANSSEN
   !/    18-Oct-2012 : Adapted to WAVEWATCH III: F. Ardhuin( version 4.07 )
   !/    21-Aug-2014 : Bug corrected: only first call wasOK( version 5.01 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !  0. Note by F. Ardhuin:
   !     In adapting the orginal program to be a WAVEWATCH module, I
@@ -2807,26 +2808,25 @@ CONTAINS
     !---------------------------------------------------------------------
     !
     IMPLICIT NONE
-    REAL OM,BETA,G,EBS,AKM1,AKM2,AO,AKP,BO,TH,STH
+    REAL OM,BETA,G,EBS,AKM1,AKM2,AKP,BO,TH,STH
 
     G =9.806
     EBS=0.0001
     AKM1=OM**2/(4.*G )
     AKM2=OM/(2.*SQRT(G*BETA))
-    AO=MAX(AKM1,AKM2)
-10  CONTINUE
-    AKP=AO
-    BO=BETA*AO
-    !     IF (BO.GT.10) GO TO 20
-    IF (BO.GT.20.) GO TO 20
-    TH=G*AO*TANH(BO)
-    STH=SQRT(TH)
-    AO=AO+(OM-STH)*STH*2./(TH/AO+G*BO/COSH(BO)**2)
-    IF (ABS(AKP-AO).GT.EBS*AO) GO TO 10
-    AKI=AO
-    RETURN
-20  CONTINUE
-    AKI=OM**2/G
+    AKI=MAX(AKM1,AKM2)
+    DO
+      AKP=AKI
+      BO=BETA*AKI
+      IF (BO.GT.20.) THEN
+        AKI=OM**2/G
+        EXIT
+      END IF
+      TH=G*AKI*TANH(BO)
+      STH=SQRT(TH)
+      AKI=AKI+(OM-STH)*STH*2./(TH/AKI+G*BO/COSH(BO)**2)
+      IF (ABS(AKP-AKI).LE.EBS*AKI) EXIT
+    END DO
     RETURN
   END FUNCTION AKI
   !

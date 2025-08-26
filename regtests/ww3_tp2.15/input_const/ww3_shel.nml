@@ -1,0 +1,78 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_shel.nml - single-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%START   = '20140310 000000'
+  DOMAIN%STOP    = '20140310 060000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each forcing via the INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_NML
+  INPUT%FORCING%WINDS         = 'T'
+  INPUT%FORCING%ATM_MOMENTUM  = 'H'
+  INPUT%FORCING%AIR_DENSITY   = 'H'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  TYPE%FIELD%LIST          = 'HS WND RHO TAU T02 DP DIR FP MXE MXES MXH MXHC SDMH SDMHC QP QKK'
+  TYPE%POINT%FILE          = '../input_rho/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  DATE%FIELD          = '20140310 000000' '900' '20140310 060000'
+  DATE%POINT          = '20140310 000000' '3600' '20140310 060000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+  HOMOG_COUNT%N_TAU   = 3
+  HOMOG_COUNT%N_RHO   = 3
+/
+
+&HOMOG_INPUT_NML
+  HOMOG_INPUT(1)%NAME       = 'TAU'
+  HOMOG_INPUT(1)%DATE       ='20140310 000000'
+  HOMOG_INPUT(1)%VALUE1     = -0.03
+  HOMOG_INPUT(1)%VALUE2     = -0.01
+
+  HOMOG_INPUT(2)%NAME       = 'TAU'
+  HOMOG_INPUT(2)%DATE       ='20140310 030000'
+  HOMOG_INPUT(2)%VALUE1     = -0.20
+  HOMOG_INPUT(2)%VALUE2     = -0.15
+
+  HOMOG_INPUT(3)%NAME       = 'TAU'
+  HOMOG_INPUT(3)%DATE       ='20140310 060000'
+  HOMOG_INPUT(3)%VALUE1     = -0.10
+  HOMOG_INPUT(3)%VALUE2     = -0.25
+
+  HOMOG_INPUT(4)%NAME       = 'RHO'
+  HOMOG_INPUT(4)%DATE       ='20140310 000000'
+  HOMOG_INPUT(4)%VALUE1     = 1.15
+
+  HOMOG_INPUT(5)%NAME       = 'RHO'
+  HOMOG_INPUT(5)%DATE       ='20140310 030000'
+  HOMOG_INPUT(5)%VALUE1     = 1.25
+
+  HOMOG_INPUT(6)%NAME       = 'RHO'
+  HOMOG_INPUT(6)%DATE       ='20140310 060000'
+  HOMOG_INPUT(6)%VALUE1     = 1.20
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
