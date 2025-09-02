@@ -13,6 +13,7 @@ MODULE W3DISPMD
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    10-Mar-2016 : Added Liu & Mollo-Christensen
   !/                  dispersion with ice (E. Rogers)     ( version 5.10 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -308,7 +309,7 @@ CONTAINS
       END IF
       IF (DIF .LT. EPS .AND. RDIF .LT. EPS) THEN
         ICON = 1
-        GOTO 100
+        EXIT
       ELSE
         KOLD = K
         F    = GRAV*KOLD*TANH(KOLD*H)-W0**2
@@ -321,10 +322,11 @@ CONTAINS
       END IF
     END DO
     !
-    DIF   = ABS(K-KOLD)
-    RDIF  = DIF/K
-    IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
-100 CONTINUE
+    IF (ICON==0) THEN
+      DIF   = ABS(K-KOLD)
+      RDIF  = DIF/K
+      IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
+    END IF
     IF (2*K*H.GT.25) THEN
       CG = W0/K * 0.5
     ELSE

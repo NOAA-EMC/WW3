@@ -70,6 +70,7 @@ PROGRAM GXOUTF
   !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
   !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
   !/    22-Mar-2021 : RHOA and TAUA added as output       ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/
   !/    Copyright 2009 National Weather Service (NWS),
@@ -107,6 +108,8 @@ PROGRAM GXOUTF
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -152,7 +155,7 @@ PROGRAM GXOUTF
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -237,8 +240,10 @@ PROGRAM GXOUTF
   !
   JLEN   = LEN_TRIM(FNMPRE)
   OPEN (NDSI,FILE=FNMPRE(:JLEN)//'gx_outf.inp',STATUS='OLD',       &
-       ERR=800,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'GXOUTF','INPUT',1)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTF','INPUT',2)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -277,7 +282,8 @@ PROGRAM GXOUTF
   !     Output times
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+  READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTF','INPUT',2)
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0 ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
@@ -297,7 +303,10 @@ PROGRAM GXOUTF
   IDTIME(21:23) = '   '
   WRITE (NDSO,941) IDTIME, NOUT
   !
-  IF ( MOD(NINT(DTREQ),60) .NE. 0 ) GOTO 810
+  IF ( MOD(NINT(DTREQ),60) .NE. 0 ) THEN 
+    WRITE (NDSE,1010)
+    CALL EXTCDE ( 10 )
+  END IF
   !
   ! ... Output fields
   !
@@ -392,7 +401,8 @@ PROGRAM GXOUTF
   ! ... Grid range
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) IX0, IXN, IY0, IYN, MSOUT, MBOUT
+  READ (NDSI,*,IOSTAT=IERR) IX0, IXN, IY0, IYN, MSOUT, MBOUT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTF','INPUT',2)
   !
   WRITE (NDSO,947)
   !
@@ -420,7 +430,8 @@ PROGRAM GXOUTF
   MBOUT  = .NOT. MBOUT
   !
   OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',form='UNFORMATTED', convert=file_endian, &
-       ERR=811,IOSTAT=IERR)
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'GXOUTF','INPUT',11,NAMEF='ww3.grads')
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 5.  Time management.
@@ -434,7 +445,7 @@ PROGRAM GXOUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,942)
-        GOTO 600
+        EXIT
       END IF
       CYCLE
     END IF
@@ -459,13 +470,13 @@ PROGRAM GXOUTF
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 6.  Close data file and write control file
   !
-600 CONTINUE
   WRITE (NDSO,980)
   !
   WRITE (NDSO,981)
   CLOSE (NDSDAT)
   WRITE (NDSO,982)
-  OPEN (NDSCTL,FILE=FNMPRE(:JLEN)//'ww3.ctl',ERR=812,IOSTAT=IERR)
+  OPEN (NDSCTL,FILE=FNMPRE(:JLEN)//'ww3.ctl',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'GXOUTF','OUTPUT',12,NAMEF='ww3.ctl')
   !
   IH0    = TIME0(2)/10000
   IM0    = MOD(TIME0(2)/100,100)
@@ -478,7 +489,10 @@ PROGRAM GXOUTF
   IF ( DTREQ .GT. 3599. ) THEN
     CINC   = 'HR'
     IINC   = NINT(DTREQ/3600.)
-    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
+    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) THEN
+      WRITE (NDSE,1020) DTREQ
+      CALL EXTCDE ( 20 )
+    END IF
   ELSE
     CINC   = 'MN'
     IINC   = NINT(DTREQ/60.)
@@ -631,44 +645,8 @@ PROGRAM GXOUTF
   !
   WRITE (NDSCTL,992)
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 1 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 2 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 3 )
-  !
-810 CONTINUE
-  WRITE (NDSE,1010)
-  CALL EXTCDE ( 10 )
-  !
-811 CONTINUE
-  WRITE (NDSE,1011)
-  CALL EXTCDE ( 11 )
-  !
-812 CONTINUE
-  WRITE (NDSE,1012)
-  CALL EXTCDE ( 12 )
-  !
-820 CONTINUE
-  WRITE (NDSE,1020) DTREQ
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021)
-  CALL EXTCDE ( 21 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
+  STOP
   !
   ! Formats
   !
@@ -698,7 +676,6 @@ PROGRAM GXOUTF
 948 FORMAT ( '      Longitudes         : ',2I6/                     &
        '      lattidutes         : ',2I6/                     &
        '      Opening file ww3.grads')
-949 FORMAT ( '      Alternative definition is used ')
 950 FORMAT ( '      Sea points in mask :      ',A)
 951 FORMAT ( '      Bound. pts. in mask:      ',A)
   !
@@ -732,41 +709,12 @@ PROGRAM GXOUTF
        ' ========================================='/          &
        '         WAVEWATCH III GrADS field output '/)
   !
-#ifdef W3_T
-9050 FORMAT ( ' TEST GXOUTF : KPDS : ',13I4/                      &
-       '                      ',12I4)
-9051 FORMAT ( ' TEST GXOUTF : KGDS : ',8I6/                       &
-       '                      ',8I6/                       &
-       '                      ',6I6)
-#endif
-  !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     SMALLEST OUTPUT INCREMENT IS 60 SEC.'/)
-  !
-1011 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     ERROR IN OPENING OUTPUT FILE ww3.grads'/         &
-       '     IOSTAT =',I5/)
-  !
-1012 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     ERROR IN OPENING OUTPUT FILE ww3.ctl'/           &
-       '     IOSTAT =',I5/)
   !
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     FIELD INCREMENT > 1HR BUT NOT MULTIPLE',F10.0/)
   !
-1021 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     UPDATE PARS IN LOOP 610 !!!'/)
   !/
   !/ Internal subroutine GXEXGO ---------------------------------------- /
   !/
@@ -1446,11 +1394,6 @@ CONTAINS
     ! Error escape locations
     !
     ! Formats
-    !
-940 FORMAT (1X,I8,3I3.2,2X,4E12.4)
-950 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I4),                           &
-         1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
-951 FORMAT (1X,2F10.5,2I8)
     !
 990 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/           &
          '     GROUP',I2,' PARAMETER',I3,' NOT LISTED '    )

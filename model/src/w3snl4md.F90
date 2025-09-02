@@ -229,6 +229,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!
     !!    it returns: 11 look-up tables arrays dim=(npts,nang,nzz,ndep)
@@ -1259,37 +1260,35 @@ CONTAINS
     !!B   This 2nd peak is not suitable for tsa, drop it and stay with just 1st peak.
     if ( e1max2.lt.0.000001 ) then
       npeaks = 1
-      goto 200           !* skip the remaings tests goto 200
-    endif
-    !!    ------------------------------------------------------------ !!op2
-    !!    ==================================================================
-    !!
-    !!
-    !!
-    !!
-    !!op2 ctd
-    if ( npeaks.eq.2 ) then
-      !!-1    Shuffle the 2 peaks (if necessary) to keep npk to be always < npk2
-      !!      This says nothing about which peak is the dominant peak
-      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      if ( npk2.lt.npk ) then
-        npk0   = npk2
-        npk2   = npk
-        npk    = npk0                 !*  this way  npk < npk2  always
-        fpk    = frqa(npk)
-        fpk2   = frqa(npk2)
-      endif
-      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    else
+      !!    ------------------------------------------------------------ !!op2
+      !!    ==================================================================
       !!
-      !!-2    here we have 2 peaks (npeaks=2) with  npk < npk2
-      !!      find the freq. separation "nfs" (that divide the freq. regime into 2)
-      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      nfs = INT ( (npk+npk2)   / 2.0 )  !* take the lower  bin # to be nfs
-      !b      nfs = INT ( (npk+npk2+1) / 2.0 )  !* take the higher bin # to be nfs
-      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    endif   !! if ( npeaks.eq.2 )
-    !!
-200 continue
+      !!
+      !!
+      !!
+      !!op2 ctd
+      if ( npeaks.eq.2 ) then
+        !!-1    Shuffle the 2 peaks (if necessary) to keep npk to be always < npk2
+        !!      This says nothing about which peak is the dominant peak
+        !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        if ( npk2.lt.npk ) then
+          npk0   = npk2
+          npk2   = npk
+          npk    = npk0                 !*  this way  npk < npk2  always
+          fpk    = frqa(npk)
+          fpk2   = frqa(npk2)
+        endif
+        !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        !!
+        !!-2    here we have 2 peaks (npeaks=2) with  npk < npk2
+        !!      find the freq. separation "nfs" (that divide the freq. regime into 2)
+        !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        nfs = INT ( (npk+npk2)   / 2.0 )  !* take the lower  bin # to be nfs
+        !b      nfs = INT ( (npk+npk2+1) / 2.0 )  !* take the higher bin # to be nfs
+        !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      endif   !! if ( npeaks.eq.2 )
+    endif
     !!    ------------------------------------------------------------ !!op2
     !!    ==================================================================
     !!
@@ -1490,6 +1489,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -1680,8 +1680,7 @@ CONTAINS
     !!    irng and iang are k1 parameters; krng and kang are k3 parameters
     iang = 1                               !* set = 1 and will remain = 1
     !!
-    !!20
-    do 20 irng=1,nrng
+    do irng=1,nrng
       !!kz
       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
@@ -1691,21 +1690,19 @@ CONTAINS
       wk1x   = wka1(irng)
       wk1y   = 0.0                         !* set = 0.0 and will remain = 0.0
       iizz = (nrng-1)*(irng-1)-((irng-2)*(irng-1))/2
-      !!30
       !!kz
-      do 30 krng=irng,kmax
+      do krng=irng,kmax
         !!kz---
-        !kz     do 30 krng=irng,nrng
+        !kz     do krng=irng,nrng
         !!
         !!        Bash; check1 - change this ratio from > 4 to > 3   and
         !!              make it consistent with similar test done in subr. snlr_'s
-        !kz       if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 30  !* Bash; use .gt. 2 for speed
-        !kz       if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 30  !* original snlr_'s
-        !kz       if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 30  !* original gridsetr
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 2. ) cycle  !* Bash; use .gt. 2 for speed
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 3. ) cycle  !* original snlr_'s
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 4. ) cycle  !* original gridsetr
         !!kz---
         izz = krng+iizz
-        !!40
-        do 40 kang=1,nang
+        do kang=1,nang
           !!
           wk3x = wka1(krng)*cosan(kang)
           wk3y = wka1(krng)*sinan(kang)
@@ -1714,7 +1711,7 @@ CONTAINS
             !!
             !!ba1         Bash; skip k1 but keep the opposite angle to k1 - orig setting
             !!ba1               remember here iang = 1
-            if ( kang .eq. 1 ) go to 40         !* th3 = th1
+            if ( kang .eq. 1 ) cycle         !* th3 = th1
             !!ba1---
             !!            ----------------------------------------------------------
             !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1742,12 +1739,11 @@ CONTAINS
           !b          dif13 = (wk1x-wk3x)**2   +  (wk1y-wk3y)**2        !* wk1y = 0.0
           !b          dif13 = (wk1x-wk3x)**2   +       (wk3y)**2
           dif13 = (wk1x-wk3x)*(wk1x-wk3x) + wk3y*wk3y
-          !!50
-          do 50 ipt=1,npts
+          do ipt=1,npts
             !!
             !!xlc1        Bash; skip k1 but keep the opposite angle to k1 - original setting
             if ( kang.eq.1 ) then                        !* th3=+th1, iang=1
-              if (ipt.eq.1 .or. ipt.eq.np2p1) go to 50   !* skip x-axis loci
+              if (ipt.eq.1 .or. ipt.eq.np2p1) cycle       !* skip x-axis loci
             end if
             !!xlc1---
             !!            ----------------------------------------------------------
@@ -1765,11 +1761,11 @@ CONTAINS
             dif14 = (wk1x-wk4x(ipt))*(wk1x-wk4x(ipt)) +             &
                  wk4y(ipt)*wk4y(ipt)
             !!
-            if ( dif13 .gt. dif14 ) go to 50    !* skip, don't compute
+            if ( dif13 .gt. dif14 ) cycle       !* skip, don't compute
             !!
             !b            if ( dif13 .gt. dif14 ) then
             !b               Heaviside = 0.                   !* Eq(12) of RPTV
-            !b               go to 50
+            !b               cycle
             !b            else
             !b               Heaviside = 1.                   !* Eq(11) of RPTV
             !b            end if
@@ -1929,13 +1925,13 @@ CONTAINS
             jref4(ipt,kang,izz) = i
             !mpc          jref4(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
             !!
-50        end do                              !* end of ipt loop
+          end do                              !* end of ipt loop
           !!
-40      end do                                !* end of kang loop
+        end do                                !* end of kang loop
         !!
-30    end do                                  !* end of krng loop
+      end do                                  !* end of krng loop
       !!
-20  end do                                    !* end of irng loop
+    end do                                    !* end of irng loop
     !!    ------------------------------------------------------------------
     !!    ==================================================================
     !!
@@ -2315,6 +2311,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -2565,6 +2562,7 @@ CONTAINS
     rnew1 = (t1 + t2 + t3) / (t*t)
     !!
     !!
+    rold = 0.9                       !* default if not otherwise found
     do n=1,4
       rold2 = rold1 + 0.1
       tp    = tanh(rold2 * p)
@@ -2576,13 +2574,11 @@ CONTAINS
       rnew2 = (t1 + t2 + t3) / (t*t)
       if ( rnew2 .lt. rold2 ) then
         rold = (rold2*rnew1-rold1*rnew2)/(rold2-rold1-rnew2+rnew1)
-        go to 11
+        exit
       end if
       rold1 = rold2
       rnew1 = rnew2
     end do  ! do n=1,4
-    rold = 0.9                       !* default if not otherwise found
-11  continue
     !!    ------------------------------------------------------------------
     !!
     !!
@@ -2596,14 +2592,13 @@ CONTAINS
       t3   = 2. * qrtp*sqrt(tp*tm)*sqrt(t-qsqp)
       rnew = (t1 + t2 + t3) / (t*t)
       if ( abs(rnew-rold) .lt. 0.00001 ) then
-        rmin = rnew
-        go to 21
+        ierr_gr = ierr_gr - 1
+        exit
       end if
       rold = 0.5 * (rold + rnew)
     end do
     ierr_gr = ierr_gr + 1  !* set 1's flag in ierr_gr if no convergence
     rmin = rnew
-21  continue
     !!    ------------------------------------------------------------------
     !!
     !!    set (dimensional) wavenumber components for this point on locus
@@ -2666,11 +2661,11 @@ CONTAINS
       rnew = ((t1+rold*t)**2) / t2
       if ( rnew .lt. rold ) then
         rold = rold - 10.
-        go to 31
+        ierr_gr = ierr_gr - 10
+        exit
       end if
     end do
     ierr_gr = ierr_gr + 10    !* set 10's place in ierr_gr if no sol'n
-31  continue
     !!    ------------------------------------------------------------------
     !!
     !!
@@ -2688,10 +2683,9 @@ CONTAINS
         rnew = ((t1+rold*t)**2) / t2
         if ( rnew .lt. rold ) then
           rold = rold - dr
-          go to 51
+          exit
         end if
       end do
-51    continue
     end do
     !!
     rmax = rold
@@ -2774,12 +2768,14 @@ CONTAINS
       !!
       do  n=1,25
         cdthnew = dbt4 - dbt5 / ((dtanh(dbt6))**2)
-        if ( dabs(cdthnew-cdthold) .lt. 0.0000001d0 ) go to 71
+        if ( dabs(cdthnew-cdthold) .lt. 0.0000001d0 ) then
+          ierr_gr = ierr_gr - 100
+          exit
+        end if
         cdthold = wate1 * cdthnew + wate2 * cdthold
         dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
       end do
       ierr_gr = ierr_gr + 100   !* add to 100's place for every failure
-71    continue
       !!
       dth  = sngl(dacos(cdthnew))
       zpod = sngl(dbz) * p / dep
@@ -3767,6 +3763,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -4012,8 +4009,7 @@ CONTAINS
     !!
     !!
     !!
-    !!50
-    do 50 irng=1,nrng,ialt
+    do irng=1,nrng,ialt
       !!kz
       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
@@ -4023,8 +4019,7 @@ CONTAINS
       !!      ----------------------------------------------------------------
       !!
       !!
-      !!60
-      do 60 iang=1,nang,ialt
+      do iang=1,nang,ialt
         !!
         !!        for both -tsa and -fbi
         d1   = dens1(irng,iang)
@@ -4033,31 +4028,28 @@ CONTAINS
         !!        for -fbi
         ddp1 = d1+dp1             !! for full expression of diag2 term
         !!
-        !!70
-        !!kz
-        !kz       do 70 krng=irng,nrng
-        do 70 krng=irng,kmax,ialt
+        !kz       do krng=irng,nrng
+        do krng=irng,kmax,ialt
           !!
           !!          for both -tsa and -fbi
           !!          Bash; check5  be consistent with gridsetr
-          !!          moved here from below (was after do 80 kang=1,nang)
-          !!          and changed go to 80 into go to 70 (i.e. go to next krng)
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
+          !!          moved here from below (was after do kang=1,nang)
+          !!          and changed do iang to do krng)
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) cycle  !* original gridsetr
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) cycle  !* original snlr_'s
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) cycle  !* Bash; use .gt. 2
           !!kz---
           !!
           izz = krng + iizz
           !!          ------------------------------------------------------------
           !!
-          !!80
-          do 80 kang=1,nang,ialt
+          do kang=1,nang,ialt
             !!
             !!            for both -tsa and -fbi
             !!ba1         Bash; Remove self interaction
             !!                  skip k1 but keep the opposite angle to k1 - original setting
             if ( krng.eq.irng ) then              !* wn3 = wn1
-              if ( kang.eq.iang ) go to 80        !* th3 = th1
+              if ( kang.eq.iang ) cycle            !* th3 = th1
             endif
             !!ba1---
             !!            ----------------------------------------------------------
@@ -4077,9 +4069,9 @@ CONTAINS
             !!
             !!            for both -tsa and -fbi
             !!            Bash; check5  be consistent with gridsetr
-            !!                  and move this test above right after do 70 krng=irng,nrng
-            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
-            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
+            !!                  and move this test above right after do krng=irng,nrng
+            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) cycle  !* gridsetr
+            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) cycle  !* original
             !!
             !!
             !!            for both -tsa and -fbi
@@ -4103,21 +4095,20 @@ CONTAINS
             dsp13 = dp3-dp1
             !!            ----------------------------------------------------------
             !!
-            !!90
-            do 90 ipt=1,npts
+            do ipt=1,npts
               !!
               !!              for both -tsa and -fbi
               !!              save time by skipping insignificant contributions
               !!e-30
-              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
+              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) cycle
               !!e-30---
-              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
+              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) cycle
               !!e-30---
               !!              --------------------------------------------------------
               !!
               !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
               !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
-              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
+              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) cycle       !* skip x-axis loci
               !xlc1           end if
               !!xlc1---
               !!              --------------------------------------------------------
@@ -4266,7 +4257,7 @@ CONTAINS
               !!              ========================================================
               !!
               !!
-90          end do                        !* end of ipt (locus) loop
+            end do                        !* end of ipt (locus) loop
             !!            ----------------------------------------------------------
             !!
             !!
@@ -4320,13 +4311,13 @@ CONTAINS
             diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
             !!            ----------------------------------------------------------
             !!
-80        end do                              !* end of kang loop
+          end do                              !* end of kang loop
           !!
-70      end do                                !* end of krng loop
+        end do                                !* end of krng loop
         !!
-60    end do                                  !* end of iang loop
+      end do                                  !* end of iang loop
       !!
-50  end do                                    !* end of irng loop
+    end do                                    !* end of irng loop
     !!------------------------------------------------------------------------------
     !!==============================================================================
     !!
@@ -4400,6 +4391,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -4645,8 +4637,7 @@ CONTAINS
     !!
     !!
     !!
-    !!50
-    do 50 irng=1,nrng,ialt
+    do irng=1,nrng,ialt
       !!kz
       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
@@ -4656,8 +4647,7 @@ CONTAINS
       !!      ----------------------------------------------------------------
       !!
       !!
-      !!60
-      do 60 iang=1,nang,ialt
+      do iang=1,nang,ialt
         !!
         !!        for both -tsa and -fbi
         d1   = dens1(irng,iang)
@@ -4666,31 +4656,29 @@ CONTAINS
         !!        for -fbi
         !fbi      ddp1 = d1+dp1             !! for full expression of diag2 term
         !!
-        !!70
         !!kz
-        !kz       do 70 krng=irng,nrng
-        do 70 krng=irng,kmax,ialt
+        !kz       do krng=irng,nrng
+        do krng=irng,kmax,ialt
           !!
           !!          for both -tsa and -fbi
           !!          Bash; check5  be consistent with gridsetr
-          !!          moved here from below (was after do 80 kang=1,nang)
-          !!          and changed go to 80 into go to 70 (i.e. go to next krng)
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
-          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
+          !!          moved here from below (was after do kang=1,nang)
+          !!          and changed do kang into do krng)
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) cycle  !* original gridsetr
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) cycle  !* original snlr_'s
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) cycle  !* Bash; use .gt. 2
           !!kz---
           !!
           izz = krng + iizz
           !!          ------------------------------------------------------------
           !!
-          !!80
-          do 80 kang=1,nang,ialt
+          do kang=1,nang,ialt
             !!
             !!            for both -tsa and -fbi
             !!ba1         Bash; Remove self interaction
             !!                  skip k1 but keep the opposite angle to k1 - original setting
             if ( krng.eq.irng ) then              !* wn3 = wn1
-              if ( kang.eq.iang ) go to 80        !* th3 = th1
+              if ( kang.eq.iang ) cycle            !* th3 = th1
             endif
             !!ba1---
             !!            ----------------------------------------------------------
@@ -4710,9 +4698,9 @@ CONTAINS
             !!
             !!            for both -tsa and -fbi
             !!            Bash; check5  be consistent with gridsetr
-            !!                  and move this test above right after do 70 krng=irng,nrng
-            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
-            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
+            !!                  and move this test above right after do krng=irng,nrng
+            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) cycle  !* gridsetr
+            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) cycle  !* original
             !!
             !!
             !!            for both -tsa and -fbi
@@ -4736,21 +4724,20 @@ CONTAINS
             dsp13 = dp3-dp1
             !!            ----------------------------------------------------------
             !!
-            !!90
-            do 90 ipt=1,npts
+            do ipt=1,npts
               !!
               !!              for both -tsa and -fbi
               !!              save time by skipping insignificant contributions
               !!e-30
-              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
+              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) cycle
               !!e-30---
-              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
+              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) cycle
               !!e-30---
               !!              --------------------------------------------------------
               !!
               !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
               !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
-              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
+              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) cycle       !* skip x-axis loci
               !xlc1           end if
               !!xlc1---
               !!              --------------------------------------------------------
@@ -4899,7 +4886,7 @@ CONTAINS
               !!              ========================================================
               !!
               !!
-90          end do                        !* end of ipt (locus) loop
+            end do                        !* end of ipt (locus) loop
             !!            ----------------------------------------------------------
             !!
             !!
@@ -4953,13 +4940,13 @@ CONTAINS
             !fbi          diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
             !!            ----------------------------------------------------------
             !!
-80        end do                              !* end of kang loop
+          end do                              !* end of kang loop
           !!
-70      end do                                !* end of krng loop
+        end do                                !* end of krng loop
         !!
-60    end do                                  !* end of iang loop
+      end do                                  !* end of iang loop
       !!
-50  end do                                    !* end of irng loop
+    end do                                    !* end of irng loop
     !!------------------------------------------------------------------------------
     !!==============================================================================
     !!
@@ -5027,6 +5014,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!
     !! 1. Purpose :
@@ -5156,112 +5144,112 @@ CONTAINS
     !!    Skip smoothing only if ismo = 0
     !!
     !!
-    if ( ismo.eq.0 ) goto 99
-    !!
-    !!
-    !!
-    !!-2  Smoothing the 2D array X into array Y
-    !!
-    !!-2a Smoothing the interior [2;nrng-1] x [2:nang-1]
-    !!-   Using 9 points averaged with equal weights.
-    !!-   Here use the dummy array so we don't spoil the original array.
-    do irng=2,nrng-1
+    if ( ismo.ne.0 ) then
+      !!
+      !!
+      !!
+      !!-2  Smoothing the 2D array X into array Y
+      !!
+      !!-2a Smoothing the interior [2;nrng-1] x [2:nang-1]
+      !!-   Using 9 points averaged with equal weights.
+      !!-   Here use the dummy array so we don't spoil the original array.
+      do irng=2,nrng-1
+        do iang=2,nang-1
+          Y(irng,iang)=(X(irng-1,iang-1)+X(irng-1,iang)+X(irng-1,iang+1) + &
+               X(irng,  iang-1)+X(irng,  iang)+X(irng,  iang+1) + &
+               X(irng+1,iang-1)+X(irng+1,iang)+X(irng+1,iang+1))/9.
+        end do
+      end do
+      !!    ------------------------------------------------------------------
+      !!    ==================================================================
+      !!
+      !!
+      !!-3  Smooth first & last line at iang=1 & iang=nang  (special cases)
+      !!
+      !!-3a Smooth line at iang = 1     (special case)
+      !!-   Using 9 points averaged with equal weights.
+      do irng=2,nrng-1
+        Y(irng, 1) = (X(irng-1,nang) + X(irng-1, 1) + X(irng-1, 2) +  &
+             X(irng,  nang) + X(irng,   1) + X(irng,   2) +  &
+             X(irng+1,nang) + X(irng+1, 1) + X(irng+1, 2) )/9.
+      end do
+      !!    ------------------------------------------------------------------
+      !!
+      !!-3b Smooth line at iang = nang  (special case)
+      !!-   Using 9 points averaged with equal weights.
+      do irng=2,nrng-1
+        Y(irng,nang)=(X(irng-1,nang-1) +X(irng-1,nang) +X(irng-1,1) + &
+             X(irng,  nang-1) +X(irng,  nang) +X(irng,  1) + &
+             X(irng+1,nang-1) +X(irng+1,nang) +X(irng+1,1))/9.
+      end do
+      !!    ------------------------------------------------------------------
+      !!    ==================================================================
+      !!
+      !!
+      !!-4  Smooth first & last col. at irng=1 & irng=nrng  (special cases)
+      !!
+      !!-4a Smooth col. at irng = 1     (low frq. can be skipped)
+      !!-   Using 6 points averaged with equal weights.
       do iang=2,nang-1
-        Y(irng,iang)=(X(irng-1,iang-1)+X(irng-1,iang)+X(irng-1,iang+1) + &
-             X(irng,  iang-1)+X(irng,  iang)+X(irng,  iang+1) + &
-             X(irng+1,iang-1)+X(irng+1,iang)+X(irng+1,iang+1))/9.
+        Y(1,iang)   = (X(1,iang-1) + X(1,iang) + X(1,iang+1) +        &
+             X(2,iang-1) + X(2,iang) + X(2,iang+1) )/6.
       end do
-    end do
-    !!    ------------------------------------------------------------------
-    !!    ==================================================================
-    !!
-    !!
-    !!-3  Smooth first & last line at iang=1 & iang=nang  (special cases)
-    !!
-    !!-3a Smooth line at iang = 1     (special case)
-    !!-   Using 9 points averaged with equal weights.
-    do irng=2,nrng-1
-      Y(irng, 1) = (X(irng-1,nang) + X(irng-1, 1) + X(irng-1, 2) +  &
-           X(irng,  nang) + X(irng,   1) + X(irng,   2) +  &
-           X(irng+1,nang) + X(irng+1, 1) + X(irng+1, 2) )/9.
-    end do
-    !!    ------------------------------------------------------------------
-    !!
-    !!-3b Smooth line at iang = nang  (special case)
-    !!-   Using 9 points averaged with equal weights.
-    do irng=2,nrng-1
-      Y(irng,nang)=(X(irng-1,nang-1) +X(irng-1,nang) +X(irng-1,1) + &
-           X(irng,  nang-1) +X(irng,  nang) +X(irng,  1) + &
-           X(irng+1,nang-1) +X(irng+1,nang) +X(irng+1,1))/9.
-    end do
-    !!    ------------------------------------------------------------------
-    !!    ==================================================================
-    !!
-    !!
-    !!-4  Smooth first & last col. at irng=1 & irng=nrng  (special cases)
-    !!
-    !!-4a Smooth col. at irng = 1     (low frq. can be skipped)
-    !!-   Using 6 points averaged with equal weights.
-    do iang=2,nang-1
-      Y(1,iang)   = (X(1,iang-1) + X(1,iang) + X(1,iang+1) +        &
-           X(2,iang-1) + X(2,iang) + X(2,iang+1) )/6.
-    end do
-    !!    ------------------------------------------------------------------
-    !!
-    !!-4b Smooth col. at irng = nrng  (high frq. can be skipped)
-    !!-   Using 6 points averaged with equal weights.
-    do iang=2,nang-1
-      Y(nrng,iang)=(X(nrng-1,iang-1)+X(nrng-1,iang)+X(nrng-1,iang+1)+ &
-           X(nrng, iang-1)+X(nrng, iang)+X(nrng, iang+1) )/6.
-    end do
-    !!    ------------------------------------------------------------------
-    !!    ==================================================================
-    !!
-    !!
-    !!-5  Smooth the 4 corners (optional):  <== Skip no sig. effect
-    !!-   Using 6 points averaged with equal weights
-    !!
-    !!-5a Corner (1, 1)
-    Y(1, 1)      =( X(1,nang) + X(1, 1) + X(1, 2) +                 &
-         X(2,nang) + X(2, 1) + X(2, 2) )/6.0
-    !!    ------------------------------------------------------------------
-    !!
-    !!-5b Corner (nrng,1)
-    Y(nrng,1)    =( X(nrng-1,nang) + X(nrng-1,1) + X(nrng-1,2) +    &
-         X(nrng,  nang) + X(nrng,  1) + X(nrng,  2) )/6.0
-    !!    ------------------------------------------------------------------
-    !!
-    !!-5c Corner (1,nang)
-    Y(1,nang)    =( X(1,nang-1) + X(1,nang) + X(1, 1) +             &
-         X(2,nang-1) + X(2,nang) + X(2, 1) ) / 6.
-    !!    ------------------------------------------------------------------
-    !!
-    !!-5d Corner (nrng,nang)
-    Y(nrng,nang) =( X(nrng-1,nang-1) +X(nrng-1,nang) +X(nrng-1,1) + &
-         X(nrng,  nang-1) +X(nrng,  nang) +X(nrng,  1) )/6.
-    !!    ------------------------------------------------------------------
-    !!    ==================================================================
-    !!
-    !!
-    !!-6  Final, dump smoothed array Y(:,:) into X(:,:) to be returned
-    !!
-    !!-6a Done with X(:,:) re-initial before it's replaced by Y(:,:)
-    !!ini
-    X(:,:) = 0.0
-    !!ini---
-    !!
-    !!-6b Dump smoothed array Y(:,:) into X(:,:) to be returned
-    do iang=1,nang
-      do irng=1,nrng
-        X(irng,iang) = Y(irng,iang)
+      !!    ------------------------------------------------------------------
+      !!
+      !!-4b Smooth col. at irng = nrng  (high frq. can be skipped)
+      !!-   Using 6 points averaged with equal weights.
+      do iang=2,nang-1
+        Y(nrng,iang)=(X(nrng-1,iang-1)+X(nrng-1,iang)+X(nrng-1,iang+1)+ &
+             X(nrng, iang-1)+X(nrng, iang)+X(nrng, iang+1) )/6.
       end do
-    end do
-    !!    Bash; can simplify in one line
-    !b    X(1:nrng, 1:nang) = Y(1:nrng, 1:nang)
-    !!    ------------------------------------------------------------------
-    !!    ==================================================================
-    !!
-99  continue
+      !!    ------------------------------------------------------------------
+      !!    ==================================================================
+      !!
+      !!
+      !!-5  Smooth the 4 corners (optional):  <== Skip no sig. effect
+      !!-   Using 6 points averaged with equal weights
+      !!
+      !!-5a Corner (1, 1)
+      Y(1, 1)      =( X(1,nang) + X(1, 1) + X(1, 2) +                 &
+           X(2,nang) + X(2, 1) + X(2, 2) )/6.0
+      !!    ------------------------------------------------------------------
+      !!
+      !!-5b Corner (nrng,1)
+      Y(nrng,1)    =( X(nrng-1,nang) + X(nrng-1,1) + X(nrng-1,2) +    &
+           X(nrng,  nang) + X(nrng,  1) + X(nrng,  2) )/6.0
+      !!    ------------------------------------------------------------------
+      !!
+      !!-5c Corner (1,nang)
+      Y(1,nang)    =( X(1,nang-1) + X(1,nang) + X(1, 1) +             &
+           X(2,nang-1) + X(2,nang) + X(2, 1) ) / 6.
+      !!    ------------------------------------------------------------------
+      !!
+      !!-5d Corner (nrng,nang)
+      Y(nrng,nang) =( X(nrng-1,nang-1) +X(nrng-1,nang) +X(nrng-1,1) + &
+           X(nrng,  nang-1) +X(nrng,  nang) +X(nrng,  1) )/6.
+      !!    ------------------------------------------------------------------
+      !!    ==================================================================
+      !!
+      !!
+      !!-6  Final, dump smoothed array Y(:,:) into X(:,:) to be returned
+      !!
+      !!-6a Done with X(:,:) re-initial before it's replaced by Y(:,:)
+      !!ini
+      X(:,:) = 0.0
+      !!ini---
+      !!
+      !!-6b Dump smoothed array Y(:,:) into X(:,:) to be returned
+      do iang=1,nang
+        do irng=1,nrng
+          X(irng,iang) = Y(irng,iang)
+        end do
+      end do
+      !!    Bash; can simplify in one line
+      !b    X(1:nrng, 1:nang) = Y(1:nrng, 1:nang)
+      !!    ------------------------------------------------------------------
+      !!    ==================================================================
+      !!
+    end if
     !!    ------------------------------------------------------------------
     !!    ==================================================================
     !!
