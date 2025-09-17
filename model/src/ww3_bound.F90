@@ -27,6 +27,7 @@ PROGRAM W3BOUND
   !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
   !/                                  Chris Bunney, UKMO.
   !/    27-May-2021 : Add namelist feature                ( version 7.XX )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2012-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -59,6 +60,7 @@ PROGRAM W3BOUND
   !     ----------------------------------------------------------------
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
@@ -124,7 +126,7 @@ PROGRAM W3BOUND
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3TIMEMD
   USE W3NMLBOUNDMD
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, EXTOPN
 #ifdef W3_RTD
   USE W3SERVMD, ONLY: W3EQTOLL
 #endif
@@ -288,17 +290,30 @@ PROGRAM W3BOUND
     BNDFILE = NML_BOUND%FILE
 
     NBO2 = 0
-    OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+    OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3BOUND','SPEC',69,NAMEF=BNDFILE)
     REWIND (NDSL)
     DO
-      READ (NDSL,*,END=400,ERR=802)
+      READ (NDSL,*,IOSTAT=IERR)
+      IF (IERR.LT.0) THEN
+        EXIT
+      ELSE IF (IERR.GT.0) THEN
+        WRITE (NDSE,1002) IERR
+        CALL EXTCDE ( 62 )
+      END IF
       NBO2 = NBO2 + 1
     END DO
-400 CONTINUE
     ALLOCATE(SPECFILES(NBO2))
     REWIND (NDSL)
     DO I=1,NBO2
-      READ (NDSL,'(A120)',END=801,ERR=802) SPECFILES(I)
+      READ (NDSL,'(A120)',IOSTAT=IERR) SPECFILES(I)
+      IF (IERR.LT.0) THEN
+        WRITE (NDSE,1001)
+        CALL EXTCDE ( 61 )
+      ELSE IF (IERR.GT.0) THEN
+        WRITE (NDSE,1002) IERR
+        CALL EXTCDE ( 62 )
+      END IF
     END DO
     CLOSE(NDSL)
 
@@ -308,10 +323,18 @@ PROGRAM W3BOUND
   ! process old ww3_bound.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bound.inp',STATUS='OLD',ERR=803,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bound.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3BOUND','INPUT',63)
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.LT.0) THEN
+      WRITE (NDSE,1001)
+      CALL EXTCDE ( 61 )
+    ELSE IF (IERR.GT.0) THEN
+      WRITE (NDSE,1002) IERR
+      CALL EXTCDE ( 62 )
+    END IF
     IF (COMSTR.EQ.' ') COMSTR = '$'
 
 
@@ -463,7 +486,7 @@ PROGRAM W3BOUND
         IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') &
              'IP, file, I/O stat:',IP,', ', &
              TRIM(SPECFILES(IP)), ', ',IERR
-        IF (IERR.NE.0) GOTO 810
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3BOUND','SPEC',70,NAMEF=SPECFILES(IP))
         READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
              space,string1,space,NKI,NTHI
         IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
@@ -494,7 +517,10 @@ PROGRAM W3BOUND
       !
 
       ! Checks consistency of NK
-      IF (NKI.GT.NK) GOTO 808
+      IF (NKI.GT.NK) THEN
+        WRITE (NDSE,1008) NK, NKI
+        CALL EXTCDE ( 68 )
+      END IF
       !
       ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
       ! such that source spec SPEC (read in input) links with output spec
@@ -506,14 +532,20 @@ PROGRAM W3BOUND
       !        IFMAX2=NK ! index of last freq. in output spectrum
       !
       ! Checks consistency of XFR
-      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 806
+      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) THEN
+        WRITE (NDSE,1006) XFR
+        CALL EXTCDE ( 66 )
+      END IF
       !
       ! Checks consistency of NTH
       ! WARNING: check is only done on number of directions, no check
       ! is done on the relative offset of first direction in terms of
       ! the directional increment [-0.5,0.5] (last parameter of the
       ! spectral definition in ww3_grid.inp, on second active line)
-      IF (NTHI.NE.NTH) GOTO 807
+      IF (NTHI.NE.NTH) THEN
+        WRITE (NDSE,1007) NTH, NTHI
+        CALL EXTCDE ( 67 )
+      END IF
 
       IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN
         DO J=1,MIN(NK1,NK)
@@ -668,43 +700,6 @@ PROGRAM W3BOUND
       CLOSE(NDSB)
     END IF
   END IF
-  STOP
-  !
-  ! Escape locations read errors :
-  !
-
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 61 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 62 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003)
-  CALL EXTCDE ( 63 )
-  !
-806 CONTINUE
-  WRITE (NDSE,1006) XFR
-  CALL EXTCDE ( 66 )
-  !
-807 CONTINUE
-  WRITE (NDSE,1007) NTH, NTHI
-  CALL EXTCDE ( 67 )
-  !
-808 CONTINUE
-  WRITE (NDSE,1008) NK, NKI
-  CALL EXTCDE ( 68 )
-  !
-809 CONTINUE
-  WRITE (NDSE,1009) BNDFILE, IERR
-  CALL EXTCDE ( 69 )
-  !
-810 CONTINUE
-  WRITE (NDSE,1010) SPECFILES(IP)
-  CALL EXTCDE ( 70 )
-
   !
   ! Formats
   !
@@ -721,10 +716,6 @@ PROGRAM W3BOUND
        '     ERROR IN READING ',A,' FROM INPUT FILE'/         &
        '     IOSTAT =',I5/)
   !
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
-       '     ERROR IN OPENING INPUT FILE: ', A/               &
-       '     IOSTAT =',I5/)
-  !
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
        '     ILLEGAL XFR, XFR =',F12.6/)
   !
@@ -734,15 +725,6 @@ PROGRAM W3BOUND
 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
        '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
        '     IT WILL BE MANAGED SOON BY SPCONV')
-  !
-1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
-       '     ERROR IN OPENING SPEC FILE: ', A/                &
-       '     IOSTAT =',I5/)
-  !
-1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
-       '     SPEC FILE NOT EXISTING: ', A/)
-
-
   !
   !/
   !/ End of W3BOUND ---------------------------------------------------- /

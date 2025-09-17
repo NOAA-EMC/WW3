@@ -17,26 +17,27 @@ DOUBLE PRECISION p1,p2,p3,pp,xl,xm,z,z1
       m=(n+1)/2
       xm=0.5d0*(x2+x1)
       xl=0.5d0*(x2-x1)
-      do 12 i=1,m
+      do i=1,m
         z=cos(3.141592654d0*(i-.25d0)/(n+.5d0))
-1       continue
+        do
           p1=1.d0
           p2=0.d0
-          do 11 j=1,n
+          do j=1,n
             p3=p2
             p2=p1
             p1=((2.d0*j-1.d0)*z*p2-(j-1.d0)*p3)/j
-11        continue
+          end do
           pp=n*(z*p1-p2)/(z*z-1.d0)
           z1=z
 
           z=z1-p1/pp
-        if(abs(z-z1).gt.EPS)goto 1
+          if(abs(z-z1).le.EPS) exit
+        end do
         x(i)=xm-xl*z
         x(n+1-i)=xm+xl*z
         w(i)=2.d0*xl/((1.d0-z*z)*pp*pp)
         w(n+1-i)=w(i)
-12    continue
+      end do
 !
 return
 END subroutine
@@ -118,6 +119,7 @@ implicit none
 !     18/01/2001 Check include if n1==1
 !     24/01/2001 Check for equality of y2 data loosened if n2==1
 !     13/09/2001 Documentation updated
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose
 !
@@ -193,7 +195,7 @@ ierr = 0
 !
 if(n1==1) then
   y2 = y1(1)
-  goto 9999
+  return
 end if
 !
 !  check minimum and maximum data values
@@ -205,12 +207,12 @@ xmax2 = maxval(x2)
 !
 if (abs(xmin1-xmax1) < eps .or. abs(x1(1)-x1(n1)) < eps) then
   ierr = 2
-  goto 9999
+  return
 end if
 !
 if ((abs(xmin2-xmax2) < eps .or. abs(x2(1)-x2(n2)) < eps) .and. n2 > 1) then
   ierr = 3
-  goto 9999
+  return
 end if
 !
 ! check input data for monotonicity
@@ -220,7 +222,7 @@ if(x1(1) < x1(n1)) then             ! data increasing
     if(x1(i1) > x1(i1+1)) then
       ierr=1
       write(*,*) 'z_intp1: i1 x1(i1) x1(i1+1):',i1,x1(i1),x1(i1+1)
-      goto 9999
+      return
     end if
   end do
 !
@@ -228,7 +230,7 @@ if(x1(1) < x1(n1)) then             ! data increasing
     if(x2(i2) > x2(i2+1)) then
       ierr=ierr+10
       write(*,*) 'z_intp1: i2 x2(i2) x2(i2+1):',i2,x2(i2),x2(i2+1)
-      goto 9999
+      return
     end if
   end do
 !
@@ -237,7 +239,7 @@ else                                 ! data decreasing
     if(x1(i1) < x1(i1+1)) then
       ierr=2
       write(*,*) 'z_intp1: i1 x1(i1) x1(i1+1):',i1,x1(i1),x1(i1+1)
-      goto 9999
+      return
     end if
   end do
 !
@@ -245,7 +247,7 @@ else                                 ! data decreasing
     if(x2(i2) < x2(i2+1)) then
       ierr=ierr + 20
       write(*,*) 'z_intp1: i2 x2(i2) x2(i2+1):',i2,x2(i2),x2(i2+1)
-      goto 9999
+      return
     end if
   end do
 end if
@@ -280,8 +282,6 @@ if(ierr==0) then
     if(i2==n2 .and. s2>s1) y2(n2) = y1(n1)
   end do
 end if
-!
-9999 continue
 !
 return
 end subroutine
@@ -446,6 +446,7 @@ real function z_root2(func,x1,x2,xacc,iprint,ierr)
 !     0.02    07/11/1999 Test added to check boundaries, and reverse if necessary
 !                        Bug fixed in assigning answer
 !     0.03    02/09/2002 Maximum number of iterations set to 20, instead of 10
+!     X.XX    04/07/2025 Remove labelled statements
 !
 !  1. Purpose
 !
@@ -523,6 +524,7 @@ real xh           ! upper (high) boundary of interval
 real xl           ! lower boundary of interval
 real xm           ! middle point of interval
 real xnew         ! new estimate according to Ridders method
+logical success   ! indicates a successful calculation
 !
 ierr   = 0        ! set error level
 unused =-1.11e30  ! set start value
@@ -554,6 +556,7 @@ fh = func(xx2)
 !if(luprint > 0) write(luprint,'(a,4e13.5)') &
 !&  'Z_ROOT2: xx1 xx2 fl fh:',xx1,xx2,fl,fh
 !
+success = .false.
 if((fl > 0. .and. fh < 0.) .or. (fl < 0. .and. fh > 0.))then
    xl = xx1
    xh = xx2
@@ -563,7 +566,10 @@ if((fl > 0. .and. fh < 0.) .or. (fl < 0. .and. fh > 0.))then
       xm = 0.5*(xl+xh)
       fm = func(xm)
       s = sqrt(fm**2-fl*fh)
-      if(s == 0.) goto 9000
+      if(s == 0.) then
+        success = .true.
+        exit
+      end if
       xnew = xm+(xm-xl)*(sign(1.,fl-fh)*fm/s)
 !
 !      if(luprint>0) write(luprint,'(a,4e13.5)') &
@@ -571,12 +577,16 @@ if((fl > 0. .and. fh < 0.) .or. (fl < 0. .and. fh > 0.))then
 !
       if (abs(xnew-zriddr) <= xacc) then
 !        if(luprint>0) write(luprint,'(a)') 'Z_ROOT2: xnew=zriddr'
-        goto 9000
+        success = .true.
+        exit
       end if
 !
       zriddr = xnew
       fnew = func(zriddr)
-      if (fnew == 0.) goto 9000
+      if (fnew == 0.) then
+        success = .true.
+        exit
+      end if
 !
       if(sign(fm,fnew) /= fm) then
          xl = xm
@@ -591,36 +601,38 @@ if((fl > 0. .and. fh < 0.) .or. (fl < 0. .and. fh > 0.))then
          fl = fnew
       else
          ierr = 1
-         goto 9000
+         success = .true.
+         exit
       endif
 !
-      if(abs(xh-xl) <= xacc) goto 9000
+      if(abs(xh-xl) <= xacc) then
+        success = .true.
+        exit
+      end if
 !
       if(luprint > 0) write(luprint,'(a,i4,5e14.6)') &
 &     'Z_ROOT2: iter,x1,x2,|x1-x2|,xacc,z:', iter,xl,xh,abs(xl-xh),xacc,fnew
 !
    end do
-   ierr = 2
-   if(luprint > 0) write(luprint,'(a)') 'Z_ROOT2: -> ierr=2'
-   goto 9000
+   if (.not. success) then
+     ierr = 2
+     if(luprint > 0) write(luprint,'(a)') 'Z_ROOT2: -> ierr=2'
+   end if
 else if (fl == 0.) then
   zriddr = xx1
 else if (fh == 0.) then
   zriddr = xx2
 else
   ierr = 3
-  goto 9999
+  return
 ! 'root must be bracketed in zriddr'
 endif
-!
-9000 continue
 !
 z_root2 = zriddr
 !
 if(luprint > 0) write(luprint,'(a,2i3,5e13.5)') &
 &     'Z_ROOT2: ierr,iter,xl,xh,acc,x0,z0:', ierr,iter,xl,xh,xacc,z_root2,func(z_root2)
 !
-9999 continue
 !
 return
 end function

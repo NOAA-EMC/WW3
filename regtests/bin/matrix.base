@@ -720,6 +720,7 @@
       echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst                        -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst         -i input_const -w work_PR3_UQ_CONST           $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst           -i input_rho -w work_PR3_UQ_RHO             $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5                $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s ST6    -i input_rho -w work_ST6FLX5                $ww3 ww3_tp2.15" >> matrix.body
@@ -880,8 +881,9 @@
     if [ "$multi08" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s ST4_PR3_UQ_MPI -w work_ST4_PR3_UQ_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
-      echo "$rtst -i i_lowres_multi -w work_lowres         -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -s ST4_PR3_UQ_MPI         -w work_ST4_PR3_UQ_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -i i_lowres_multi         -w work_lowres         -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -i i_lowres_multi_jonswap -w work_lowres_jonswap -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
     fi
 
   fi
@@ -1959,6 +1961,7 @@
     echo "$rtst                  -w work_IC4_M8                -i input_IC4_M8      $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC4_M9                -i input_IC4_M9      $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC4_M10               -i input_IC4_M10     $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC4_M10_icenum        -i input_IC4_M10_icenum $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m         -w work_IC5_M1                -i input_IC5_M1      $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m         -w work_IC5_M2                -i input_IC5_M2      $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m         -w work_IC5_M3                -i input_IC5_M3      $ww3 ww3_tic1.1" >> matrix.body
