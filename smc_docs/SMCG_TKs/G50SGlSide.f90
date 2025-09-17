@@ -105,7 +105,7 @@ END MODULE Constants
 !    Close all files
       CLOSE(16)
 
- 9999  PRINT*, ' AdapGrid completed '
+      PRINT*, ' AdapGrid completed '
 
  END PROGRAM AdapGrid 
 !  End of main program
@@ -189,7 +189,7 @@ END MODULE Constants
       WRITE(6,*) " Start creating u boundary face II JJ=", II, JJ
 
 !!    Exclude last cell, the North Polar cell.
-!     DO 111 L=1, NC-1
+!     DO L=1, NC-1
 !!    Loop over all cells.
       DO L=1, NC
          i=0
@@ -234,7 +234,7 @@ END MODULE Constants
          END DO
 
          IF(kk+ij .gt. 2*ICE(4,L) )  WRITE(6,*) "Over done i-side for cell L,ij,kk=", L, ij, kk
-         IF(kk+ij .ge. 2*ICE(4,L) )  EXIT
+         IF(kk+ij .ge. 2*ICE(4,L) )  CYCLE
 
          IF(ij .eq. 0)  THEN
 !!  Full boundary cell for west side
@@ -317,7 +317,7 @@ END MODULE Constants
       WRITE(6,*) " Start creating v boundary face II JJ=", II, JJ
 
 !!    Exclude the last polar cell
-!     DO 222 L=1, NC-1
+!     DO L=1, NC-1
 !!    Loop over all cells
       DO L=1, NC
          i=0
@@ -357,7 +357,7 @@ END MODULE Constants
          END DO
 
          IF(nn+ij .gt. 2*ICE(3,L) )  WRITE(6,*)  "Over done j-side for L, ij, nn=", L, ij, nn
-         IF(nn+ij .ge. 2*ICE(3,L) )  EXIT
+         IF(nn+ij .ge. 2*ICE(3,L) )  CYCLE
 
          IF(ij .eq. 0)  THEN
 !!  Full boundary cell for south side
@@ -629,9 +629,9 @@ END MODULE Constants
 
    PRINT*, ' I J-Sides output done '
 
- 999  PRINT*, ' Sub CellSide ended.'
+   PRINT*, ' Sub CellSide ended.'
 
-      RETURN
+   RETURN
 
  END SUBROUTINE CellSide
 

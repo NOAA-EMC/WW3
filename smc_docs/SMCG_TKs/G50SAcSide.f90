@@ -237,7 +237,7 @@ END MODULE Constants
          END DO
 
          IF(kk+ij .gt. 2*ICE(4,L) )  WRITE(6,*) "Over done i-side for cell L,ij,kk=", L, ij, kk
-         IF(kk+ij .ge. 2*ICE(4,L) )  EXIT
+         IF(kk+ij .ge. 2*ICE(4,L) )  CYCLE
 
          IF(ij .eq. 0)  THEN
 !!  Full boundary cell for west side
@@ -359,7 +359,7 @@ END MODULE Constants
          END DO
 
          IF(nn+ij .gt. 2*ICE(3,L) )  WRITE(6,*)  "Over done j-side for L, ij, nn=", L, ij, nn
-         IF(nn+ij .ge. 2*ICE(3,L) )  EXIT
+         IF(nn+ij .ge. 2*ICE(3,L) )  CYCLE
 
          IF(ij .eq. 0)  THEN
 !!  Full boundary cell for south side
@@ -630,9 +630,9 @@ END MODULE Constants
 
    PRINT*, ' I J-Sides output done '
 
- 999  PRINT*, ' Sub CellSide ended.'
+   PRINT*, ' Sub CellSide ended.'
 
-      RETURN
+   RETURN
 
  END SUBROUTINE CellSide
 
