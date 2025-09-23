@@ -734,10 +734,11 @@ PROGRAM W3GRIB
   ! ... Set GRIB2 Data Representation Template Number (Code Table 5.0)
   !
 #ifdef W3_NCEP2
-  IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
+  IDRSNUM = 2 !Complex Packing
 #endif
   !                            clusters with Intel compiler ***
 #ifdef W3_NCEP2
+  !IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
   !IDRSNUM = 0 !simple packing
   !IDRSNUM = 41 !png packing
   !IDRSNUM = 2 !Complex Packing (Grid Point Data)
