@@ -231,9 +231,9 @@ CONTAINS
 #ifdef W3_SMC
     REAL                 :: DLON, DLAT
 #endif
-#ifdef W3_MPI
-    type(MPI_COMM)       :: mpicomm
-#endif
+!#ifdef W3_MPI
+!    type(MPI_COMM)       :: mpicomm
+!#endif
     !/ ------------------------------------------------------------------- /
     !
     IF (LD_MASTER) THEN
@@ -354,8 +354,8 @@ CONTAINS
     ENDIF
     !
 #ifdef W3_MPI
-    mpicomm%mpi_val = ID_LCOMM
-    CALL MPI_BCAST(NNODES,1,MPI_INTEGER,0,mpicomm,IERR_MPI)
+    !mpicomm%mpi_val = ID_LCOMM
+    CALL MPI_BCAST(NNODES,1,MPI_INTEGER,0,ID_LCOMM,IERR_MPI)
 #endif
     !
     !/ ------------------------------------------------------------------- /
