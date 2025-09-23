@@ -135,6 +135,7 @@ CONTAINS
 #endif
     ! * Argument
     type(MPI_COMM), INTENT(OUT)       :: ID_LCOMM      ! Model local communicator
+    INTEGER :: ID_LCOMM_INT
     !
     !----------------------------------------------------------------------
     ! * Executable part
@@ -146,7 +147,8 @@ CONTAINS
     ENDIF
     !
     !! Get the value of a local MPI communicator to be used by WW3 for its internal parallelisation
-    CALL OASIS_GET_LOCALCOMM(ID_LCOMM, IL_ERR)
+    CALL OASIS_GET_LOCALCOMM(ID_LCOMM_INT, IL_ERR)
+    ID_LCOMM%mpi_val = ID_LCOMM_INT
     IF (IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_INIT', 'Problem during oasis_get_localcomm')
     ENDIF
