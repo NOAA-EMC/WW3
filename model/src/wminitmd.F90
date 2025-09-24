@@ -449,9 +449,9 @@ CONTAINS
     !/
     INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE
 #ifdef W3_MPI
-    type(MPI_COMM)             :: MPI_COMM_IN
+    type(MPI_COMM), INTENT(IN) :: MPI_COMM_IN
 #else
-    INTEGER                    :: MPI_COMM_IN
+    INTEGER, INTENT(IN)        :: MPI_COMM_IN
 #endif
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
