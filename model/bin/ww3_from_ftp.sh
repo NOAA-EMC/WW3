@@ -20,7 +20,7 @@ usage()
 curr_dir=`pwd`
 
 # Set WW3 code version
-ww3ver=v7.14.1
+ww3ver=v7.14.2
 
 interactive='n'
 keep='n'

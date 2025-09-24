@@ -63,6 +63,7 @@ PROGRAM GXOUTP
   !/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
   !/                  (in source terms)
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -123,6 +124,8 @@ PROGRAM GXOUTP
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -170,7 +173,7 @@ PROGRAM GXOUTP
 #else 
   USE W3IOPOMD, ONLY: W3IOPO
 #endif
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -257,8 +260,10 @@ PROGRAM GXOUTP
   !
   J      = LEN_TRIM(FNMPRE)
   OPEN (NDSI,FILE=FNMPRE(:J)//'gx_outp.inp',STATUS='OLD',         &
-       ERR=800,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'GXOUTP','INPUT',10)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTP','INPUT',11)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -302,7 +307,8 @@ PROGRAM GXOUTP
   !     Output times
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+  READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTP','INPUT',11)
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0 ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
@@ -329,7 +335,8 @@ PROGRAM GXOUTP
   !
   DO
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) IPOINT
+    READ (NDSI,*,IOSTAT=IERR) IPOINT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTP','INPUT',11)
     IF ( IPOINT .GT. 0 ) THEN
       IF ( IPOINT .LE. NOPTS ) THEN
         IF ( .NOT. FLREQ(IPOINT) ) NREQ   = NREQ + 1
@@ -358,7 +365,8 @@ PROGRAM GXOUTP
   ! ... Output of output points
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) FLSRCE
+  READ (NDSI,*,IOSTAT=IERR) FLSRCE
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'GXOUTP','INPUT',11)
   WRITE (NDSO,952)
   NLEV   = 0
   DO I=1, 7
@@ -430,7 +438,10 @@ PROGRAM GXOUTP
   IF ( DTREQ .GT. 3599. ) THEN
     CINC   = 'HR'
     IINC   = NINT(DTREQ/3600.)
-    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
+    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) THEN 
+      WRITE (NDSE,1020) DTREQ
+      CALL EXTCDE ( 20 )
+    END IF
   ELSE
     CINC   = 'MN'
     IINC   = NINT(DTREQ/60.)
@@ -459,33 +470,8 @@ PROGRAM GXOUTP
   !
   WRITE (NDSCGR,974)
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 10 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 11 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 12 )
-  !
-820 CONTINUE
-  WRITE (NDSE,1020) DTREQ
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021)
-  CALL EXTCDE ( 21 )
-  !
-888 CONTINUE
-  !
   WRITE (NDSO,999)
+  STOP
   !
   ! Formats
   !
@@ -552,22 +538,9 @@ PROGRAM GXOUTP
        ' ========================================='/          &
        '         WAVEWATCH III GrADS point output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTP : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTP : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTP : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     FIELD INCREMENT > 1HR BUT NOT MULTIPLE',F10.0/)
   !
-1021 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     UPDATE PARS IN LOOP 610 !!!'/)
   !/
   !/ Internal subroutine GXEXPO ---------------------------------------- /
   !/

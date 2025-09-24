@@ -59,6 +59,7 @@ MODULE WMINITMD
   !/                  (T. J. Campbell, NRL)
   !/    15-May-2018 : Update namelist                     ( version 6.05 )
   !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -177,6 +178,7 @@ CONTAINS
     !/                  (T. J. Campbell, NRL)
     !/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -237,6 +239,8 @@ CONTAINS
     !      WMIOPP    Subr. WMIOPOMD Initialize unified point output.
     !      ITRACE    Subr. W3SERVMD Initialize subroutine tracing.
     !      STRACE    Subr.   Id.    Subroutine tracing.
+    !      EXTIOF    Subr.   Id.    Program abort if error I/O file.
+    !      EXTOPN    Subr.   Id.    Program abort if error opening file.
     !      EXTCDE    Subr.   Id.    Program abort.
     !      WWDATE    Subr.   Id.    System date.
     !      WWTIME    Subr.   Id.    System time.
@@ -378,7 +382,7 @@ CONTAINS
     USE WMINIOMD, ONLY: WMIOBS, WMIOBG, WMIOBF
     USE WMIOPOMD, ONLY: WMIOPP
     !/
-    USE W3SERVMD, ONLY: ITRACE, EXTCDE, WWDATE, WWTIME, NEXTLN
+    USE W3SERVMD, ONLY: ITRACE, EXTCDE, EXTOPN, EXTIOF, WWDATE, WWTIME, NEXTLN
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -623,10 +627,11 @@ CONTAINS
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                      &
          WRITE (MDSS,910)  IFNAME, MDSI
     !
-    OPEN (MDSI,FILE=TRIM(FNMPRE)//IFNAME,STATUS='OLD',ERR=2000,      &
-         IOSTAT=IERR)
+    OPEN (MDSI,FILE=TRIM(FNMPRE)//IFNAME,STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINIT','INPUT',2000,NAMEF=IFNAME)
     REWIND (MDSI)
-    READ (MDSI,'(A)',END=2001,ERR=2002) COMSTR
+    READ (MDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     CALL WMUSET ( MDSS, MDSS, MDSI, .TRUE., 'INP',                  &
          TRIM(FNMPRE)//IFNAME, 'Model control input file')
@@ -648,7 +653,8 @@ CONTAINS
 #endif
     !
     IF ( IMPROC .EQ. NMPLOG ) THEN
-      OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,ERR=2010,IOSTAT=IERR)
+      OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINIT','LOG',2010)
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
            WRITE (MDSS,911)  LFILE, MDSO
       CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'OUT',              &
@@ -660,7 +666,8 @@ CONTAINS
     !
     IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
       IFT    = LEN_TRIM(TFILE)
-      OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
+      OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINIT','TEST',2011)
       CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
            TRIM(FNMPRE)//TFILE(:IFT), 'Test output file')
     END IF
@@ -670,7 +677,8 @@ CONTAINS
     CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
     CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
          TRIM(FNMPRE)//PFILE(:IFT), 'Profiling file')
-    OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
+    OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINIT','TEST',2011)
 #endif
     !
     ! 1.e Initial and test output
@@ -697,8 +705,9 @@ CONTAINS
     !     Processor set as in W3INIT to minimize communication in WMIOPO
     !
     CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-    READ (MDSI,*,END=2001,ERR=2002) NRGRD, NRINP, UNIPTS,           &
+    READ (MDSI,*,IOSTAT=IERR) NRGRD, NRINP, UNIPTS,           &
          IOSTYP, UPPROC, PSHARE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
     IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
     !
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
@@ -728,8 +737,16 @@ CONTAINS
       END IF
     END IF
     !
-    IF ( NRGRD .LT. 1 ) GOTO 2020
-    IF ( NRINP .LT. 0 ) GOTO 2021
+    IF ( NRGRD .LT. 1 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
+      CALL EXTCDE ( 2020 )
+      RETURN
+    END IF
+    IF ( NRINP .LT. 0 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
+      CALL EXTCDE ( 2021 )
+      RETURN
+    END IF
     IF ( NRINP.EQ.0 .AND. .NOT.UNIPTS ) NRINP = -1
     !
     ! 2.b Set up data structures
@@ -820,7 +837,8 @@ CONTAINS
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
       CALL W3SETI ( -I, MDSE, MDST )
       INFLAGS1 = .FALSE.
-      READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), INFLAGS1(JFIRST:9)
+      READ (MDSI,*,IOSTAT=IERR) MNAMES(-I), INFLAGS1(JFIRST:9)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
       !
     END DO
     !
@@ -835,7 +853,8 @@ CONTAINS
       NDSE   = MDSE
       !
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-      READ (MDSI,*,END=2001,ERR=2002) MNAMES(0)
+      READ (MDSI,*,IOSTAT=IERR) MNAMES(0)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
       !
       IF ( IOSTYP .LE. 1 ) THEN
         NMPUPT = MAX(1,NMPROC-2)
@@ -849,8 +868,9 @@ CONTAINS
     !
     DO I=NRGRD+1, 2*NRGRD
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-      READ (MDSI,*,END=2001,ERR=2002) MNAMES(I), TNAMES(:),         &
+      READ (MDSI,*,IOSTAT=IERR) MNAMES(I), TNAMES(:),         &
            TMPRNK(I), TMPGRP(I), RP1(I), RPN(I), BCDTMP(I)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
       INAMES(I,:) = TNAMES(:)
       RP1(I) = MAX ( 0. , MIN ( 1. , RP1(I) ) )
       RPN(I) = MAX ( RP1(I) , MIN ( 1. , RPN(I) ) )
@@ -917,8 +937,16 @@ CONTAINS
                   EXIT
                 END IF
               END DO
-              IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+              IF ( INPMAP(I,J) .EQ. 0 ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
+              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
               USEINP(-INPMAP(I,J)) = .TRUE.
               CPLINP(-INPMAP(I,J)) = .TRUE.
             END IF
@@ -931,8 +959,16 @@ CONTAINS
                 EXIT
               END IF
             END DO
-            IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+            IF ( INPMAP(I,J) .EQ. 0 ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+              CALL EXTCDE ( 2030 )
+              RETURN
+            END IF
+            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+              CALL EXTCDE ( 2031 )
+              RETURN
+            END IF
             USEINP(INPMAP(I,J)) = .TRUE.
           END IF
         END IF
@@ -1186,10 +1222,11 @@ CONTAINS
     !
     CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
     IF (IS_ESMF_COMPONENT) THEN
-      READ (MDSI,*,END=2001,ERR=2002) STMPT, ETMPT
+      READ (MDSI,*,IOSTAT=IERR) STMPT, ETMPT
     ELSE
-      READ (MDSI,*,END=2001,ERR=2002) STIME, ETIME
+      READ (MDSI,*,IOSTAT=IERR) STIME, ETIME
     END IF
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
     !
     CALL STME21 ( STIME , DTME21 )
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
@@ -1204,7 +1241,8 @@ CONTAINS
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,943)
     !
     CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-    READ (MDSI,*,END=2001,ERR=2002) FLGHG1, FLGHG2
+    READ (MDSI,*,IOSTAT=IERR) FLGHG1, FLGHG2
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
     FLGHG2 = FLGHG1 .AND. FLGHG2
     !
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
@@ -1272,7 +1310,8 @@ CONTAINS
         READ(WORDS( 5 ), * ) ODAT(20,1)
         IF (WORDS(6) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-          READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
+          READ (MDSI,*,IOSTAT=IERR)(ODAT(I,1),I=5*(8-1)+1,5*8)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
         ELSE 
           ODAT(5*(8-1)+1,1)=0
           ODAT(5*(8-1)+2,1)=0
@@ -1281,7 +1320,8 @@ CONTAINS
           ODAT(5*8,1)=0
         END IF
       ELSE
-        READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
+        READ (MDSI,*,IOSTAT=IERR)(ODAT(I,1),I=5*(J-1)+1,5*J)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
         OUTFF(J,1) = 0
       END IF
       !
@@ -1351,14 +1391,17 @@ CONTAINS
               IF (NPTS.GT.0) THEN
                 ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
               ELSE
-                GOTO 2054
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
+                CALL EXTCDE ( 2054 )
+                RETURN
               END IF
             END IF
             !
             NPTS = 0
             DO
               CALL NEXTLN ( COMSTR , MDSI2 , MDSE2 )
-              READ (MDSI2,*,END=2001,ERR=2002) XX, YY, PN
+              READ (MDSI2,*,IOSTAT=IERR) XX, YY, PN
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
               !
               IF ( ILOOP.EQ.1 .AND. IMPROC.EQ.1 ) THEN
                 BACKSPACE (MDSI)
@@ -1406,7 +1449,8 @@ CONTAINS
           ! 5.e Type 3: track output
           !
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-          READ (MDSI,*,END=2001,ERR=2002) TFLAGI
+          READ (MDSI,*,IOSTAT=IERR) TFLAGI
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           IF ( .NOT. TFLAGI ) MDS(11,:) = -MDS(11,:)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
             IF ( .NOT. TFLAGI ) THEN
@@ -1429,7 +1473,8 @@ CONTAINS
           ! 5.h Type 6: partitioned wave field data
           !
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-          READ (MDSI,*,END=2001,ERR=2002) IPRT(:,1), LPRT(1)
+          READ (MDSI,*,IOSTAT=IERR) IPRT(:,1), LPRT(1)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
             WRITE (MDSS,961) IPRT(:,1)
             IF ( .NOT. LPRT(1) ) THEN
@@ -1539,7 +1584,8 @@ CONTAINS
     !
     DO
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-      READ (MDSI,*,END=2001,ERR=2002) MN, J
+      READ (MDSI,*,IOSTAT=IERR) MN, J
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
       !
       ! 5.j.1 Bail out loop for output type 0
       !
@@ -1552,14 +1598,26 @@ CONTAINS
         IF ( MN(:II) .EQ. MNAMES(I)(1:II) ) EXIT
       END DO
       !
-      IF ( I .GT. NRGRD ) GOTO 2051
+      IF ( I .GT. NRGRD ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
+        CALL EXTCDE ( 2051 )
+        RETURN
+      END IF
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
            WRITE (MDSS,962) MN(1:II), I
       !
       ! 5.j.3 Check the output type
       !
-      IF ( J.LT.0 .OR. J.GT. NOTYPE ) GOTO 2052
-      IF ( J.EQ.2 .AND. UNIPTS ) GOTO 2053
+      IF ( J.LT.0 .OR. J.GT. NOTYPE ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
+        CALL EXTCDE ( 2052 )
+        RETURN
+      END IF
+      IF ( J.EQ.2 .AND. UNIPTS ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
+        CALL EXTCDE ( 2053 )
+        RETURN
+      END IF
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
            WRITE (MDSS,951) J, IDOTYP(J)
       !
@@ -1591,7 +1649,8 @@ CONTAINS
         END IF
         !
       ELSE
-        READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,I),II=5*(J-1)+1,5*J)
+        READ (MDSI,*,IOSTAT=IERR)(ODAT(II,I),II=5*(J-1)+1,5*J)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
         OUTFF(J,I) = 0
       END IF
       !
@@ -1663,7 +1722,8 @@ CONTAINS
             OT2(I)%NPTS = 0
             DO
               CALL NEXTLN ( COMSTR , MDSI2 , MDSE2 )
-              READ (MDSI2,*,END=2001,ERR=2002) XX, YY, PN
+              READ (MDSI2,*,IOSTAT=IERR) XX, YY, PN
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
               !
               IF ( ILOOP.EQ.1 .AND. IMPROC.EQ.1 ) THEN
                 BACKSPACE (MDSI)
@@ -1711,7 +1771,8 @@ CONTAINS
           ! 5.n Type 3: track output
           !
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-          READ (MDSI,*,END=2001,ERR=2002) TFLAGI
+          READ (MDSI,*,IOSTAT=IERR) TFLAGI
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           IF ( TFLAGI ) THEN
             MDS(11,I) =  ABS(MDS(11,I))
           ELSE
@@ -1730,7 +1791,8 @@ CONTAINS
           ! 5.o Type 6: partitioned wave field data
           !
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-          READ (MDSI,*,END=2001,ERR=2002) IPRT(:,I), LPRT(I)
+          READ (MDSI,*,IOSTAT=IERR) IPRT(:,I), LPRT(I)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
             WRITE (MDSS,961) IPRT(:,I)
             IF ( .NOT. LPRT(I) ) THEN
@@ -1803,7 +1865,8 @@ CONTAINS
         NMOVE  = 0
         DO
           CALL NEXTLN ( COMSTR , MDSI2 , MDSE2 )
-          READ (MDSI2,*,END=2001,ERR=2002) IDTST
+          READ (MDSI2,*,IOSTAT=IERR) IDTST
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           !
           IF ( ILOOP.EQ.1 .AND. IMPROC.EQ.1 ) THEN
             BACKSPACE (MDSI)
@@ -1818,7 +1881,8 @@ CONTAINS
           IF ( ILOOP .EQ. 1 ) CYCLE
           !
           BACKSPACE (MDSI2)
-          READ (MDSI2,*,END=2001,ERR=2002) IDTST, TTIME, XX, YY
+          READ (MDSI2,*,IOSTAT=IERR) IDTST, TTIME, XX, YY
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINIT','INPUT',2001)
           TMOVE(:,NMOVE) = TTIME
           AMOVE(NMOVE)   = XX
           DMOVE(NMOVE)   = YY
@@ -1850,7 +1914,11 @@ CONTAINS
       END DO
 #endif
       !
-      IF ( NMOVE .EQ. 0 ) GOTO 2060
+      IF ( NMOVE .EQ. 0 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
+        CALL EXTCDE ( 2060 )
+        RETURN
+      END IF
       !
       NMVMAX = NMOVE
       DO I=1, NRGRD
@@ -2484,7 +2552,10 @@ CONTAINS
                !!Li     NX, NY, GTYPE, IERR, MNAMES(I),           &
                NX, NY,   JJJ, IERR, MNAMES(I),           &
                TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           !
           !!Li   Print a warning message when GTYPE not matching forcing field one.
           IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
@@ -2748,7 +2819,11 @@ CONTAINS
     ! 8.a.6 Check for coordinate system
     !
     DO I=1, NRGRD-1
-      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) GOTO 2070
+      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
+        CALL EXTCDE ( 2070 )
+        RETURN
+      END IF
     END DO
     !
     ! 8.b Input files
@@ -2780,7 +2855,10 @@ CONTAINS
           CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                MDSE2, NX, NY, GTYPE, IERR,               &
                MNAMES(-I), TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                WRITE (MDSS,985) IDFLDS(J)
         ELSE
@@ -3144,93 +3222,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations read errors :
-    !
-2000 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1000) IFNAME, IERR
-    CALL EXTCDE ( 2000 )
-    RETURN
-    !
-2001 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1001)
-    CALL EXTCDE ( 2001 )
-    RETURN
-    !
-2002 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1002) IERR
-    CALL EXTCDE ( 2002 )
-    RETURN
-    !
-2010 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1010) IERR
-    CALL EXTCDE ( 2010 )
-    RETURN
-    !
-2011 CONTINUE
-    ! === no process number filtering for test file !!! ===
-    WRITE (MDSE,1011) IERR
-    CALL EXTCDE ( 2011 )
-    RETURN
-    !
-2020 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
-    CALL EXTCDE ( 2020 )
-    RETURN
-    !
-2021 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
-    CALL EXTCDE ( 2021 )
-    RETURN
-    !
-2030 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
-    CALL EXTCDE ( 2030 )
-    RETURN
-    !
-2031 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
-    CALL EXTCDE ( 2031 )
-    RETURN
-    !
-    !2050 CONTINUE
-    !     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1040)
-    !     CALL EXTCDE ( 2050 )
-    !     RETURN
-    !
-2051 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
-    CALL EXTCDE ( 2051 )
-    RETURN
-    !
-2052 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
-    CALL EXTCDE ( 2052 )
-    RETURN
-    !
-2053 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
-    CALL EXTCDE ( 2053 )
-    RETURN
-    !
-2054 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
-    CALL EXTCDE ( 2054 )
-    RETURN
-    !
-2060 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
-    CALL EXTCDE ( 2060 )
-    RETURN
-    !
-2070 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
-    CALL EXTCDE ( 2070 )
-    RETURN
-    !
-2080 CONTINUE
-    CALL EXTCDE ( 2080 )
-    RETURN
-    !
     ! Formats
     !
 900 FORMAT ( ' ========== STARTING MWW3 INITIALIZATION (WMINIT) =', &
@@ -3367,22 +3358,6 @@ CONTAINS
 999 FORMAT ( ' ========== END OF MWW3 INITIALIZATION (WMINIT) ===', &
          '============================'/)
     !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
-         '     ERROR IN OPENING INPUT FILE ',A/                 &
-         '     IOSTAT =',I5/)
-    !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
-         '     PREMATURE END OF INPUT FILE'/)
-    !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
-1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
-         '     ERROR IN OPENING LOG FILE'/                      &
-         '     IOSTAT =',I5/)
-1011 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
-         '     ERROR IN OPENING TEST FILE'/                     &
-         '     IOSTAT =',I5/)
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
          '     ILLEGAL NUMBER OF GRIDS ( < 1 ) '/)
 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
@@ -3550,6 +3525,7 @@ CONTAINS
     !/    15-May-2018 : Update namelist                     ( version 6.05 )
     !/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -3751,7 +3727,7 @@ CONTAINS
     USE WMINIOMD, ONLY: WMIOBS, WMIOBG, WMIOBF
     USE WMIOPOMD, ONLY: WMIOPP
     !/
-    USE W3SERVMD, ONLY: ITRACE, EXTCDE, NEXTLN, WWDATE, WWTIME
+    USE W3SERVMD, ONLY: ITRACE, EXTCDE, EXTOPN, EXTIOF, NEXTLN, WWDATE, WWTIME
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -4051,7 +4027,8 @@ CONTAINS
 #endif
     !
     IF ( IMPROC .EQ. NMPLOG ) THEN
-      OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,ERR=2010,IOSTAT=IERR)
+      OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINITNML','LOG',2010)
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
            WRITE (MDSS,911)  LFILE, MDSO
       CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'OUT',              &
@@ -4063,7 +4040,8 @@ CONTAINS
     !
     IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
       IFT    = LEN_TRIM(TFILE)
-      OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
+      OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINITNML','TEST',2011)
       CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
            TRIM(FNMPRE)//TFILE(:IFT), 'Test output file')
     END IF
@@ -4073,7 +4051,8 @@ CONTAINS
     CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
     CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
          TRIM(FNMPRE)//PFILE(:IFT), 'Profiling file')
-    OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
+    OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINITNML','TEST',2011)
 #endif
     !
     ! 1.e Initial and test output
@@ -4133,8 +4112,16 @@ CONTAINS
       END IF
     END IF
     !
-    IF ( NRGRD .LT. 1 ) GOTO 2020
-    IF ( NRINP .LT. 0 ) GOTO 2021
+    IF ( NRGRD .LT. 1 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
+      CALL EXTCDE ( 2020 )
+      RETURN
+    END IF
+    IF ( NRINP .LT. 0 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
+      CALL EXTCDE ( 2021 )
+      RETURN
+    END IF
     IF ( NRINP.EQ.0 .AND. .NOT.UNIPTS ) NRINP = -1
     !
     ! 2.b Set up data structures
@@ -4356,8 +4343,16 @@ CONTAINS
                   EXIT
                 END IF
               END DO
-              IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+              IF ( INPMAP(I,J) .EQ. 0 ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
+              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+                CALL EXTCDE ( 2031 )
+                RETURN
+              END IF
               USEINP(-INPMAP(I,J)) = .TRUE.
               CPLINP(-INPMAP(I,J)) = .TRUE.
             END IF
@@ -4370,8 +4365,16 @@ CONTAINS
                 EXIT
               END IF
             END DO
-            IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+            IF ( INPMAP(I,J) .EQ. 0 ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+              CALL EXTCDE ( 2030 )
+              RETURN
+            END IF
+            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+              CALL EXTCDE ( 2031 )
+              RETURN
+            END IF
             USEINP(INPMAP(I,J)) = .TRUE.
           END IF
         END IF
@@ -4787,7 +4790,9 @@ CONTAINS
                 CYCLE
                 ! and if output still enabled, stop
               ELSE
-                GOTO 2055
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1055)
+                CALL EXTCDE ( 2055 )
+                RETURN
               END IF
             END IF
 
@@ -4796,11 +4801,16 @@ CONTAINS
             !
             IF ( UNIPTS .AND. I.GE.2 ) THEN
               DO K=1,I-1
-                IF ( NML_OUTPUT_TYPE(K)%POINT%FILE.NE.NML_OUTPUT_TYPE(I)%POINT%FILE ) GOTO 2053
+                IF ( NML_OUTPUT_TYPE(K)%POINT%FILE.NE.NML_OUTPUT_TYPE(I)%POINT%FILE ) THEN
+                  IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
+                  CALL EXTCDE ( 2053 )
+                  RETURN
+                END IF
               END DO
             END IF
             OPEN (MDSI, file=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE(I)%POINT%FILE), &
-                 FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
+                 FORM='FORMATTED', STATUS='OLD', IOSTAT=IERR)
+            IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'WMINITNML','POINT',1104)
 
             ! first loop to count the number of points
             ! second loop to allocate the array and store the points
@@ -4815,13 +4825,15 @@ CONTAINS
                        OT2(I)%PNAMES(OT2(I)%NPTS) )
                   OT2(I)%NPTS = 0  ! reset it to use it as a counter for loop 2
                 ELSE
-                  ALLOCATE ( OT2(I)%X(1), OT2(I)%Y(1), OT2(I)%PNAMES(1) )
-                  GOTO 2054
+                  IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
+                  CALL EXTCDE ( 2054 )
+                  RETURN
                 END IF
               END IF
               !
               DO
-                READ (MDSI,*,ERR=2004,IOSTAT=IERR) TMPLINE
+                READ (MDSI,*,IOSTAT=IERR) TMPLINE
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
                 ! if end of file or stopstring, then exit
                 IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
                 ! leading blanks removed and placed on the right
@@ -4831,8 +4843,10 @@ CONTAINS
                   CYCLE
                 ELSE
                   ! otherwise, backup to beginning of line
-                  BACKSPACE ( MDSI, ERR=2004, IOSTAT=IERR)
-                  READ (MDSI,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                  BACKSPACE ( MDSI, IOSTAT=IERR)
+                  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
+                  READ (MDSI,*,IOSTAT=IERR) XX, YY, PN
+                  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
                 ENDIF
                 OT2(I)%NPTS = OT2(I)%NPTS + 1
                 IF ( ILOOP .EQ. 1 ) CYCLE
@@ -4956,8 +4970,16 @@ CONTAINS
       N_MOV  = NML_HOMOG_COUNT%N_MOV
       N_TOT = NML_HOMOG_COUNT%N_TOT
 
-      IF ( N_MOV .EQ. 0 ) GOTO 2060
-      IF ( N_MOV .GT. 99 ) GOTO 2061
+      IF ( N_MOV .EQ. 0 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
+        CALL EXTCDE ( 2060 )
+        RETURN
+      END IF
+      IF ( N_MOV .GT. 99 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1061) IDTST, N_MOV
+        CALL EXTCDE ( 2061 )
+        RETURN
+      END IF
 
       ALLOCATE ( TMOVE(2,N_MOV), AMOVE(N_MOV), DMOVE(N_MOV) )
       !
@@ -4971,7 +4993,9 @@ CONTAINS
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
                WRITE (MDSS,968) I, TMOVE(:,I), AMOVE(I), DMOVE(I)
         CASE DEFAULT
-          GOTO 2062
+          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1062) IDTST
+          CALL EXTCDE ( 2062 )
+          RETURN
         END SELECT
       END DO
       !
@@ -5615,7 +5639,10 @@ CONTAINS
                !!Li     NX, NY, GTYPE, IERR, MNAMES(I),           &
                NX, NY,   JJJ, IERR, MNAMES(I),           &
                TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           !
           !!Li   Print a warning message when GTYPE not matching forcing field one.
           IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
@@ -5867,7 +5894,11 @@ CONTAINS
     ! 8.a.6 Check for coordinate system
     !
     DO I=1, NRGRD-1
-      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) GOTO 2070
+      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
+        CALL EXTCDE ( 2070 )
+        RETURN
+      END IF
     END DO
     !
     ! 8.b Input files
@@ -5899,7 +5930,10 @@ CONTAINS
           CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                MDSE2, NX, NY, GTYPE, IERR,               &
                MNAMES(-I), TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                WRITE (MDSS,985) IDFLDS(J)
         ELSE
@@ -6261,108 +6295,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations read errors :
-    !
-2003 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1003)
-    CALL EXTCDE ( 2003 )
-    RETURN
-    !
-2104 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1104) IERR
-    CALL EXTCDE ( 1104 )
-    RETURN
-    !
-2004 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1004) IERR
-    CALL EXTCDE ( 2004 )
-    RETURN
-    !
-2010 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1010) IERR
-    CALL EXTCDE ( 2010 )
-    RETURN
-    !
-2011 CONTINUE
-    ! === no process number filtering for test file !!! ===
-    WRITE (MDSE,1011) IERR
-    CALL EXTCDE ( 2011 )
-    RETURN
-    !
-2020 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
-    CALL EXTCDE ( 2020 )
-    RETURN
-    !
-2021 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
-    CALL EXTCDE ( 2021 )
-    RETURN
-    !
-2030 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
-    CALL EXTCDE ( 2030 )
-    RETURN
-    !
-2031 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
-    CALL EXTCDE ( 2031 )
-    RETURN
-    !
-    !2050 CONTINUE
-    !     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1040)
-    !     CALL EXTCDE ( 2050 )
-    !     RETURN
-    !
-2051 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
-    CALL EXTCDE ( 2051 )
-    RETURN
-    !
-2052 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
-    CALL EXTCDE ( 2052 )
-    RETURN
-    !
-2053 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
-    CALL EXTCDE ( 2053 )
-    RETURN
-    !
-2054 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
-    CALL EXTCDE ( 2054 )
-    RETURN
-    !
-2055 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1055)
-    CALL EXTCDE ( 2055 )
-    RETURN
-    !
-2060 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
-    CALL EXTCDE ( 2060 )
-    RETURN
-    !
-2061 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1061) IDTST, N_MOV
-    CALL EXTCDE ( 2061 )
-    RETURN
-    !
-2062 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1062) IDTST
-    CALL EXTCDE ( 2062 )
-    RETURN
-    !
-2070 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
-    CALL EXTCDE ( 2070 )
-    RETURN
-    !
-2080 CONTINUE
-    CALL EXTCDE ( 2080 )
-    RETURN
-    !
     ! Formats
     !
 900 FORMAT ( ' ========== STARTING MWW3 INITIALIZATION (WMINITNML) =', &
@@ -6499,22 +6431,6 @@ CONTAINS
 999 FORMAT ( ' ========== END OF MWW3 INITIALIZATION (WMINITNML) ===', &
          '============================'/)
     !
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
-         '     PREMATURE END OF POINT FILE'/)
-    !
-1104 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
-         '     ERROR IN OPENING POINT FILE'/                     &
-         '     IOSTAT =',I5/)
-    !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
-         '     ERROR IN READING FROM POINT FILE'/                &
-         '     IOSTAT =',I5/)
-1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
-         '     ERROR IN OPENING LOG FILE'/                       &
-         '     IOSTAT =',I5/)
-1011 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
-         '     ERROR IN OPENING TEST FILE'/                      &
-         '     IOSTAT =',I5/)
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
          '     ILLEGAL NUMBER OF GRIDS ( < 1 ) '/)
 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &

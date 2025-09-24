@@ -101,6 +101,7 @@ CONTAINS
     !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
     !/    15-Aug-2011 : Adjustments to version 4.05         ( version 4.05 )
     !/    11-Mar-2013 : Minor cleanup                       ( version 4.09 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -360,114 +361,113 @@ CONTAINS
     IF ( HSTOT .GT. 0. ) WRITE (CASCBLINE(6:7),'(I2)') NINT(HSTOT/0.3048)
 #endif
     !
-    IF ( NPART.EQ.0 .OR. HSTOT.LT.0.1 ) GOTO 699
     !
     ! 5.b Switch off peak with too low wave height
     !
-    DO IP=1, NPART
-      FLAG(IP) = HSP(IP) .GT. BHSMIN
-    ENDDO
-    !
-    ! 5.c Find next highest wave height
-    !
-    INOTAB   = 0
-    !
-601 CONTINUE
-    !
-    HMAX   = 0.
-    IPNOW  = 0
-    DO IP=1, NPART
-      IF ( HSP(IP).GT.HMAX .AND. FLAG(IP) ) THEN
-        IPNOW  = IP
-        HMAX   = HSP(IP)
-      ENDIF
-    ENDDO
-    !
-    ! 5.d No more peaks, skip to output
-    !
-    IF ( IPNOW .EQ. 0 ) GOTO 699
-    !
-    ! 5.e Find matching field
-    !
-    ITAB   = 0
-    !
-    DO IP=1, NPTAB
-      IF ( TPT(IP,2) .GT. 0. ) THEN
-        !
-        DELHS  = ABS ( HST(IP,2) - HSP(IPNOW) )
-        DELTP  = ABS ( TPT(IP,2) - TPP(IPNOW) )
-        DELDM  = ABS ( DMT(IP,2) - DMP(IPNOW) )
-        IF ( DELDM .GT. 180. ) DELDM = 360. - DELDM
-        IF ( DELHS.LT.DHSMAX .AND. &
-             DELTP.LT.DTPMAX .AND. &
-             DELDM.LT.DDMMAX ) ITAB = IP
-        !
-      ENDIF
-    ENDDO
-    !
-    ! 5.f No matching field, find empty fields
-    !
-    IF ( ITAB .EQ. 0 ) THEN
-      DO IP=NPTAB, 1, -1
-        IF ( TPT(IP,1).LT.0. .AND. TPT(IP,2).LT.0. )    &
-             ITAB = IP
+    IF ( NPART.NE.0 .AND. HSTOT.GE.0.1 ) THEN
+      DO IP=1, NPART
+        FLAG(IP) = HSP(IP) .GT. BHSMIN
       ENDDO
-    ENDIF
-    !
-    ! 5.g Slot in table found, write
-    !
-    ! Remove clear windseas
-    !
-    IF ( ITAB .NE. 0 ) THEN
       !
-      WRITE (PART,'(1X,F5.2,F5.1,I4)')                             &
-           HSP(IPNOW), TPP(IPNOW), NINT(DMP(IPNOW))
-#ifdef W3_NCO
-      WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                         &
-           NINT(HSP(IPNOW)/0.3048),                              &
-           NINT(TPP(IPNOW)),                                     &
-           NINT(MOD(DMP(IPNOW)+180.,360.))
-#endif
-      DELDW  = MOD ( ABS ( UDIR - DMP(IPNOW) ) , 360. )
-      IF ( DELDW .GT. 180. ) DELDW = 360. - DELDW
-      AFR    = 2.*PI/TPP(IPNOW)
-      AGE    = UABS * WNP(IPNOW) / AFR
-      IF ( DELDW.LT.DDWMAX .AND. AGE.GT.AGEMIN ) PART(1:1) = '*'
+      ! 5.c Find next highest wave height
       !
-      ASCBLINE(5+ITAB*18:19+ITAB*18) = PART
-#ifdef W3_NCO
-      CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
-#endif
+      INOTAB   = 0
       !
-      DO IFLD=1,NPTAB
-        IF(ITAB.EQ.IFLD)THEN
-          IYY(IFLD)=.TRUE.
-          HSD(IFLD)=HSP(IPNOW)
-          TPD(IFLD)=TPP(IPNOW)
-          WDD(IFLD)=NINT(DMP(IPNOW))
+      DO
+        !
+        HMAX   = 0.
+        IPNOW  = 0
+        DO IP=1, NPART
+          IF ( HSP(IP).GT.HMAX .AND. FLAG(IP) ) THEN
+            IPNOW  = IP
+            HMAX   = HSP(IP)
+          ENDIF
+        ENDDO
+        !
+        ! 5.d No more peaks, skip to output
+        !
+        IF ( IPNOW .EQ. 0 ) EXIT
+        !
+        ! 5.e Find matching field
+        !
+        ITAB   = 0
+        !
+        DO IP=1, NPTAB
+          IF ( TPT(IP,2) .GT. 0. ) THEN
+            !
+            DELHS  = ABS ( HST(IP,2) - HSP(IPNOW) )
+            DELTP  = ABS ( TPT(IP,2) - TPP(IPNOW) )
+            DELDM  = ABS ( DMT(IP,2) - DMP(IPNOW) )
+            IF ( DELDM .GT. 180. ) DELDM = 360. - DELDM
+            IF ( DELHS.LT.DHSMAX .AND. &
+                 DELTP.LT.DTPMAX .AND. &
+                 DELDM.LT.DDMMAX ) ITAB = IP
+            !
+          ENDIF
+        ENDDO
+        !
+        ! 5.f No matching field, find empty fields
+        !
+        IF ( ITAB .EQ. 0 ) THEN
+          DO IP=NPTAB, 1, -1
+            IF ( TPT(IP,1).LT.0. .AND. TPT(IP,2).LT.0. )    &
+                 ITAB = IP
+          ENDDO
         ENDIF
-      ENDDO
-      !
-      HST(ITAB,1) = HSP(IPNOW)
-      TPT(ITAB,1) = TPP(IPNOW)
-      DMT(ITAB,1) = DMP(IPNOW)
+        !
+        ! 5.g Slot in table found, write
+        !
+        ! Remove clear windseas
+        !
+        IF ( ITAB .NE. 0 ) THEN
+          !
+          WRITE (PART,'(1X,F5.2,F5.1,I4)')                             &
+               HSP(IPNOW), TPP(IPNOW), NINT(DMP(IPNOW))
+#ifdef W3_NCO
+          WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                       &
+               NINT(HSP(IPNOW)/0.3048),                              &
+               NINT(TPP(IPNOW)),                                     &
+               NINT(MOD(DMP(IPNOW)+180.,360.))
+#endif
+          DELDW  = MOD ( ABS ( UDIR - DMP(IPNOW) ) , 360. )
+          IF ( DELDW .GT. 180. ) DELDW = 360. - DELDW
+          AFR    = 2.*PI/TPP(IPNOW)
+          AGE    = UABS * WNP(IPNOW) / AFR
+          IF ( DELDW.LT.DDWMAX .AND. AGE.GT.AGEMIN ) PART(1:1) = '*'
+          !
+          ASCBLINE(5+ITAB*18:19+ITAB*18) = PART
+#ifdef W3_NCO
+          CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
+#endif
+          !
+          DO IFLD=1,NPTAB
+            IF(ITAB.EQ.IFLD)THEN
+              IYY(IFLD)=.TRUE.
+              HSD(IFLD)=HSP(IPNOW)
+              TPD(IFLD)=TPP(IPNOW)
+              WDD(IFLD)=NINT(DMP(IPNOW))
+            ENDIF
+          ENDDO
+          !
+          HST(ITAB,1) = HSP(IPNOW)
+          TPT(ITAB,1) = TPP(IPNOW)
+          DMT(ITAB,1) = DMP(IPNOW)
 
-      !
-      ! 5.h No slot in table found, write
-      !
-    ELSE
-      !
-      INOTAB   = INOTAB + 1
-      WRITE (ASCBLINE(19:19),'(I1)') INOTAB
-      !
-    ENDIF
-    !
-    FLAG(IPNOW) = .FALSE.
-    GOTO 601
+          !
+          ! 5.h No slot in table found, write
+          !
+        ELSE
+          !
+          INOTAB   = INOTAB + 1
+          WRITE (ASCBLINE(19:19),'(I1)') INOTAB
+          !
+        ENDIF
+        !
+        FLAG(IPNOW) = .FALSE.
+      END DO
+    END IF
     !
     ! 5.i End of processing, write line in table
-    !
-699 CONTINUE
     !
     DO IFLD=1,NPTAB
       IF(IYY(IFLD))THEN

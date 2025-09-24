@@ -482,6 +482,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    09-Nov-2020 : Creation                            ( version 7.12 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !
     !  1. Purpose :
@@ -532,7 +533,15 @@ CONTAINS
     !   - a comment line (starting with $)
     !   - the end of the file
     DO
-      READ(NDMI, '(A)', iostat=IERR, err=101, end=100) BUF
+      READ(NDMI, '(A)', iostat=IERR) BUF
+      IF (IERR.LT.0) THEN
+        BUF = ''
+        EOF = .TRUE.
+        RETURN
+      ELSE IF (IERR.GT.0) THEN
+        WRITE(NDSE, 1000) FN_META, ILINE, IERR
+        CALL EXTCDE(10)
+      END IF
 
       ILINE = ILINE + 1
 
@@ -581,18 +590,6 @@ CONTAINS
       RETURN
     ENDDO
 
-    !/    Escape locations
-    !
-    !     End of file
-100 CONTINUE
-    BUF = ''
-    EOF = .TRUE.
-    RETURN
-    !
-    !     I/O Error
-101 CONTINUE
-    WRITE(NDSE, 1000) FN_META, ILINE, IERR
-    CALL EXTCDE(10)
     !
 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
          '     ERROR READING METADATA FILE'/                    &

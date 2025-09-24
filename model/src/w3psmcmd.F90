@@ -3710,7 +3710,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
     USE W3GDATMD
-    USE W3SERVMD, ONLY: EXTCDE
     USE W3ODATMD, ONLY: NDSE, NDST
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -3852,7 +3851,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
     USE W3GDATMD
-    USE W3SERVMD, ONLY: EXTCDE
     USE W3ODATMD, ONLY: NDSE, NDST
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE

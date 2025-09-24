@@ -314,7 +314,5 @@
 
  endfor
 
-;GOTO, FileAgain
-
  END
 

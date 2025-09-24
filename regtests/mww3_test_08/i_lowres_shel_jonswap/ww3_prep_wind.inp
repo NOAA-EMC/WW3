@@ -1,0 +1,42 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Field preprocessor input file                          $
+$ -------------------------------------------------------------------- $
+$ Mayor types of field and time flag
+$   Field types  :  ICE   Ice concentrations.
+$                   LEV   Water levels.
+$                   WND   Winds.
+$                   WNS   Winds (including air-sea temp. dif.)
+$                   CUR   Currents.
+$   Format types :  AI    Transfer field 'as is'.
+$                   LL    Field defined on longitude-latitude grid.
+$                   F1    Arbitrary grid, longitude and latitude of
+$                         each grid point given in separate file.
+$                   F2    Like F1, composite of 2 fields.
+$   Time flag    : If true, time is included in file.
+$
+   'WND' 'LL' T T
+$
+$ Additional time input ---------------------------------------------- $
+$ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
+$
+$   19680605 120000
+$
+$ Additional input format type 'LL' ---------------------------------- $
+$ Grid range (degr.) and number of points for longitudes and latitudes,
+$ respectively.
+$ min(x) max(x) nx ; min(y) max(y) ny
+$ We use a 2x2 grid, since the winds will be uniform
+   0.0 1000.0e+3 2  0.0 1000.0e+3 2 
+$
+$ Define data files -------------------------------------------------- $
+$ The first input line identifies the file format with FROM, IDLA and
+$ IDFM, the second (third) lines give the file unit number and name.
+$
+$  'UNIT' 3 1 '(..T..)' '(..F..)' 
+  'NAME' 1 2 '(I10,1x,I10)' '(1000(F7.2))' 
+  401 '../input/wnd.ascii'
+$ 10 'data_file.2'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

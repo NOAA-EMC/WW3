@@ -18,6 +18,7 @@ MODULE W3PROFSMD
   !/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
   !/    18-Aug-2016 : Corrected boundary treatment        ( version 4.16 )
   !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !
   !  1. Purpose :
   !
@@ -2003,33 +2004,30 @@ END MODULE W3PROFSMD
 !     solver, say BCG. Here is a piece of pseudo-code showing how it can
 !     be done,
 !
-! 10   call bcg(n,rhs,sol,ipar,fpar,w)
+!     do
+!      call bcg(n,rhs,sol,ipar,fpar,w)
 !      if (ipar(1).eq.1) then
 !         call amux(n,w(ipar(8)),w(ipar(9)),a,ja,ia)
-!         goto 10
 !      else if (ipar(1).eq.2) then
 !         call atmux(n,w(ipar(8)),w(ipar(9)),a,ja,ia)
-!         goto 10
 !      else if (ipar(1).eq.3) then
 !         left preconditioner solver
-!         goto 10
 !      else if (ipar(1).eq.4) then
 !         left preconditioner transposed solve
-!         goto 10
 !      else if (ipar(1).eq.5) then
 !         right preconditioner solve
-!         goto 10
 !      else if (ipar(1).eq.6) then
 !         right preconditioner transposed solve
-!         goto 10
 !      else if (ipar(1).eq.10) then
 !         call my own stopping test routine
-!         goto 10
 !      else if (ipar(1).gt.0) then
 !         ipar(1) is an unspecified code
+!         exit
 !      else
 !         the iterative solver terminated with code = ipar(1)
+!         exit
 !      endif
+!     end do
 !
 !     This segment of pseudo-code assumes the matrix is in CSR format,
 !     AMUX and ATMUX are two routines from the SPARSKIT MATVEC module.
@@ -2098,240 +2096,271 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !
   integer i
   real*8 alpha,beta,rho,omega
-  logical lp, rp
+  logical lp, rp, matvec, iterated
   save lp, rp
   !
   !     where to go
   !
+  matvec = .true.
   if (ipar(1).gt.0) then
-    !!goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
-    SELECT CASE (ipar(10))
-    CASE (1)
-      GOTO 10
-    CASE (2)
-      GOTO 20
-    CASE (3)
-      GOTO 40
-    CASE (4)
-      GOTO 50
-    CASE (5)
-      GOTO 60
-    CASE (6)
-      GOTO 70
-    CASE (7)
-      GOTO 80
-    CASE (8)
-      GOTO 90
-    CASE (9)
-      GOTO 100
-    CASE (10)
-      GOTO 110
-    END SELECT
+    if(ipar(10) .eq. 1) then
+      ipar(7) = ipar(7) + 1
+      ipar(13) = ipar(13) + 1
+      do i = 1, n
+        w(i,1) = rhs(i) - w(i,2)
+      enddo
+      fpar(11) = fpar(11) + n
+      if (lp) then
+        ipar(1) = 3
+        ipar(10) = 2
+        return
+      endif
+    endif
+    !
+    if(ipar(10) .le. 2) then
+      if (lp) then
+        do i = 1, n
+          w(i,1) = w(i,2)
+          w(i,6) = w(i,2)
+        enddo
+      else
+        do i = 1, n
+          w(i,2) = w(i,1)
+          w(i,6) = w(i,1)
+        enddo
+      endif
+      !
+      fpar(7) = ddot(n,w,w)
+      fpar(11) = fpar(11) + 2 * n
+      fpar(5) = sqrt(fpar(7))
+      fpar(3) = fpar(5)
+      if (abs(ipar(3)).eq.2) then
+        fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
+        fpar(11) = fpar(11) + 2 * n
+      else if (ipar(3).ne.999) then
+        fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      endif
+      if (ipar(3).ge.0) fpar(6) = fpar(5)
+      if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and. ipar(3).ne.999) then
+        matvec = .false.
+      endif
+    endif
+    !
+    !     beginning of the iterations
+    !
+    if (matvec) then
+      iterated = .false.
+      do
+        !     Step (1), v = A p
+        if (ipar(10) .le. 2 .or. iterated) then
+          if (rp) then
+            ipar(1) = 5
+            ipar(8) = 5*n+1
+            if (lp) then
+              ipar(9) = 4*n + 1
+            else
+              ipar(9) = 6*n + 1
+            endif
+            ipar(10) = 3
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 3 .or. iterated) then
+          ipar(1) = 1
+          if (rp) then
+            ipar(8) = ipar(9)
+          else
+            ipar(8) = 5*n+1
+          endif
+          if (lp) then
+            ipar(9) = 6*n + 1
+          else
+            ipar(9) = 4*n + 1
+          endif
+          ipar(10) = 4
+          return
+        endif
+        !
+        if (ipar(10) .le. 4 .or. iterated) then
+          if (lp) then
+            ipar(1) = 3
+            ipar(8) = ipar(9)
+            ipar(9) = 4*n + 1
+            ipar(10) = 5
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 5 .or. iterated) then
+          ipar(7) = ipar(7) + 1
+          !
+          !     step (2)
+          alpha = ddot(n,w(1,1),w(1,5))
+          fpar(11) = fpar(11) + 2 * n
+          if (brkdn(alpha, ipar)) then
+            matvec = .false.
+            exit
+          end if
+          alpha = fpar(7) / alpha
+          fpar(8) = alpha
+          !
+          !     step (3)
+          do i = 1, n
+            w(i,3) = w(i,2) - alpha * w(i,5)
+          enddo
+          fpar(11) = fpar(11) + 2 * n
+          !
+          !     Step (4): the second matvec -- t = A s
+          !
+          if (rp) then
+            ipar(1) = 5
+            ipar(8) = n+n+1
+            if (lp) then
+              ipar(9) = ipar(8)+n
+            else
+              ipar(9) = 6*n + 1
+            endif
+            ipar(10) = 6
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 6 .or. iterated) then
+          ipar(1) = 1
+          if (rp) then
+            ipar(8) = ipar(9)
+          else
+            ipar(8) = n+n+1
+          endif
+          if (lp) then
+            ipar(9) = 6*n + 1
+          else
+            ipar(9) = 3*n + 1
+          endif
+          ipar(10) = 7
+          return
+        endif
+        !
+        if (ipar(10) .le. 7 .or. iterated) then
+          if (lp) then
+            ipar(1) = 3
+            ipar(8) = ipar(9)
+            ipar(9) = 3*n + 1
+            ipar(10) = 8
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 8 .or. iterated) then
+          ipar(7) = ipar(7) + 1
+          !
+          !     step (5)
+          omega = ddot(n,w(1,4),w(1,4))
+          fpar(11) = fpar(11) + n + n
+          if (brkdn(omega,ipar)) then
+            matvec = .false.
+            exit
+          endif
+          omega = ddot(n,w(1,4),w(1,3)) / omega
+          fpar(11) = fpar(11) + n + n
+          if (brkdn(omega,ipar)) then
+            matvec = .false.
+            exit
+          endif
+          fpar(9) = omega
+          alpha = fpar(8)
+          !
+          !     step (6) and (7)
+          do i = 1, n
+            w(i,7) = alpha * w(i,6) + omega * w(i,3)
+            w(i,8) = w(i,8) + w(i,7)
+            w(i,2) = w(i,3) - omega * w(i,4)
+          enddo
+          fpar(11) = fpar(11) + 6 * n + 1
+          !
+          !     convergence test
+          if (ipar(3).eq.999) then
+            ipar(1) = 10
+            ipar(8) = 7*n + 1
+            ipar(9) = 6*n + 1
+            ipar(10) = 9
+            return
+          endif
+          if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one)) then
+            matvec = .false.
+            exit
+          endif
+        endif
+        !
+        if (ipar(10) .le. 9 .or. iterated) then
+          if (ipar(3).eq.999.and.ipar(11).eq.1) then
+            matvec = .false.
+            exit
+          end if 
+          !
+          !     step (8): computing new p and rho
+          !
+          rho = fpar(7)
+          fpar(7) = ddot(n,w(1,2),w(1,1))
+          omega = fpar(9)
+          beta = fpar(7) * fpar(8) / (fpar(9) * rho)
+          do i = 1, n
+            w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
+          enddo
+          fpar(11) = fpar(11) + 6 * n + 3
+          if (brkdn(fpar(7),ipar)) then
+            matvec = .false.
+            exit
+          end if
+          !
+          !     end of an iteration
+          !
+        end if
+        iterated = .true.
+      enddo
+    endif
   else if (ipar(1).lt.0) then
-    goto 900
+    matvec = .false.
   endif
   !
-  !     call the initialization routine
-  !
-  call bisinit(ipar,fpar,8*n,1,lp,rp,w)
-  if (ipar(1).lt.0) return
-  !
-  !     perform a matvec to compute the initial residual
-  !
-  ipar(1) = 1
-  ipar(8) = 1
-  ipar(9) = 1 + n
-  do i = 1, n
-    w(i,1) = sol(i)
-  enddo
-  ipar(10) = 1
-  return
-10 ipar(7) = ipar(7) + 1
-  ipar(13) = ipar(13) + 1
-  do i = 1, n
-    w(i,1) = rhs(i) - w(i,2)
-  enddo
-  fpar(11) = fpar(11) + n
-  if (lp) then
-    ipar(1) = 3
-    ipar(10) = 2
-    return
-  endif
-  !
-20 if (lp) then
+  if (matvec) then
+    !
+    !     call the initialization routine
+    !
+    call bisinit(ipar,fpar,8*n,1,lp,rp,w)
+    if (ipar(1).lt.0) return
+    !
+    !     perform a matvec to compute the initial residual
+    !
+    ipar(1) = 1
+    ipar(8) = 1
+    ipar(9) = 1 + n
     do i = 1, n
-      w(i,1) = w(i,2)
-      w(i,6) = w(i,2)
+      w(i,1) = sol(i)
     enddo
+    ipar(10) = 1
+    return
   else
-    do i = 1, n
-      w(i,2) = w(i,1)
-      w(i,6) = w(i,1)
-    enddo
-  endif
-  !
-  fpar(7) = ddot(n,w,w)
-  fpar(11) = fpar(11) + 2 * n
-  fpar(5) = sqrt(fpar(7))
-  fpar(3) = fpar(5)
-  if (abs(ipar(3)).eq.2) then
-    fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
-    fpar(11) = fpar(11) + 2 * n
-  else if (ipar(3).ne.999) then
-    fpar(4) = fpar(1) * fpar(3) + fpar(2)
-  endif
-  if (ipar(3).ge.0) fpar(6) = fpar(5)
-  if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and. ipar(3).ne.999) then
-    goto 900
-  endif
-  !
-  !     beginning of the iterations
-  !
-  !     Step (1), v = A p
-30 if (rp) then
-    ipar(1) = 5
-    ipar(8) = 5*n+1
-    if (lp) then
-      ipar(9) = 4*n + 1
-    else
-      ipar(9) = 6*n + 1
+    !
+    !     some clean up job to do
+    !
+    if (rp) then
+      if (ipar(1).lt.0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 7*n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
+      return
     endif
-    ipar(10) = 3
-    return
-  endif
-  !
-40 ipar(1) = 1
-  if (rp) then
-    ipar(8) = ipar(9)
-  else
-    ipar(8) = 5*n+1
-  endif
-  if (lp) then
-    ipar(9) = 6*n + 1
-  else
-    ipar(9) = 4*n + 1
-  endif
-  ipar(10) = 4
-  return
-50 if (lp) then
-    ipar(1) = 3
-    ipar(8) = ipar(9)
-    ipar(9) = 4*n + 1
-    ipar(10) = 5
-    return
-  endif
-  !
-60 ipar(7) = ipar(7) + 1
-  !
-  !     step (2)
-  alpha = ddot(n,w(1,1),w(1,5))
-  fpar(11) = fpar(11) + 2 * n
-  if (brkdn(alpha, ipar)) goto 900
-  alpha = fpar(7) / alpha
-  fpar(8) = alpha
-  !
-  !     step (3)
-  do i = 1, n
-    w(i,3) = w(i,2) - alpha * w(i,5)
-  enddo
-  fpar(11) = fpar(11) + 2 * n
-  !
-  !     Step (4): the second matvec -- t = A s
-  !
-  if (rp) then
-    ipar(1) = 5
-    ipar(8) = n+n+1
-    if (lp) then
-      ipar(9) = ipar(8)+n
-    else
-      ipar(9) = 6*n + 1
-    endif
-    ipar(10) = 6
-    return
-  endif
-  !
-70 ipar(1) = 1
-  if (rp) then
-    ipar(8) = ipar(9)
-  else
-    ipar(8) = n+n+1
-  endif
-  if (lp) then
-    ipar(9) = 6*n + 1
-  else
-    ipar(9) = 3*n + 1
-  endif
-  ipar(10) = 7
-  return
-80 if (lp) then
-    ipar(1) = 3
-    ipar(8) = ipar(9)
-    ipar(9) = 3*n + 1
-    ipar(10) = 8
-    return
-  endif
-90 ipar(7) = ipar(7) + 1
-  !
-  !     step (5)
-  omega = ddot(n,w(1,4),w(1,4))
-  fpar(11) = fpar(11) + n + n
-  if (brkdn(omega,ipar)) goto 900
-  omega = ddot(n,w(1,4),w(1,3)) / omega
-  fpar(11) = fpar(11) + n + n
-  if (brkdn(omega,ipar)) goto 900
-  fpar(9) = omega
-  alpha = fpar(8)
-  !
-  !     step (6) and (7)
-  do i = 1, n
-    w(i,7) = alpha * w(i,6) + omega * w(i,3)
-    w(i,8) = w(i,8) + w(i,7)
-    w(i,2) = w(i,3) - omega * w(i,4)
-  enddo
-  fpar(11) = fpar(11) + 6 * n + 1
-  !
-  !     convergence test
-  if (ipar(3).eq.999) then
-    ipar(1) = 10
-    ipar(8) = 7*n + 1
-    ipar(9) = 6*n + 1
-    ipar(10) = 9
-    return
-  endif
-  if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one))  goto 900
-100 if (ipar(3).eq.999.and.ipar(11).eq.1) goto 900
-  !
-  !     step (8): computing new p and rho
-  !
-  rho = fpar(7)
-  fpar(7) = ddot(n,w(1,2),w(1,1))
-  omega = fpar(9)
-  beta = fpar(7) * fpar(8) / (fpar(9) * rho)
-  do i = 1, n
-    w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
-  enddo
-  fpar(11) = fpar(11) + 6 * n + 3
-  if (brkdn(fpar(7),ipar)) goto 900
-  !
-  !     end of an iteration
-  !
-  goto 30
-  !
-  !     some clean up job to do
-  !
-900 if (rp) then
-    if (ipar(1).lt.0) ipar(12) = ipar(1)
-    ipar(1) = 5
-    ipar(8) = 7*n + 1
-    ipar(9) = ipar(8) - n
-    ipar(10) = 10
-    return
   endif
 
-110 if (rp) then
-    call tidycg(n,ipar,fpar,sol,w(1,7))
-  else
-    call tidycg(n,ipar,fpar,sol,w(1,8))
+  if (ipar(10) .eq. 10 .or. .not. matvec) then
+    if (rp) then
+      call tidycg(n,ipar,fpar,sol,w(1,7))
+    else
+      call tidycg(n,ipar,fpar,sol,w(1,8))
+    endif
   endif
   !
   return
@@ -2346,29 +2375,32 @@ subroutine implu(np,umm,beta,ypiv,u,permut,full)
   !     performs implicitly one step of the lu factorization of a
   !     banded hessenberg matrix.
   !-----------------------------------------------------------------------
-  if (np .le. 1) goto 12
-  npm1 = np - 1
-  !
-  !     -- perform  previous step of the factorization-
-  !
-  do k=1,npm1
-    if (.not. permut(k)) goto 5
-    x=u(k)
-    u(k) = u(k+1)
-    u(k+1) = x
-5   u(k+1) = u(k+1) - ypiv(k)*u(k)
-  end do
+  if (np .gt. 1) then
+    npm1 = np - 1
+    !
+    !     -- perform  previous step of the factorization-
+    !
+    do k=1,npm1
+      if (permut(k)) then
+        x=u(k)
+        u(k) = u(k+1)
+        u(k+1) = x
+      end if
+      u(k+1) = u(k+1) - ypiv(k)*u(k)
+    end do
+  end if
   !-----------------------------------------------------------------------
   !     now determine pivotal information to be used in the next call
   !-----------------------------------------------------------------------
-12 umm = u(np)
+  umm = u(np)
   perm = (beta .gt. abs(umm))
-  if (.not. perm) goto 4
-  xpiv = umm / beta
-  u(np) = beta
-  goto 8
-4 xpiv = beta/umm
-8 permut(np) = perm
+  if (perm) then
+    xpiv = umm / beta
+    u(np) = beta
+  else
+    xpiv = beta/umm
+  end if
+  permut(np) = perm
   ypiv(np) = xpiv
   if (.not. full) return
   !     shift everything up if full...
@@ -2395,20 +2427,24 @@ subroutine uppdir(n,p,np,lbp,indp,y,u,usav,flops)
   parameter(zero=0.0D0)
   !
   npm1=np-1
-  if (np .le. 1) goto 12
-  j=indp
-  ju = npm1
-10 if (j .le. 0) j=lbp
-  x = u(ju) /usav(j)
-  if (x .eq. zero) goto 115
-  do k=1,n
-    y(k) = y(k) - x*p(k,j)
-  end do
-  flops = flops + 2*n
-115 j = j-1
-  ju = ju -1
-  if (ju .ge. 1) goto 10
-12 indp = indp + 1
+  if (np .gt. 1) then
+    j=indp
+    ju = npm1
+    do
+    if (j .le. 0) j=lbp
+      x = u(ju) /usav(j)
+      if (x .ne. zero) then
+        do k=1,n
+          y(k) = y(k) - x*p(k,j)
+        end do
+        flops = flops + 2*n
+      end if
+      j = j-1
+      ju = ju -1
+      if (ju .lt. 1) exit
+    end do
+  end if
+  indp = indp + 1
   if (indp .gt. lbp) indp = 1
   usav(indp) = u(np)
   do  k=1,n
@@ -3707,40 +3743,41 @@ subroutine qsplit(a,ind,n,ncut)
   !
   !     outer loop -- while mid .ne. ncut do
   !
-1 mid = first
-  abskey = abs(a(mid))
-  do j=first+1, last
-    if (abs(a(j)) .gt. abskey) then
-      mid = mid+1
-      !     interchange
-      tmp = a(mid)
-      itmp = ind(mid)
-      a(mid) = a(j)
-      ind(mid) = ind(j)
-      a(j)  = tmp
-      ind(j) = itmp
+  do
+    mid = first
+    abskey = abs(a(mid))
+    do j=first+1, last
+      if (abs(a(j)) .gt. abskey) then
+        mid = mid+1
+        !     interchange
+        tmp = a(mid)
+        itmp = ind(mid)
+        a(mid) = a(j)
+        ind(mid) = ind(j)
+        a(j)  = tmp
+        ind(j) = itmp
+      endif
+    end do
+    !
+    !     interchange
+    !
+    tmp = a(mid)
+    a(mid) = a(first)
+    a(first)  = tmp
+    !
+    itmp = ind(mid)
+    ind(mid) = ind(first)
+    ind(first) = itmp
+    !
+    !     test for while loop
+    !
+    if (mid .eq. ncut) return
+    if (mid .gt. ncut) then
+      last = mid-1
+    else
+      first = mid+1
     endif
   end do
-  !
-  !     interchange
-  !
-  tmp = a(mid)
-  a(mid) = a(first)
-  a(first)  = tmp
-  !
-  itmp = ind(mid)
-  ind(mid) = ind(first)
-  ind(first) = itmp
-  !
-  !     test for while loop
-  !
-  if (mid .eq. ncut) return
-  if (mid .gt. ncut) then
-    last = mid-1
-  else
-    first = mid+1
-  endif
-  goto 1
   !----------------end-of-qsplit------------------------------------------
   !-----------------------------------------------------------------------
 end subroutine qsplit
@@ -3780,38 +3817,41 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   ipar(1) = 0
   !     time = dtime(dt)
 
-10 call solver(n,rhs,sol,ipar,fpar,wk)
+  do
+    call solver(n,rhs,sol,ipar,fpar,wk)
 
-  if (ipar(7).ne.its) then
-    its = ipar(7)
-  endif
-  if (ipar(1).eq.1) then
-    call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-    goto 10
-  else if (ipar(1).eq.2) then
-    call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-    goto 10
-  else if (ipar(1).eq.3 .or. ipar(1).eq.5) then
-    call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-    goto 10
-  else if (ipar(1).eq.4 .or. ipar(1).eq.6) then
-    call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-    goto 10
-  else if (ipar(1).le.0) then
-    if (ipar(1).eq.0) then
-      !            WRITE(*,*) 'Iterative sovler has satisfied convergence test.'
-    else if (ipar(1).eq.-1) then
-      WRITE(*,*) 'Iterative solver has iterated too many times.'
-    else if (ipar(1).eq.-2) then
-      WRITE(*,*) 'Iterative solver was not given enough work space.'
-      WRITE(*,*) 'The work space should at least have ', ipar(4), &
-           &           ' elements.'
-    else if (ipar(1).eq.-3) then
-      WRITE(*,*) 'Iterative sovler is facing a break-down.'
-    else
-      WRITE(*,*) 'Iterative solver terminated. code =', ipar(1)
+    if (ipar(7).ne.its) then
+      its = ipar(7)
     endif
-  endif
+    if (ipar(1).eq.1) then
+      call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      cycle
+    else if (ipar(1).eq.2) then
+      call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      cycle
+    else if (ipar(1).eq.3 .or. ipar(1).eq.5) then
+      call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
+      cycle
+    else if (ipar(1).eq.4 .or. ipar(1).eq.6) then
+      call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
+      cycle
+    else if (ipar(1).le.0) then
+      if (ipar(1).eq.0) then
+        !            WRITE(*,*) 'Iterative sovler has satisfied convergence test.'
+      else if (ipar(1).eq.-1) then
+        WRITE(*,*) 'Iterative solver has iterated too many times.'
+      else if (ipar(1).eq.-2) then
+        WRITE(*,*) 'Iterative solver was not given enough work space.'
+        WRITE(*,*) 'The work space should at least have ', ipar(4), &
+             &           ' elements.'
+      else if (ipar(1).eq.-3) then
+        WRITE(*,*) 'Iterative sovler is facing a break-down.'
+      else
+        WRITE(*,*) 'Iterative solver terminated. code =', ipar(1)
+      endif
+      exit
+    endif
+  end do
 end subroutine runrc
 !-----end-of-runrc
 !----------------------------------------------------------------------c
@@ -3914,7 +3954,10 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
   !     locals
   integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,lenn
   real*8 tnorm, t, abs, s, fact
-  if (lfil .lt. 0) goto 998
+  if (lfil .lt. 0) then  !     illegal lfil entered.
+    ierr = -4
+    return
+  end if
   !-----------------------------------------------------------------------
   !     initialize ju0 (points to next element to be added to alu,jlu)
   !     and pointer array.
@@ -3939,7 +3982,10 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     do k=j1,j2
       tnorm = tnorm+abs(a(k))
     end do
-    if (abs(tnorm) .lt. tiny(1.)) goto 999
+    if (abs(tnorm) .lt. tiny(1.)) then !     zero row encountered
+      ierr = -5
+      return
+    end if
 
     tnorm = tnorm/real(j2-j1+1)
     !
@@ -3974,104 +4020,110 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     !
     !     eliminate previous rows
     !
-150 jj = jj+1
-    if (jj .gt. lenl) goto 160
-    !-----------------------------------------------------------------------
-    !     in order to do the elimination in the correct order we must select
-    !     the smallest column index among jw(k), k=jj+1, ..., lenl.
-    !-----------------------------------------------------------------------
-    jrow = jw(jj)
-    k = jj
-    !
-    !     determine smallest column index
-    !
-    do j=jj+1,lenl
-      if (jw(j) .lt. jrow) then
-        jrow = jw(j)
-        k = j
+    do
+      jj = jj+1
+      if (jj .gt. lenl) exit
+      !-----------------------------------------------------------------------
+      !     in order to do the elimination in the correct order we must select
+      !     the smallest column index among jw(k), k=jj+1, ..., lenl.
+      !-----------------------------------------------------------------------
+      jrow = jw(jj)
+      k = jj
+      !
+      !     determine smallest column index
+      !
+      do j=jj+1,lenl
+        if (jw(j) .lt. jrow) then
+          jrow = jw(j)
+          k = j
+        endif
+      end do
+      !
+      if (k .ne. jj) then
+        !     exchange in jw
+        j = jw(jj)
+        jw(jj) = jw(k)
+        jw(k) = j
+        !     exchange in jr
+        jw(n+jrow) = jj
+        jw(n+j) = k
+        !     exchange in w
+        s = w(jj)
+        w(jj) = w(k)
+        w(k) = s
       endif
-    end do
-    !
-    if (k .ne. jj) then
-      !     exchange in jw
-      j = jw(jj)
-      jw(jj) = jw(k)
-      jw(k) = j
-      !     exchange in jr
-      jw(n+jrow) = jj
-      jw(n+j) = k
-      !     exchange in w
-      s = w(jj)
-      w(jj) = w(k)
-      w(k) = s
-    endif
-    !
-    !     zero out element in row by setting jw(n+jrow) to zero.
-    !
-    jw(n+jrow) = 0
-    !
-    !     get the multiplier for row to be eliminated (jrow).
-    !
-    fact = w(jj)*alu(jrow)
-    if (abs(fact) .le. droptol) goto 150
-    !
-    !     combine current row and row jrow
-    !
-    do  k = ju(jrow), jlu(jrow+1)-1
-      s = fact*alu(k)
-      j = jlu(k)
-      jpos = jw(n+j)
-      if (j .ge. ii) then
-        !
-        !     dealing with upper part.
-        !
-        if (jpos .eq. 0) then
+      !
+      !     zero out element in row by setting jw(n+jrow) to zero.
+      !
+      jw(n+jrow) = 0
+      !
+      !     get the multiplier for row to be eliminated (jrow).
+      !
+      fact = w(jj)*alu(jrow)
+      if (abs(fact) .le. droptol) cycle
+      !
+      !     combine current row and row jrow
+      !
+      do  k = ju(jrow), jlu(jrow+1)-1
+        s = fact*alu(k)
+        j = jlu(k)
+        jpos = jw(n+j)
+        if (j .ge. ii) then
           !
-          !     this is a fill-in element
+          !     dealing with upper part.
           !
-          lenu = lenu+1
-          if (lenu .gt. n) goto 995
-          i = ii+lenu-1
-          jw(i) = j
-          jw(n+j) = i
-          w(i) = - s
-        else
-          !
-          !     this is not a fill-in element
-          !
-          w(jpos) = w(jpos) - s
+          if (jpos .eq. 0) then
+            !
+            !     this is a fill-in element
+            !
+            lenu = lenu+1
+            if (lenu .gt. n) then  !     incomprehensible error. Matrix must be wrong.
+              ierr = -1
+              return
+            end if
+            i = ii+lenu-1
+            jw(i) = j
+            jw(n+j) = i
+            w(i) = - s
+          else
+            !
+            !     this is not a fill-in element
+            !
+            w(jpos) = w(jpos) - s
 
-        endif
-      else
-        !
-        !     dealing  with lower part.
-        !
-        if (jpos .eq. 0) then
-          !
-          !     this is a fill-in element
-          !
-          lenl = lenl+1
-          if (lenl .gt. n) goto 995
-          jw(lenl) = j
-          jw(n+j) = lenl
-          w(lenl) = - s
+          endif
         else
           !
-          !     this is not a fill-in element
+          !     dealing  with lower part.
           !
-          w(jpos) = w(jpos) - s
+          if (jpos .eq. 0) then
+            !
+            !     this is a fill-in element
+            !
+            lenl = lenl+1
+            if (lenl .gt. n) then  !     incomprehensible error. Matrix must be wrong.
+              ierr = -1
+              return
+            end if
+            jw(lenl) = j
+            jw(n+j) = lenl
+            w(lenl) = - s
+          else
+            !
+            !     this is not a fill-in element
+            !
+            w(jpos) = w(jpos) - s
+          endif
         endif
-      endif
+      end do
+      !
+      !     store this pivot element -- (from left to right -- no danger of
+      !     overlap with the working elements in L (pivots).
+      !
+      lenn = lenn+1
+      w(lenn) = fact
+      jw(lenn)  = jrow
     end do
-    !
-    !     store this pivot element -- (from left to right -- no danger of
-    !     overlap with the working elements in L (pivots).
-    !
-    lenn = lenn+1
-    w(lenn) = fact
-    jw(lenn)  = jrow
-    goto 150
-160 continue
     !
     !     reset double-pointer to zero (U-part)
     !
@@ -4091,7 +4143,10 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     !     store L-part
     !
     do k=1, lenn
-      if (ju0 .gt. iwk) goto 996
+      if (ju0 .gt. iwk) then!     insufficient storage in L.
+        ierr = -2
+        return
+      end if
       alu(ju0) =  w(k)
       jlu(ju0) =  jw(k)
       ju0 = ju0+1
@@ -4119,7 +4174,10 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     !     copy
     !
     t = abs(w(ii))
-    if (lenn + ju0 .gt. iwk) goto 997
+    if (lenn + ju0 .gt. iwk) then  !     insufficient storage in U.
+      ierr = -3
+      return
+    end if
     do k=ii+1,ii+lenn-1
       jlu(ju0) = jw(k)
       alu(ju0) = w(k)
@@ -4141,32 +4199,8 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     !     end main loop
     !-----------------------------------------------------------------------
   end do
+
   ierr = 0
-  return
-  !
-  !     incomprehensible error. Matrix must be wrong.
-  !
-995 ierr = -1
-  return
-  !
-  !     insufficient storage in L.
-  !
-996 ierr = -2
-  return
-  !
-  !     insufficient storage in U.
-  !
-997 ierr = -3
-  return
-  !
-  !     illegal lfil entered.
-  !
-998 ierr = -4
-  return
-  !
-  !     zero row encountered
-  !
-999 ierr = -5
   return
   !----------------end-of-ilut--------------------------------------------
   !-----------------------------------------------------------------------
@@ -4217,7 +4251,10 @@ subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
       end do
     end do
     !     invert  and store diagonal element.
-    if (abs(alu(ii)) .lt. tiny(1.)) goto 600
+    if (abs(alu(ii)) .lt. tiny(1.)) then  !     zero pivot :
+      ierr = ii
+      return
+    end if
     alu(ii) = 1.0d0/alu(ii)
     !     reset pointer iw to zero
     iw(ii) = 0
@@ -4229,9 +4266,6 @@ subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
   ierr = 0
   return
 
-  !     zero pivot :
-600 ierr = ii
-  return
 end subroutine ilu0
 !-----------------------------------------------------------------------
 !       subroutine pgmres(n, im, rhs, sol, eps, maxits, ierr)
@@ -4333,160 +4367,165 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
   do j=1,n
     vv(j,1) = rhs(j) - vv(j,1)
   end do
-20 if (lblas) then
-    ro = dnrm2(n, vv)
-  else
-    ro = sqrt(sum(vv(:,1)*vv(:,1)))
-  end if
-  if (abs(ro) .lt. epsmac) goto 999
-  t = 1.0d0 / ro
-  do j=1, n
-    vv(j,1) = vv(j,1)*t
-  end do
-  if (its .eq. 0) eps1=eps*ro
-  !      initialize 1-st term  of rhs of hessenberg system..
-  rs(1) = ro
-  i = 0
-4 i=i+1
-  its = its + 1
-  i1 = i + 1
-  if (lblas) then
-    call lusol (n, vv(1,i), rhs, alu, jlu, ju)
-    call amux (n, rhs, vv(1,i1), aspar, ja, ia)
-  else
-    do iii = 1, n !- lusol
-      rhs(iii) = vv(iii,i)
-      do k=jlu(iii),ju(iii)-1
-        rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
-      end do
-    end do
-    do iii = n, 1, -1
-      do k=ju(iii),jlu(iii+1)-1
-        rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
-      end do
-      rhs(iii) = alu(iii)*rhs(iii)
-    end do
-    do iii = 1, n !- amux
-      t = 0.0d0
-      do k = ia(iii), ia(iii+1)-1
-        t = t + aspar(k) * rhs(ja(k))
-      end do
-      vv(iii,i1) = t
-    end do
-  end if
-  !      modified gram - schmidt...
-  if (lblas) then
-    do j=1, i
-      t = ddot(n, vv(1,j),vv(1,i1))
-      hh(j,i) = t
-      call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
-      t = dnrm2(n, vv(1,i1))
-    end do
-  else
-    do j=1, i
-      t = 0.d0
-      do iii = 1,n
-        t = t + vv(iii,j)*vv(iii,i1)
-      end do
-      hh(j,i) = t
-      vv(:,i1) = vv(:,i1) - t * vv(:,j)
-      t = sqrt(sum(vv(:,i1)*vv(:,i1)))
-    end do
-  end if
-  hh(i1,i) = t
-  if ( abs(t) .lt. epsmac) goto 58
-  t = 1.0d0/t
-  do k=1,n
-    vv(k,i1) = vv(k,i1)*t
-  end do
-  !     done with modified gram schimd and arnoldi step.. now  update factorization of hh
-58 if (i .eq. 1) goto 121
-  do k=2,i
-    k1 = k-1
-    t = hh(k1,i)
-    hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
-    hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
-  end do
-121 gam = sqrt(hh(i,i)**2 + hh(i1,i)**2)
-  if (abs(gam) .lt. epsmac) gam = epsmac
-  !      get  next plane rotation
-  c(i) = hh(i,i)/gam
-  s(i) = hh(i1,i)/gam
-  rs(i1) = -s(i)*rs(i)
-  rs(i) =  c(i)*rs(i)
-  !      detrermine residual norm and test for convergence-
-  hh(i,i) = c(i)*hh(i,i) + s(i)*hh(i1,i)
-  ro = abs(rs(i1))
-  if (i .lt. im .and. (ro .gt. eps1))  goto 4
-  !      now compute solution. first solve upper triangular system.
-  rs(i) = rs(i)/hh(i,i)
-  do ii=2,i
-    k=i-ii+1
-    k1 = k+1
-    t=rs(k)
-    do j=k1,i
-      t = t-hh(k,j)*rs(j)
-    end do
-    rs(k) = t/hh(k,k)
-  end do
-  !      form linear combination of v(*,i)'s to get solution
-  t = rs(1)
-  do k=1, n
-    rhs(k) = vv(k,1)*t
-  end do
-  do j = 2, i
-    t = rs(j)
-    do k=1, n
-      rhs(k) = rhs(k)+t*vv(k,j)
-    end do
-  end do
-  !      call preconditioner.
-  if (lblas) then
-    call lusol (n, rhs, rhs, alu, jlu, ju)
-  else
-    do iii = 1, n
-      do k=jlu(iii),ju(iii)-1
-        rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
-      end do
-    end do
-    do iii = n, 1, -1
-      do k=ju(iii),jlu(iii+1)-1
-        rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
-      end do
-      rhs(iii) = alu(iii)*rhs(iii)
-    end do
-  end if
-  do k=1, n
-    sol(k) = sol(k) + rhs(k)
-  end do
-  !      restart outer loop  when necessary
-  if (ro .le. eps1) goto 990
-  if (its .ge. maxits) goto 991
-  !      else compute residual vector and continue..
-  do j=1,i
-    jj = i1-j+1
-    rs(jj-1) = -s(jj-1)*rs(jj)
-    rs(jj) = c(jj-1)*rs(jj)
-  end do
-  do j=1,i1
-    t = rs(j)
-    if (j .eq. 1)  t = t-1.0d0
+  do
     if (lblas) then
-      call daxpy (n, t, vv(1,j), 1,  vv, 1)
+      ro = dnrm2(n, vv)
     else
-      vv(:,j) = vv(:,j) + t * vv(:,1)
+      ro = sqrt(sum(vv(:,1)*vv(:,1)))
     end if
+    if (abs(ro) .lt. epsmac) then
+      ierr = -1
+      return
+    end if
+    t = 1.0d0 / ro
+    do j=1, n
+      vv(j,1) = vv(j,1)*t
+    end do
+    if (its .eq. 0) eps1=eps*ro
+    !      initialize 1-st term  of rhs of hessenberg system..
+    rs(1) = ro
+    i = 0
+    do
+      i=i+1
+      its = its + 1
+      i1 = i + 1
+      if (lblas) then
+        call lusol (n, vv(1,i), rhs, alu, jlu, ju)
+        call amux (n, rhs, vv(1,i1), aspar, ja, ia)
+      else
+        do iii = 1, n !- lusol
+          rhs(iii) = vv(iii,i)
+          do k=jlu(iii),ju(iii)-1
+            rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
+          end do
+        end do
+        do iii = n, 1, -1
+          do k=ju(iii),jlu(iii+1)-1
+            rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
+          end do
+          rhs(iii) = alu(iii)*rhs(iii)
+        end do
+        do iii = 1, n !- amux
+          t = 0.0d0
+          do k = ia(iii), ia(iii+1)-1
+            t = t + aspar(k) * rhs(ja(k))
+          end do
+          vv(iii,i1) = t
+        end do
+      end if
+      !      modified gram - schmidt...
+      if (lblas) then
+        do j=1, i
+          t = ddot(n, vv(1,j),vv(1,i1))
+          hh(j,i) = t
+          call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
+          t = dnrm2(n, vv(1,i1))
+        end do
+      else
+        do j=1, i
+          t = 0.d0
+          do iii = 1,n
+            t = t + vv(iii,j)*vv(iii,i1)
+          end do
+          hh(j,i) = t
+          vv(:,i1) = vv(:,i1) - t * vv(:,j)
+          t = sqrt(sum(vv(:,i1)*vv(:,i1)))
+        end do
+      end if
+      hh(i1,i) = t
+      if ( abs(t) .ge. epsmac) then
+        t = 1.0d0/t
+        do k=1,n
+          vv(k,i1) = vv(k,i1)*t
+        end do
+      end if
+      !     done with modified gram schimd and arnoldi step.. now  update factorization of hh
+      if (i .ne. 1) then
+        do k=2,i
+          k1 = k-1
+          t = hh(k1,i)
+          hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
+          hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
+        end do
+      end if
+      gam = sqrt(hh(i,i)**2 + hh(i1,i)**2)
+      if (abs(gam) .lt. epsmac) gam = epsmac
+      !      get  next plane rotation
+      c(i) = hh(i,i)/gam
+      s(i) = hh(i1,i)/gam
+      rs(i1) = -s(i)*rs(i)
+      rs(i) =  c(i)*rs(i)
+      !      detrermine residual norm and test for convergence-
+      hh(i,i) = c(i)*hh(i,i) + s(i)*hh(i1,i)
+      ro = abs(rs(i1))
+      if (i .ge. im .or. (ro .le. eps1)) exit
+    end do
+    !      now compute solution. first solve upper triangular system.
+    rs(i) = rs(i)/hh(i,i)
+    do ii=2,i
+      k=i-ii+1
+      k1 = k+1
+      t=rs(k)
+      do j=k1,i
+        t = t-hh(k,j)*rs(j)
+      end do
+      rs(k) = t/hh(k,k)
+    end do
+    !      form linear combination of v(*,i)'s to get solution
+    t = rs(1)
+    do k=1, n
+      rhs(k) = vv(k,1)*t
+    end do
+    do j = 2, i
+      t = rs(j)
+      do k=1, n
+        rhs(k) = rhs(k)+t*vv(k,j)
+      end do
+    end do
+    !      call preconditioner.
+    if (lblas) then
+      call lusol (n, rhs, rhs, alu, jlu, ju)
+    else
+      do iii = 1, n
+        do k=jlu(iii),ju(iii)-1
+          rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
+        end do
+      end do
+      do iii = n, 1, -1
+        do k=ju(iii),jlu(iii+1)-1
+          rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
+        end do
+        rhs(iii) = alu(iii)*rhs(iii)
+      end do
+    end if
+    do k=1, n
+      sol(k) = sol(k) + rhs(k)
+    end do
+    !      restart outer loop  when necessary
+    if (ro .le. eps1) then
+      ierr = 0
+      return
+    end if
+    if (its .ge. maxits) then
+      ierr = 1
+      return
+    end if
+    !      else compute residual vector and continue..
+    do j=1,i
+      jj = i1-j+1
+      rs(jj-1) = -s(jj-1)*rs(jj)
+      rs(jj) = c(jj-1)*rs(jj)
+    end do
+    do j=1,i1
+      t = rs(j)
+      if (j .eq. 1)  t = t-1.0d0
+      if (lblas) then
+        call daxpy (n, t, vv(1,j), 1,  vv, 1)
+      else
+        vv(:,j) = vv(:,j) + t * vv(:,1)
+      end if
+    end do
   end do
-  ! 199   format('   its =', i4, ' res. norm =', d20.6)
-  !      restart outer loop.
-  goto 20
-990 ierr = 0
-  return
-991 ierr = 1
-  return
-999 continue
-  ierr = -1
-  return
   !---------------------------------------------------------------------
 end subroutine pgmres
 !-----------------------------------------------------------------------
@@ -4615,25 +4654,24 @@ double precision function ddot(n,dx,dy)
   !     uses unrolled loops for increments equal to one.
   !     jack dongarra, linpack, 3/11/78.
   !
-  double precision dx(*),dy(*),dtemp
+  double precision dx(*),dy(*)
   integer i,m,mp1,n
   !
   ddot = 0.0d0
-  dtemp = 0.0d0
   if(n.le.0)return
 
-20 m = mod(n,5)
-  if( m .eq. 0 ) go to 40
-  do i = 1,m
-    dtemp = dtemp + dx(i)*dy(i)
-  end do
-  if( n .lt. 5 ) go to 60
-40 mp1 = m + 1
+  m = mod(n,5)
+  if( m .ne. 0 ) then
+    do i = 1,m
+      ddot = ddot + dx(i)*dy(i)
+    end do
+    if( n .lt. 5 ) return
+  end if
+  mp1 = m + 1
   do i = mp1,n,5
-    dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
+    ddot = ddot + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
          &   dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
   end do
-60 ddot = dtemp
   return
 end function ddot
 !----------------------------------------------------------------------
@@ -4648,34 +4686,36 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
   !
   if(n.le.0)return
   if (abs(da) .lt. tiny(1.d0)) return
-  if(incx.eq.1.and.incy.eq.1)go to 20
-  !
-  !        code for unequal increments or equal increments
-  !          not equal to 1
-  !
-  ix = 1
-  iy = 1
-  if(incx.lt.0)ix = (-n+1)*incx + 1
-  if(incy.lt.0)iy = (-n+1)*incy + 1
-  do  i = 1,n
-    dy(iy) = dy(iy) + da*dx(ix)
-    ix = ix + incx
-    iy = iy + incy
-  end do
-  return
-  !
-  !        code for both increments equal to 1
-  !
-  !
-  !        clean-up loop
-  !
-20 m = mod(n,4)
-  if( m .eq. 0 ) go to 40
-  do i = 1,m
-    dy(i) = dy(i) + da*dx(i)
-  end do
-  if( n .lt. 4 ) return
-40 mp1 = m + 1
+  if(incx.ne.1.or.incy.ne.1) then
+    !
+    !        code for unequal increments or equal increments
+    !          not equal to 1
+    !
+    ix = 1
+    iy = 1
+    if(incx.lt.0)ix = (-n+1)*incx + 1
+    if(incy.lt.0)iy = (-n+1)*incy + 1
+    do  i = 1,n
+      dy(iy) = dy(iy) + da*dx(ix)
+      ix = ix + incx
+      iy = iy + incy
+    end do
+    return
+    !
+    !        code for both increments equal to 1
+    !
+    !
+    !        clean-up loop
+    !
+  end if
+  m = mod(n,4)
+  if( m .ne. 0 ) then
+    do i = 1,m
+      dy(i) = dy(i) + da*dx(i)
+    end do
+    if( n .lt. 4 ) return
+  end if
+  mp1 = m + 1
   do i = mp1,n,4
     dy(i) = dy(i) + da*dx(i)
     dy(i + 1) = dy(i + 1) + da*dx(i + 1)

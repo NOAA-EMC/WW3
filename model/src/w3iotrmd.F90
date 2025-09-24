@@ -130,6 +130,7 @@ CONTAINS
     !/    26-Dec-2012 : Initialize ASPTRK.                  ( version 4.11 )
     !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
     !/    08-Jun-2018 : use W3PARALL/INIT_GET_JSEA_ISPROC   ( version 6.04 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2014 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -369,19 +370,64 @@ CONTAINS
              'FORMATTED'
 #endif
         OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-             STATUS='OLD',ERR=800,FORM='FORMATTED',IOSTAT=IERR)
-        READ (NDSTI,'(A)',ERR=801,END=802,IOSTAT=IERR) IDTST
+             STATUS='OLD',FORM='FORMATTED',IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        READ (NDSTI,'(A)',IOSTAT=IERR) IDTST
+        IF (IERR.NE.0) THEN
+          IF (IERR.GT.0 .AND. IAPROC .EQ. NAPERR )    &
+            WRITE (NDSE,1001) FILEXT(:I), IERR
+          IF (IERR.LT.0 .AND. IAPROC .EQ. NAPERR )    &
+            WRITE (NDSE,1002) FILEXT(:I)
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       ELSE
 #ifdef W3_T
         WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
              'UNFORMATTED'
 #endif
         OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-             STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
-        READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
+             STATUS='OLD',form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        READ (NDSTI,IOSTAT=IERR) IDTST
+        IF (IERR.NE.0) THEN
+          IF (IERR.GT.0 .AND. IAPROC .EQ. NAPERR ) &
+            WRITE (NDSE,1001) FILEXT(:I), IERR
+          IF (IERR.LT.0 .AND. IAPROC .EQ. NAPERR ) &
+            WRITE (NDSE,1002) FILEXT(:I)
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       END IF
       !
-      IF ( IDTST .NE. IDSTRI ) GOTO 803
+      IF ( IDTST .NE. IDSTRI ) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) FILEXT(:I), IDSTRI, IDTST
+        ATOLAST(:,3) = TIME
+#ifdef W3_T
+        WRITE (NDST,9080)
+#endif
+        RETURN
+      END IF
       !
       ! 1.b Open output file
       !
@@ -391,12 +437,36 @@ CONTAINS
              'UNFORMATTED'
 #endif
         OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
-             form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
-        WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        WRITE (NDSTO,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
              NTH, XFR
-        WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        WRITE (NDSTO,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
              (SIG(IK)*TPIINV,IK=1,NK),                          &
              (DSIP(IK)*TPIINV,IK=1,NK)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       END IF
       !
       ! 1.c Initialize maps
@@ -451,171 +521,178 @@ CONTAINS
 #ifdef W3_T
       WRITE (NDST,9034)
 #endif
-      GOTO 399
-    END IF
-    !
-#ifdef W3_T1
-    WRITE (NDST,9030)
-#endif
-    !
-    DO
+    ELSE 
       !
-      IF ( FORMI ) THEN
-        READ (NDSTI,'(A)',ERR=801,END=390,IOSTAT=IERR) LINE
-        LIST(:)=''
-        CALL STRSPLIT(LINE,LIST)
-        READ(LIST(1),'(I8)') TTIME(1)
-        READ(LIST(2),'(I6)') TTIME(2)
-        READ(LIST(3),*) XT
-        READ(LIST(4),*) YT
-        IF(SIZE(LIST).GE.5) TRCKT=LIST(5)
-      ELSE
-        READ (NDSTI, ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT, TRCKT
-      END IF
+#ifdef W3_T1
+      WRITE (NDST,9030)
+#endif
+      !
+      DO
+        !
+        IF ( FORMI ) THEN
+          READ (NDSTI,'(A)', IOSTAT=IERR) LINE
+        ELSE
+          READ (NDSTI, IOSTAT=IERR) TTIME, XT, YT, TRCKT
+        END IF
+        ! Check if file has been properly read
+        IF (IERR .LT. 0) THEN
+          ! End of input file
 #ifdef W3_T
-      NREAD  = NREAD + 1
+          WRITE (NDST,9033)
 #endif
-      !
-      ! 3.b Point before time interval
-      !
-      IF ( DSEC21(TIMEB,TTIME) .LT. 0. ) THEN
-#ifdef W3_T1
-        WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
-#endif
-        CYCLE
-      END IF
-      !
-      ! 3.c Point after time interval
-      !
-      IF ( DSEC21(TIMEE,TTIME) .GT. 0. ) THEN
-        BACKSPACE (NDSTI)
+          STOP   = .TRUE.
+          EXIT
+        ELSE IF (IERR .GT. 0) THEN
+          ! Error reading file
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
 #ifdef W3_T
-        NREAD  = NREAD - 1
+          WRITE (NDST,9080)
 #endif
-#ifdef W3_T1
-        WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
-#endif
-        GOTO 399
-      END IF
-      !
-      ! 3.d Check time in interval
-      !
-      FLAG1  = DSEC21(TTIME,TIMEE) .GT. RTCHCK*DTOUT
-      FLAG2  = DSEC21(TIMEB,TTIME) .GT. RTCHCK*DTOUT
-      !
-      ! 3.e Check point coordinates
-      !
-
-      ! 3.e.1 Initial identification of computational grid points to include.
-      !
-      !       Find cell that encloses target point (note that the returned
-      !       cell corner indices are adjusted for global wrapping and the
-      !       coordinates are adjusted to avoid branch cut crossings)
-      INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
-      IF ( .NOT. INGRID ) THEN
-#ifdef W3_T1
-        WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
-             'OUT OF GRID'
-#endif
-        CYCLE
-      END IF
-      !
-      !       Change cell-corners from counter-clockwise to column-major order
-      IX     = IXX(4);  IY     = IYY(4);
-      IXX(4) = IXX(3);  IYY(4) = IYY(3);
-      IXX(3) = IX;      IYY(3) = IY;
-      !
-      ! 3.e.2 Optimize: omit points that are not strictly required.
-      !       See "Remarks"
-
-      IF(CMPRTRCK)THEN ! perform track compression
-
-        !         Project onto I-axis
-        RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
-             + DPDY(IYY(1),IXX(1))*(YT-YY(1))
-        !
-        !         Collapse to left or right if within tolerance
-        IF ( RD .LT. RDCHCK ) THEN
-          IXX(2) = IXX(1)
-          IXX(4) = IXX(3)
-        ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-          IXX(1) = IXX(2)
-          IXX(3) = IXX(4)
+          RETURN
         END IF
         !
-        !         Project onto J-axis
-        RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
-             + DQDY(IYY(1),IXX(1))*(YT-YY(1))
-        !
-        !         Collapse to top or bottom if within tolerance
-        IF ( RD .LT. RDCHCK ) THEN
-          IYY(3) = IYY(1)
-          IYY(4) = IYY(2)
-        ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-          IYY(1) = IYY(3)
-          IYY(2) = IYY(4)
+        IF ( FORMI ) THEN
+          LIST(:)=''
+          CALL STRSPLIT(LINE,LIST)
+          READ(LIST(1),'(I8)') TTIME(1)
+          READ(LIST(2),'(I6)') TTIME(2)
+          READ(LIST(3),*) XT
+          READ(LIST(4),*) YT
+          IF(SIZE(LIST).GE.5) TRCKT=LIST(5)
         END IF
-
-      END IF ! IF(CMPRTRCK)THEN
-      !
-      ! 3.f Mark the four corner points
-      !
-      DO J=1, 4
+#ifdef W3_T
+        NREAD  = NREAD + 1
+#endif
         !
-        IX     = IXX(J)
-        IY     = IYY(J)
-        IF(GTYPE .EQ. UNGTYPE) THEN
-          X = XGRD(1,IX)
-          Y = YGRD(1,IX)
-        ENDIF
-        MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
-        MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
-        TRCKID(IY,IX) = TRCKT
+        ! 3.b Point before time interval
         !
+        IF ( DSEC21(TIMEB,TTIME) .LT. 0. ) THEN
 #ifdef W3_T1
-        IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-          IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-            TSTLOC(4*J-3:4*J-1) = 'LND'
-          ELSE
-            TSTLOC(4*J-3:4*J-1) = 'XCL'
+          WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
+#endif
+          CYCLE
+        END IF
+        !
+        ! 3.c Point after time interval
+        !
+        IF ( DSEC21(TIMEE,TTIME) .GT. 0. ) THEN
+          BACKSPACE (NDSTI)
+#ifdef W3_T
+          NREAD  = NREAD - 1
+#endif
+#ifdef W3_T1
+          WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
+#endif
+          EXIT
+        END IF
+        !
+        ! 3.d Check time in interval
+        !
+        FLAG1  = DSEC21(TTIME,TIMEE) .GT. RTCHCK*DTOUT
+        FLAG2  = DSEC21(TIMEB,TTIME) .GT. RTCHCK*DTOUT
+        !
+        ! 3.e Check point coordinates
+        !
+
+        ! 3.e.1 Initial identification of computational grid points to include.
+        !
+        !       Find cell that encloses target point (note that the returned
+        !       cell corner indices are adjusted for global wrapping and the
+        !       coordinates are adjusted to avoid branch cut crossings)
+        INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
+        IF ( .NOT. INGRID ) THEN
+#ifdef W3_T1
+          WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
+               'OUT OF GRID'
+#endif
+          CYCLE
+        END IF
+        !
+        !       Change cell-corners from counter-clockwise to column-major order
+        IX     = IXX(4);  IY     = IYY(4);
+        IXX(4) = IXX(3);  IYY(4) = IYY(3);
+        IXX(3) = IX;      IYY(3) = IY;
+        !
+        ! 3.e.2 Optimize: omit points that are not strictly required.
+        !       See "Remarks"
+
+        IF(CMPRTRCK)THEN ! perform track compression
+
+          !         Project onto I-axis
+          RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
+               + DPDY(IYY(1),IXX(1))*(YT-YY(1))
+          !
+          !         Collapse to left or right if within tolerance
+          IF ( RD .LT. RDCHCK ) THEN
+            IXX(2) = IXX(1)
+            IXX(4) = IXX(3)
+          ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
+            IXX(1) = IXX(2)
+            IXX(3) = IXX(4)
           END IF
-        ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
-          IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
-            TSTLOC(4*J-3:4*J-1) = 'ICE'
-          ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
-            TSTLOC(4*J-3:4*J-1) = 'DRY'
-          ELSE
-            TSTLOC(4*J-3:4*J-1) = 'DIS'
+          !
+          !         Project onto J-axis
+          RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
+               + DQDY(IYY(1),IXX(1))*(YT-YY(1))
+          !
+          !         Collapse to top or bottom if within tolerance
+          IF ( RD .LT. RDCHCK ) THEN
+            IYY(3) = IYY(1)
+            IYY(4) = IYY(2)
+          ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
+            IYY(1) = IYY(3)
+            IYY(2) = IYY(4)
           END IF
-        ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
-          TSTLOC(4*J-3:4*J-1) = 'SEA'
-        END IF
+
+        END IF ! IF(CMPRTRCK)THEN
+        !
+        ! 3.f Mark the four corner points
+        !
+        DO J=1, 4
+          !
+          IX     = IXX(J)
+          IY     = IYY(J)
+          IF(GTYPE .EQ. UNGTYPE) THEN
+            X = XGRD(1,IX)
+            Y = YGRD(1,IX)
+          ENDIF
+          MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
+          MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
+          TRCKID(IY,IX) = TRCKT
+          !
+#ifdef W3_T1
+          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+              TSTLOC(4*J-3:4*J-1) = 'LND'
+            ELSE
+              TSTLOC(4*J-3:4*J-1) = 'XCL'
+            END IF
+          ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
+            IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
+              TSTLOC(4*J-3:4*J-1) = 'ICE'
+            ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
+              TSTLOC(4*J-3:4*J-1) = 'DRY'
+            ELSE
+              TSTLOC(4*J-3:4*J-1) = 'DIS'
+            END IF
+          ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
+            TSTLOC(4*J-3:4*J-1) = 'SEA'
+          END IF
+#endif
+          !
+        END DO
+        !
+#ifdef W3_T1
+        WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
+             IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
+#endif
+#ifdef W3_T
+        NTRACK = NTRACK + 1
 #endif
         !
       END DO
-      !
-#ifdef W3_T1
-      WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
-           IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
-#endif
-      !
-#ifdef W3_T
-      NTRACK = NTRACK + 1
-#endif
-      !
-    END DO
-    !
-    ! 3.g End of input file escape location
-    !
-390 CONTINUE
-#ifdef W3_T
-    WRITE (NDST,9033)
-#endif
-    STOP   = .TRUE.
-    !
-    ! 3.h Read end escape location
-    !
-399 CONTINUE
+    END IF
     !
     ! 3.h Mask test output
     !
@@ -765,17 +842,41 @@ CONTAINS
               !
               ! 4.e Sea point, write general data + spectrum
               !
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    TIME, X, Y, TSTSTR, TRCKID(IY,IX)
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    DW(ISEA), CX(ISEA), CY(ISEA), WX, WY,        &
                    UST(ISEA), AS(ISEA), SPEC
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
               !
               ! 4.f Non-sea point, write
               !
             ELSE
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    TIME, X, Y, TSTSTR, TRCKID(IY,IX)
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
               !
               ! ..... Sea and non-sea points processed
               !
@@ -804,43 +905,6 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9090) NTRACK, NREAD, NSPECO, NLOCO
 #endif
-    !
-    GOTO 888
-    !
-    !     Error Escape Locations
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
-    GOTO 880
-    !
-801 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:I), IERR
-    GOTO 880
-    !
-802 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:I)
-    GOTO 880
-    !
-803 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) FILEXT(:I), IDSTRI, IDTST
-    GOTO 880
-    !
-810 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) FILEXT(:I), IERR
-    GOTO 880
-    !
-811 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
-    !
-    !     Disabeling output
-    !
-880 CONTINUE
-    ATOLAST(:,3) = TIME
-#ifdef W3_T
-    WRITE (NDST,9080)
-#endif
-    !
-888 CONTINUE
     !
     RETURN
     !

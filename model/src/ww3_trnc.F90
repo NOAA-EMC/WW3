@@ -25,6 +25,7 @@ PROGRAM W3TRNC
   !/    11-Apr-2016 : Adapted to use more options         ( version 5.11 )
   !/    15-May-2018 : Add namelist feature                ( version 6.05 )
   !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,7 +77,7 @@ PROGRAM W3TRNC
 #endif
   USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR, GNAME
   USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -196,27 +197,33 @@ PROGRAM W3TRNC
   ! process old ww3_trnc.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_trnc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_trnc.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 14)
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=806,ERR=807,IOSTAT=IERR) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 15)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     WRITE (NDSO,901) COMSTR
 
 
     ! 3.1 Time setup IDTIME, DTREQ, NOUT
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=806,ERR=807) TOUT, DTREQ, NOUT
+    READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 15)
 
 
     ! 3.2 Output type
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=806,ERR=807) NCTYPE
+    READ (NDSI,*,IOSTAT=IERR) NCTYPE
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 15)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     FILEPREFIX= 'ww3.'
-    READ (NDSI,*,END=806,ERR=807) FILEPREFIX
+    READ (NDSI,*,IOSTAT=IERR) FILEPREFIX
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 15)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=806,ERR=807) S3
+    READ (NDSI,*,IOSTAT=IERR) S3
+    IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 15)
 
   END IF ! .NOT. FLGNML
 
@@ -257,8 +264,10 @@ PROGRAM W3TRNC
   ! 4.  Check consistency with input file and track_o.ww3
   !
   OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
-       STATUS='OLD',ERR=800,IOSTAT=IERR)
-  READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
+       STATUS='OLD',IOSTAT=IERR)
+  IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 10)
+  READ (NDSINP,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
   !
   IF ( FLAGLL ) THEN
     M2KM  = 1.
@@ -266,14 +275,18 @@ PROGRAM W3TRNC
     M2KM  = 1.E-3
   END IF
   !
-  IF ( IDSTR .NE. IDTST ) GOTO 810
+  IF ( IDSTR .NE. IDTST ) THEN
+    WRITE (NDSE,1010) IDSTR, IDTST
+    CALL EXTCDE ( 20 )
+  END IF
 
   WRITE (NDSO,902) MK, MTH
   NSPEC  = MK * MTH
   ALLOCATE ( FREQ(MK), FREQ1(MK), FREQ2(MK), DSIP(MK), &
        SPEC(MK,MTH), E(MK,MTH), THD(MTH), DIR(MTH) )
   !
-  READ (NDSINP,ERR=801,IOSTAT=IERR) TH1, DTH, FREQ, DSIP
+  READ (NDSINP,IOSTAT=IERR) TH1, DTH, FREQ, DSIP
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
 
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,69 +295,78 @@ PROGRAM W3TRNC
   IOUT = 0
   NCID = 0
   WRITE (NDSO,970)
-  READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME
-  BACKSPACE (NDSINP)
+  READ (NDSINP,IOSTAT=IERR) TIME
+  IF (IERR.GT.0) THEN
+    WRITE (NDSE,1001)
+    CALL EXTCDE ( 11 )
+  ELSE IF (IERR.EQ.0) THEN
+    BACKSPACE (NDSINP)
 
 
-  ! 5.1 Loops on track_o.ww3 to read the time and data
-  DO
-    DTEST  = DSEC21 ( TIME , TOUT )
+    ! 5.1 Loops on track_o.ww3 to read the time and data
+    DO
+      DTEST  = DSEC21 ( TIME , TOUT )
 
-    ! cycle to reach the start time of input file
-    IF ( DTEST .LT. 0. ) THEN
-      CALL TICK21 ( TOUT , DTREQ )
-      CYCLE
-    END IF
-
-    IF ( DTEST .GE. 0. ) THEN
-      TRCKID=''
-      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR, TRCKID
-      IF ( TSTSTR .EQ. 'SEA' ) THEN
-        READ (NDSINP,ERR=801,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, &
-             AS, SPEC
-      END IF
-      IF ( IERR .EQ. -1 ) THEN
-        WRITE (NDSO,944)
-        EXIT
+      ! cycle to reach the start time of input file
+      IF ( DTEST .LT. 0. ) THEN
+        CALL TICK21 ( TOUT , DTREQ )
+        CYCLE
       END IF
 
-
-      IF ( TIME(1).EQ.TOUT(1) .AND. TIME(2).EQ.TOUT(2) ) THEN
-        ILOC = ILOC + 1
-        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-      ENDIF
-      IF ( TIME(1).GT.TOUT(1) .OR. TIME(2).GT.TOUT(2) ) THEN
-        CALL STME21 ( TIME , STIME )
-        WRITE (NDSO,945) STIME, ILOC, ISPEC
-        ILOC    = 1
-        ISPEC   = 0
-        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-        TOUT(1) = TIME(1)
-        TOUT(2) = TIME(2)
-      ENDIF
-    END IF
-
-
-    ! 5.1.1 Increments the global time counter IOUT
-    IOUT = IOUT + 1
-    CALL STME21 ( TOUT , IDTIME )
-    WRITE (NDSO,971) IDTIME
+      IF ( DTEST .GE. 0. ) THEN
+        TRCKID=''
+        READ (NDSINP,IOSTAT=IERR) TIME, X, Y, TSTSTR, TRCKID
+        IF (IERR.LT.0) THEN
+          EXIT
+        ELSE IF (IERR.GT.0) THEN
+          WRITE (NDSE,1001)
+          CALL EXTCDE ( 11 )
+        END IF
+        IF ( TSTSTR .EQ. 'SEA' ) THEN
+          READ (NDSINP,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, &
+               AS, SPEC
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
+        END IF
+        IF ( IERR .LT.0 ) THEN
+          WRITE (NDSO,944)
+          EXIT
+        END IF
 
 
-    ! 5.1.2  Processes the variable value for the time step IOUT
-    CALL W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
+        IF ( TIME(1).EQ.TOUT(1) .AND. TIME(2).EQ.TOUT(2) ) THEN
+          ILOC = ILOC + 1
+          IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+        ENDIF
+        IF ( TIME(1).GT.TOUT(1) .OR. TIME(2).GT.TOUT(2) ) THEN
+          CALL STME21 ( TIME , STIME )
+          WRITE (NDSO,945) STIME, ILOC, ISPEC
+          ILOC    = 1
+          ISPEC   = 0
+          IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+          TOUT(1) = TIME(1)
+          TOUT(2) = TIME(2)
+        ENDIF
+      END IF
 
 
-    ! 5.1.3 Defines the stop date
-    CALL T2D(TOUT,STOPDATE,IERR)
-    WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
-         '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
-
-    IF ( IOUT .GE. NOUT ) EXIT
-  END DO
+      ! 5.1.1 Increments the global time counter IOUT
+      IOUT = IOUT + 1
+      CALL STME21 ( TOUT , IDTIME )
+      WRITE (NDSO,971) IDTIME
 
 
-444 CONTINUE
+      ! 5.1.2  Processes the variable value for the time step IOUT
+      CALL W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
+
+
+      ! 5.1.3 Defines the stop date
+      CALL T2D(TOUT,STOPDATE,IERR)
+      WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
+           '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
+
+      IF ( IOUT .GE. NOUT ) EXIT
+    END DO
+  END IF
 
   ! 5.2 Closes the netCDF file
   IF (NCID.NE.0) THEN
@@ -357,37 +379,8 @@ PROGRAM W3TRNC
   END IF
 
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 10 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 11 )
-  !
-805 CONTINUE
-  WRITE (NDSE,1004) IERR
-  CALL EXTCDE ( 14 )
-  !
-806 CONTINUE
-  WRITE (NDSE,1005) IERR
-  CALL EXTCDE ( 15 )
-  !
-807 CONTINUE
-  WRITE (NDSE,1006) IERR
-  CALL EXTCDE ( 16 )
-  !
-
-810 CONTINUE
-  WRITE (NDSE,1010) IDSTR, IDTST
-  CALL EXTCDE ( 20 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
+  STOP
   !
   ! Formats
   !
@@ -418,24 +411,8 @@ PROGRAM W3TRNC
        ' ========================================='/          &
        '         WAVEWATCH III Track output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
        '     PREMATURE END OF INPUT FILE'/)
-  !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
-1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
-       '     ERROR IN OPENING OUTPUT FILE'/                   &
-       '     IOSTAT =',I5/)
   !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
        '     ILLEGAL TYPE, NCTYPE =',I4/)
@@ -467,6 +444,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/     8-apr-2016 : Creation                            ( version 5.11 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -702,8 +680,7 @@ CONTAINS
     !
     ! 1.6 Exit from W3EXNC if not sea point
     !
-    IF ( TSTSTR .NE. 'SEA' ) GOTO 888
-
+    IF ( TSTSTR .NE. 'SEA' ) RETURN
 
     !
     ! 1.6.1 Process speed and direction components
@@ -776,9 +753,6 @@ CONTAINS
     IRET=NF90_PUT_VAR(NCID,VARID(18),TRCKID,start=(/1,IT/),count=(/LEN_TRIM(TRCKID),1/))
     CALL CHECK_ERR(IRET)
 
-
-    !
-888 CONTINUE
     !
     RETURN
 
@@ -786,7 +760,6 @@ CONTAINS
     ! Formats
     !
 973 FORMAT ( 'NEW NetCDF file was created ',A)
-
 
     !/ End of W3EXNC ----------------------------------------------------- /
     !/

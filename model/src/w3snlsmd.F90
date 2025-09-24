@@ -673,6 +673,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    04-Aug-2008 : Origination.                        ( version 3.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -823,7 +824,10 @@ CONTAINS
 #endif
       !
       IF ( A34.GT.ABMAX .OR. B3.GT.ABMAX .OR. B4.GT.ABMAX .OR.     &
-           A34.LT.0. .OR. B3.LT.0. .OR. B4.LT.0. ) GOTO 801
+           A34.LT.0. .OR. B3.LT.0. .OR. B4.LT.0. ) THEN
+        WRITE (NDSE,1001) A34, B3, B4
+        CALL EXTCDE (1001)
+      END IF
       !
       ! 2.d Store weights
       !
@@ -839,12 +843,6 @@ CONTAINS
     END DO
     !
     RETURN
-    !
-    ! Error escape locations
-    !
-801 CONTINUE
-    WRITE (NDSE,1001) A34, B3, B4
-    CALL EXTCDE (1001)
     !
     ! Formats
     !
