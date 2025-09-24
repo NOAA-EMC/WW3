@@ -493,7 +493,7 @@ CONTAINS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
     !
-#if defined(W3_MPI) || defined(W3_OASIS)
+#ifdef W3_MPI 
     use mpi_f08
 #endif
     !/
