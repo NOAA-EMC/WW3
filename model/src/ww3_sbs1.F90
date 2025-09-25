@@ -179,6 +179,10 @@ PROGRAM W3SBS1
   USE WMMDATMD, ONLY: MDSE, MDST, MDSS, NMPROC, IMPROC, NMPSCR,   &
        NRGRD, STIME, ETIME
   !/
+#ifdef W3_MPI
+  USE MPICOMM, ONLY: MPI_COMM_WW3
+#endif
+  !
   IMPLICIT NONE
   !
 #ifdef W3_MPI
@@ -205,11 +209,11 @@ PROGRAM W3SBS1
   ! 0.  Initialization necessary for driver
   ! 0.a General I/O: all can start with initialization in wmmdatmd
   !
-  ! 0.b MPI environment: Here, we use MPI_COMM_WORLD
+  ! 0.b MPI environment: Here, we use MPI_COMM_WW3
   !
 #ifdef W3_MPI
   CALL MPI_INIT      ( IERR_MPI )
-  MPI_COMM = MPI_COMM_WORLD
+  MPI_COMM = MPI_COMM_WW3
   CALL MPI_COMM_SIZE ( MPI_COMM, NMPROC, IERR_MPI )
   CALL MPI_COMM_RANK ( MPI_COMM, IMPROC, IERR_MPI )
   IMPROC = IMPROC + 1

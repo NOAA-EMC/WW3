@@ -802,7 +802,7 @@ create_file_list()
                prop=
             sourcet="w3parall w3triamd w3gridmd $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd'
-                aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode"
+                aux="constants mpicomm w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode"
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
@@ -819,42 +819,42 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $tr $trx $bt $setupcode $stx $flx $nlx $btx $is wmmdatmd w3parall $uostmd"
                  IO='w3iogrmd w3iorsmd'
-                aux="constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd" ;;
+                aux="constants mpicomm w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd" ;;
       ww3_bound)
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"
                prop="$smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux="constants w3servmd w3timemd w3arrymd w3cspcmd w3nmlboundmd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3cspcmd w3nmlboundmd" ;;
       ww3_bounc)
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"
                prop="$smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux="constants w3servmd w3arrymd w3timemd w3cspcmd w3nmlbouncmd" ;;
+                aux="constants mpicomm w3servmd w3arrymd w3timemd w3cspcmd w3nmlbouncmd" ;;
       ww3_prep)
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $flx $nlx $btx  $is $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd w3parall" ;;
+                aux="constants mpicomm w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd w3parall" ;;
       ww3_prnc)
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $flx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd w3nmlprncmd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd w3nmlprncmd" ;;
       ww3_prtide)
                core='w3fldsmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop="$pr $smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
       ww3_shel)
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -863,7 +863,7 @@ create_file_list()
             sourcet="$sourcet $is $db $tr $bs $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
                  IO="$IO w3iosfmd w3partmd"
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
                 aux="$aux w3nmlshelmd $pdlibyow" ;;
       ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]
@@ -879,7 +879,7 @@ create_file_list()
             sourcet="$pdlibcode $pdlibyow $setupcode w3parall w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
+                aux="constants mpicomm $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
                 aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -899,7 +899,7 @@ create_file_list()
             sourcet="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $refcode $igcode $is $ic $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode"
                 aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -917,7 +917,7 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd w3iogomd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
       ww3_ounf)
                core='w3initmd'
@@ -925,7 +925,7 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $flx $nlx $btx  $is $uostmd"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounfmd $smco w3ounfmetamd w3metamd" ;;
       ww3_outp)
                core=
@@ -933,14 +933,14 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $igcode $uostmd"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
       ww3_ounp)
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $igcode $uostmd"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounpmd" ;;
       ww3_trck)
                core=
@@ -948,21 +948,21 @@ create_file_list()
                prop=
             sourcet=
                  IO=
-                aux="constants w3servmd w3timemd w3gsrumd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3gsrumd" ;;
       ww3_trnc)
                core=
                data="$memcode w3gdatmd w3odatmd"
                prop=
             sourcet=
                  IO=
-                aux="constants w3servmd w3timemd w3gsrumd w3nmltrncmd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3gsrumd w3nmltrncmd" ;;
       ww3_grib)
                core=
                data="w3parall wmmdatmd w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd w3iogomd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
       ww3_gspl)
                core='w3fldsmd'
@@ -970,14 +970,14 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $flx $nlx $btx $is $uostmd"
                  IO="w3iogrmd  $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
       ww3_gint)
                core=
                data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                  IO='w3iogrmd w3iogomd'
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $st $nl $is $uostmd"
-                aux="constants w3triamd w3servmd  w3arrymd w3dispmd w3timemd w3gsrumd"
+                aux="constants mpicomm w3triamd w3servmd  w3arrymd w3dispmd w3timemd w3gsrumd"
                 aux="$aux" ;;
       gx_outf)
                core=
@@ -985,7 +985,7 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $flx $nlx $btx $tr $bs $is $uostmd"
                  IO='w3iogrmd w3iogomd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
       gx_outp)
                core=
@@ -993,28 +993,28 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $st $nlx $btx $tr $bs $is $ic $uostmd"
                  IO='w3iogrmd w3iopomd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
       ww3_systrk)
                core='w3strkmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $flx $nlx $btx $tr $bs $is $uostmd"
                  IO=
-                aux="constants w3servmd w3timemd w3arrymd w3gsrumd w3parall" ;;
+                aux="constants mpicomm w3servmd w3timemd w3arrymd w3gsrumd w3parall" ;;
       libww3|libww3.so)
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr $smcm"
             sourcet="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
+                aux="constants mpicomm w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
       ww3_uprstr)
               core=
 	      data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
               prop=
            sourcet="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $uostmd"
                 IO='w3iogrmd w3iogomd w3iorsmd'
-               aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+               aux="constants mpicomm w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                aux="$aux w3parall w3nmluprstrmd" ;;
     esac
 
