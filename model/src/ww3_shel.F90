@@ -397,7 +397,7 @@ PROGRAM W3SHEL
 #ifdef W3_MPI
   type(MPI_COMM)       :: MPICOMM
 #else 
-  INTEGER              :: MPICOMM
+  INTEGER              :: MPICOMM = -99
 #endif
   !
   !/
@@ -486,8 +486,6 @@ PROGRAM W3SHEL
 
 #ifdef W3_MPI
     MPICOMM = MPI_COMM_WORLD
-#else 
-    MPICOMM = 1    
 #endif
 #ifdef W3_OASIS
   END IF

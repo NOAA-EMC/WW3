@@ -354,7 +354,6 @@ CONTAINS
     ENDIF
     !
 #ifdef W3_MPI
-    !mpicomm%mpi_val = ID_LCOMM
     CALL MPI_BCAST(NNODES,1,MPI_INTEGER,0,ID_LCOMM,IERR_MPI)
 #endif
     !
