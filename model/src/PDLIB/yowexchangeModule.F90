@@ -253,9 +253,7 @@ contains
     use yowerr
     use mpi_f08
     implicit none
-    real(kind=rkind), intent(inout) :: U(:)
-
-    real(kind=rkind), allocatable :: Ub_send(:), Ub_recv(:)
+    real(kind=rkind), intent(inout) :: U(npa)
 
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
@@ -267,14 +265,10 @@ contains
       CALL ABORT(errmsg)
     endif
 
-    allocate(Ub_send(size(U)))
-    allocate(Ub_recv(size(U)))
-    Ub_send = U
-
     ! post receives
     do i=1, nConnDomains
       tag = 10000 + myrank
-      call MPI_IRecv(Ub_recv, 1, neighborDomains(i)%p1DRrecvType, &
+      call MPI_IRecv(U, 1, neighborDomains(i)%p1DRrecvType, &
            neighborDomains(i)%domainID-1, tag, comm, &
            recvRqst(i), ierr)
       if(ierr/=MPI_SUCCESS) then
@@ -285,7 +279,7 @@ contains
     ! post sends
     do i=1, nConnDomains
       tag = 10000 + (neighborDomains(i)%domainID-1)
-      call MPI_ISend(Ub_send, 1, neighborDomains(i)%p1DRsendType, &
+      call MPI_ISend(U, 1, neighborDomains(i)%p1DRsendType, &
            neighborDomains(i)%domainID-1, tag, comm, &
            sendRqst(i), ierr);
       if(ierr/=MPI_SUCCESS) then
@@ -298,9 +292,6 @@ contains
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
     call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-
-    U = Ub_recv
-    deallocate(Ub_send, Ub_recv)
 
   end subroutine PDLIB_exchange1Dreal
 
@@ -320,7 +311,7 @@ contains
 
     real(kind=rkind), allocatable :: Ub_send(:,:), Ub_recv(:,:)
 
-    integer :: i, ierr, tag
+    integer :: i, ierr, tag, istat
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
     type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
 
@@ -333,6 +324,7 @@ contains
     allocate(Ub_send(size(U,1), size(U,2)))
     allocate(Ub_recv(size(U,1), size(U,2)))
     Ub_send = U
+    Ub_recv = U
 
     ! post receives
 #ifdef W3_DEBUGEXCH
@@ -383,7 +375,7 @@ contains
 #endif
 
     U = Ub_recv
-    deallocate(Ub_send, Ub_recv)
+    deallocate(Ub_send, Ub_recv, stat=istat)
 
   end subroutine PDLIB_exchange2Dreal
 
