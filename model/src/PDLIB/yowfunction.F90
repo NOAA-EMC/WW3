@@ -46,6 +46,7 @@ CONTAINS
   !**********************************************************************
   SUBROUTINE PDLIB_ABORT(istat)
     IMPLICIT NONE
+    external :: ABORT
     integer, intent(in) :: istat
     Print *, 'Error with istat=', istat
     CALL ABORT

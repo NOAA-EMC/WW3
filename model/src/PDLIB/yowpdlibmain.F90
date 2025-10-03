@@ -438,7 +438,7 @@ contains
     integer :: IP_glob, itmp
     integer :: ref
     logical :: lexist = .false.
-
+    external :: SCOTCH_PARMETIS_V3_PARTGEOMKWAY
     ! Node to domain mapping.
     ! np_global long. give the domain number for die global node number
     integer, allocatable :: node2domain(:)
