@@ -5742,6 +5742,7 @@ CONTAINS
     !/
     !     Local variables
     !     ----------------------------------------------------------------
+    EXTERNAL :: ABORT
     LOGICAL :: LOOP
     INTEGER :: TOP, BOT
     REAL    :: VAL, TMP
@@ -5867,6 +5868,7 @@ CONTAINS
     !/
     !     Local variables
     !     ----------------------------------------------------------------
+    EXTERNAL :: ABORT
     INTEGER :: TOP, BOT, I
     REAL    :: VAL, TMP
     LOGICAL :: LOOP

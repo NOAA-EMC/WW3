@@ -165,6 +165,7 @@ PROGRAM W3BOUNC
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
+  EXTERNAL :: CHECK_ERR
 
   TYPE(NML_BOUND_T)       :: NML_BOUND
   !
