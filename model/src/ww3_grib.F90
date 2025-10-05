@@ -224,6 +224,7 @@ PROGRAM W3GRIB
   !
   NDSTRC =  6
   NTRACE = 10
+  WORDS = ''
   !
 #ifdef W3_NCO
   !
@@ -281,7 +282,6 @@ PROGRAM W3GRIB
   READ (NDSI,'(A)') LINEIN
   WRITE(NDSO,*)' LINEIN:  ',LINEIN
   READ(LINEIN,*,iostat=ierr) WORDS
-  WRITE (NDSO,*) WORDS
   READ(WORDS( 1 ), * ) TOUT(1)
   READ(WORDS( 2 ), * ) TOUT(2)
   READ(WORDS( 3 ), * ) DTREQ

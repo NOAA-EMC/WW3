@@ -1173,7 +1173,7 @@ CONTAINS
 #endif
     REAL                    :: FMAX, RR
     LOGICAL                 :: FLSCLE
-    CHARACTER               :: PNUM*5, STRA*5, PNUM2*2, STRA3*3
+    CHARACTER               :: PNUM*5, STRA*5, PNUM2*2, STRA3*9
     DIMENSION               :: PNUM(25), PNUM2(61)
     !/
     !/ ------------------------------------------------------------------- /
@@ -1285,10 +1285,10 @@ CONTAINS
       JM = 0
       DO IY = IY2, IY1, IY3*(-1)
         IF (JM.EQ.0) THEN
-          WRITE (STRA3, FMT='(I3)') IY
+          WRITE (STRA3, FMT='(I9)') IY
           JM = 2
         ELSE
-          STRA3  = '   '
+          STRA3  = '         '
           JM = JM-1
         END IF
         !
@@ -1309,7 +1309,7 @@ CONTAINS
         WRITE (NDS,920) STRA3, ' |', (PNUM(I), I=1, LX), ' |   '
       END DO
       !
-      STRA3   = '   '
+      STRA3   = '         '
       PNUM(1) = '-----'
       WRITE (NDS,920) STRA3, ' +', (PNUM(1), I=1, LX), '-+   '
       WRITE (NDS,922) (IX,IX=IX1,IX2,IX3)
