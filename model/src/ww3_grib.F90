@@ -163,6 +163,9 @@ PROGRAM W3GRIB
   !/ ------------------------------------------------------------------- /
   !/ Local variables
   !/
+  EXTERNAL                :: BAOPENW
+  EXTERNAL                :: GRIBCREATE, ADDGRID, ADDFIELD, GRIBEND, WRYTE
+  EXTERNAL                :: BAOPEN, PUTGB
   INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSTRC,   &
        NTRACE, IERR, IOTEST, I,J,K, IFI,IFJ,&
        ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&
@@ -221,6 +224,7 @@ PROGRAM W3GRIB
   !
   NDSTRC =  6
   NTRACE = 10
+  WORDS = ''
   !
 #ifdef W3_NCO
   !
@@ -278,7 +282,6 @@ PROGRAM W3GRIB
   READ (NDSI,'(A)') LINEIN
   WRITE(NDSO,*)' LINEIN:  ',LINEIN
   READ(LINEIN,*,iostat=ierr) WORDS
-  WRITE (NDSO,*) WORDS
   READ(WORDS( 1 ), * ) TOUT(1)
   READ(WORDS( 2 ), * ) TOUT(2)
   READ(WORDS( 3 ), * ) DTREQ

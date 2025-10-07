@@ -1299,6 +1299,10 @@ CONTAINS
         MAPLND = 0
         ACTIVE = .TRUE.
         MAPSTA(IY,IX) = ABS ( MAPSTA(IY,IX) )
+        MAPICET = 0
+        MAPDRYT = 0
+        MAPLNDT = 0
+        MAPMSKT = 0
         SUMGRD = 0
         DO IG = 1,GR_INTS(ISEA)%NGRDS
           IGRID = GR_INTS(ISEA)%GDID(IG)

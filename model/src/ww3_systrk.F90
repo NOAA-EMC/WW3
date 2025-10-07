@@ -77,6 +77,7 @@ PROGRAM WW3_SYSTRK
   !
   !  3. Parameters :
   !
+  EXTERNAL     :: ABORT
   LOGICAL      :: testout
   PARAMETER (testout = .FALSE.)
   CHARACTER    :: filename*80, paramFile*32
