@@ -1044,7 +1044,7 @@ PROGRAM W3OUTP
 948 FORMAT ( '      Data for ',A)
 949 FORMAT (/'      End of file reached '/)
   !
-950 FORMAT (/'  Requested output for',I3,' points : '/              &
+950 FORMAT (/'  Requested output for',I9,' points : '/              &
        ' --------------------------------------------------')
 951 FORMAT ( '      ',A,2F10.2)
 953 FORMAT ( '      ',A,2(F8.1,'E3'))
@@ -2996,7 +2996,7 @@ CONTAINS
 9000 FORMAT (' TEST W3EXPO : FLAGS :',40L2)
 9001 FORMAT (' TEST W3EXPO : ITPYE  :',I4/                        &
          '               OTPYE  :',I4/                        &
-         '               NREQ   :',I4/                        &
+         '               NREQ   :',I9/                        &
          '               SCALE1 :',E10.3/                     &
          '               SCALE2 :',E10.3/                     &
          '               FLSRCE :',7L2)
