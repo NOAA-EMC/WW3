@@ -237,6 +237,8 @@ PROGRAM W3PRNC
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
+  EXTERNAL                :: CHECK_ERROR
+  EXTERNAL                :: INTERP
   TYPE(NML_FORCING_T)     :: NML_FORCING
   TYPE(NML_FILE_T)        :: NML_FILE
   TYPE(T_GSU)             :: GSI
