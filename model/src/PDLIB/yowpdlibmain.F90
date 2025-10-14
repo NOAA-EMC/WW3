@@ -448,6 +448,8 @@ contains
     integer :: i, j, stat, ierr
     type(t_Node), pointer :: node, nodeNeighbor
 
+    INTEGER :: np_toSend
+
     !    CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 1")
     ! Create xadj and adjncy arrays. They holds the nodes neighbors in CSR Format
     ! Here, the adjacency structure of a graph is represented by two arrays,
@@ -576,7 +578,8 @@ contains
     allocate(vtxdist(nTasks+1),stat=stat)
     if(stat/=0) call parallel_abort('partition: vtxdist allocation failure')
 
-    call mpi_allgather(np_perProcSum(myrank)+1, 1, itype, vtxdist, 1, itype, comm, ierr)
+    np_toSend = np_perProcSum(myrank)+1
+    call mpi_allgather(np_toSend, 1, itype, vtxdist, 1, itype, comm, ierr)
     if(ierr/=MPI_SUCCESS) call parallel_abort('partition: mpi_allgather',ierr)
     vtxdist(nTasks+1)=np_global+1
     !    CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 7")
