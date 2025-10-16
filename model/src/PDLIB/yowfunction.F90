@@ -60,8 +60,8 @@ CONTAINS
     USE yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa, np, iplg
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
+    use mpi_f08
     IMPLICIT NONE
-    INCLUDE "mpif.h"
     integer IPROC, idx, IP, len, istat, sumNP, ierr
     integer, allocatable :: iVect(:)
     !
@@ -198,8 +198,8 @@ CONTAINS
     USE yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa, np, iplg
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
+    use mpi_f08
     IMPLICIT NONE
-    INCLUDE "mpif.h"
     INTEGER sumNP, iProc, ierr, istat
 #ifdef W3_DEBUGINIT
     WRITE(740+IAPROC,*) 'Before ComputeListNP_ListNPA_Kernel'

@@ -243,12 +243,12 @@ PROGRAM W3STRT
 #ifdef W3_WRST
   USE W3IDATMD, ONLY: W3NINP
 #endif
+#ifdef W3_MPI
+  use mpi_f08
+#endif
   !/
   IMPLICIT NONE
   !
-#ifdef W3_MPI
-  INCLUDE "mpif.h"
-#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

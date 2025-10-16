@@ -63,6 +63,7 @@ contains
   !> @param[in] MPIComm MPI communicator to use with pdlib
   !> @overload initPD1
   subroutine initFromGridDim(MNP, MNE, INE_global, secDim, MPIcomm)
+    use mpi_f08,           only: MPI_COMM
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
     use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
     use yowElementpool,    only: ne_global,ne
@@ -73,7 +74,7 @@ contains
     integer, intent(in) :: MNP, MNE
     integer, intent(in) :: INE_global(3,MNE)
     integer, intent(in) :: secDim
-    integer, intent(in) :: MPIcomm
+    type(MPI_COMM), intent(in) :: MPIcomm
     integer :: istat, memunit
 
     ! note: myrank=0 until after initMPI is called, so only rank=0 file
@@ -176,11 +177,11 @@ contains
 
   SUBROUTINE REAL_MPI_BARRIER_PDLIB(TheComm, string)
 
-    INCLUDE "mpif.h"
-    integer, intent(in) :: TheComm
+    use mpi_f08
+    type(MPI_COMM), intent(in) :: TheComm
     character(*), intent(in) :: string
     integer NbProc, eRank
-    integer :: istatus(MPI_STATUS_SIZE)
+    type(MPI_STATUS) :: istatus
     integer ierr, iField(1), iProc
     !      Print *, 'Start of REAL_MPI_BARRIER_PDLIB'
     CALL MPI_COMM_RANK(TheComm, eRank, ierr)
@@ -210,9 +211,9 @@ contains
   subroutine initMPI(MPIcomm)
     use yowDatapool, only: comm, nTasks, myrank
     use yowerr
-    use MPI
+    use mpi_f08
 
-    integer, intent(in) :: MPIcomm
+    type(MPI_COMM), intent(in) :: MPIcomm
     logical :: flag
     integer :: ierr
 #ifdef W3_DEBUGINIT
@@ -425,7 +426,7 @@ contains
     use yowSidepool, only: ns
     use yowElementpool, only: ne, ne_global
     use w3gdatmd, only: xgrd, ygrd
-    use MPI
+    use mpi_f08
 
     integer, intent(in) :: MNP
 
@@ -446,6 +447,8 @@ contains
     ! Mics
     integer :: i, j, stat, ierr
     type(t_Node), pointer :: node, nodeNeighbor
+
+    INTEGER :: np_toSend
 
     !    CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 1")
     ! Create xadj and adjncy arrays. They holds the nodes neighbors in CSR Format
@@ -575,7 +578,8 @@ contains
     allocate(vtxdist(nTasks+1),stat=stat)
     if(stat/=0) call parallel_abort('partition: vtxdist allocation failure')
 
-    call mpi_allgather(np_perProcSum(myrank)+1, 1, itype, vtxdist, 1, itype, comm, ierr)
+    np_toSend = np_perProcSum(myrank)+1
+    call mpi_allgather(np_toSend, 1, itype, vtxdist, 1, itype, comm, ierr)
     if(ierr/=MPI_SUCCESS) call parallel_abort('partition: mpi_allgather',ierr)
     vtxdist(nTasks+1)=np_global+1
     !    CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 7")
@@ -1063,7 +1067,7 @@ contains
     use yowNodepool,       only: np, t_node, nodes
     use yowDatapool,       only: nTasks, myrank, comm
     use yowExchangeModule, only: neighborDomains, nConnDomains, createMPITypes
-    use MPI
+    use mpi_f08
 
     integer :: i, j, k
     integer :: ierr
@@ -1071,11 +1075,11 @@ contains
     integer :: tag
     ! we use non-blocking send and recv subroutines
     ! store the send status
-    integer :: sendRequest(nConnDomains)
+    type(MPI_REQUEST) :: sendRequest(nConnDomains)
     ! store the revc status
-    integer :: recvRequest(nConnDomains)
+    type(MPI_REQUEST) :: recvRequest(nConnDomains)
     ! status to verify if one communication fails or not
-    integer :: status(MPI_STATUS_SIZE, nConnDomains);
+    type(MPI_STATUS)  :: status(nConnDomains);
 
 
     type(t_node), pointer :: node

@@ -364,15 +364,20 @@ CONTAINS
     USE W3TRIAMD, ONLY: IS_IN_UNGRID 
     USE W3GDATMD, ONLY: FILEXT 
     !
-    IMPLICIT NONE
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)          :: NPT, IMOD, MPI_COMM_IOPP
+    INTEGER, INTENT(IN)          :: NPT, IMOD
+#ifdef W3_MPI
+    TYPE(MPI_COMM), INTENT(IN)   :: MPI_COMM_IOPP
+#else
+    INTEGER, INTENT(IN)          :: MPI_COMM_IOPP
+#endif
     REAL, INTENT(INOUT)          :: XPT(NPT), YPT(NPT)
     CHARACTER(LEN=40),INTENT(IN) :: PNAMES(NPT)
     !/
@@ -985,11 +990,10 @@ CONTAINS
     USE W3ARRYMD, ONLY: PRT2DS
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1003,7 +1007,7 @@ CONTAINS
          IM(4), IK, ITH, ISP
 #ifdef W3_MPI
     INTEGER                 :: IOFF, IERR_MPI
-    INTEGER                 :: STAT(MPI_STATUS_SIZE,4*NOPTS)
+    type(MPI_STATUS)        :: STAT(4*NOPTS)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -1215,8 +1219,8 @@ CONTAINS
       !
 #ifdef W3_MPI
       IOFF   = 1 + 4*(I-1)
-      CALL MPI_STARTALL ( 4, IRQPO2(IOFF), IERR_MPI )
-      CALL MPI_WAITALL  ( 4, IRQPO2(IOFF), STAT, IERR_MPI )
+      CALL MPI_STARTALL ( 4, IRQPO2(IOFF:IOFF+3), IERR_MPI )
+      CALL MPI_WAITALL  ( 4, IRQPO2(IOFF:IOFF+3), STAT(IOFF:IOFF+3), IERR_MPI )
 #endif
       !
       ! Interpolate spectrum

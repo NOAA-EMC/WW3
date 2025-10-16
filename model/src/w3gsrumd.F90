@@ -9623,7 +9623,7 @@ CONTAINS
   !/
   SUBROUTINE EXTCDE(IEXIT)
 #ifdef ENABLE_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
     INTEGER, INTENT(IN) :: IEXIT
 #ifdef ENABLE_MPI

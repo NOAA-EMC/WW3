@@ -310,6 +310,13 @@ MODULE W3ODATMD
   !
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS, ONLY : UNDEF
+#ifdef W3_MPI
+  use mpi_f08, ONLY   : MPI_Request
+#endif
+
+  ! module default
+  IMPLICIT NONE
+
   PUBLIC
   !/
   !/ Module private variable for checking error returns
@@ -346,7 +353,7 @@ MODULE W3ODATMD
     INTEGER               :: IPASS1
 #ifdef W3_MPI
     INTEGER               :: NRQGO, NRQGO2
-    INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
+    type(MPI_Request), POINTER :: IRQGO(:), IRQGO2(:)
 #endif
     LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
          FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
@@ -361,7 +368,7 @@ MODULE W3ODATMD
 #endif
     INTEGER, POINTER      :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 #ifdef W3_MPI
-    INTEGER, POINTER      :: IRQPO1(:), IRQPO2(:)
+    type(MPI_Request), POINTER :: IRQPO1(:), IRQPO2(:)
 #endif
     REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),             &
          DPO(:), WAO(:), WDO(:), ASO(:),      &
@@ -384,7 +391,7 @@ MODULE W3ODATMD
     INTEGER               :: IPASS3
 #ifdef W3_MPI
     INTEGER               :: IT0PNT, IT0TRK, IT0PRT, NRQTR
-    INTEGER, POINTER      :: IRQTR(:)
+    type(MPI_Request), POINTER :: IRQTR(:)
 #endif
     LOGICAL               :: O3INIT, STOP
     LOGICAL, POINTER      :: MASK1(:,:), MASK2(:,:)
@@ -395,7 +402,7 @@ MODULE W3ODATMD
     INTEGER               :: IFILE4
 #ifdef W3_MPI
     INTEGER               :: NRQRS, NBLKRS, RSBLKS
-    INTEGER, POINTER      :: IRQRS(:), IRQRSS(:)
+    type(MPI_Request), POINTER :: IRQRS(:), IRQRSS(:)
     REAL, POINTER         :: VAAUX(:,:,:)
 #endif
   END TYPE OTYPE4
@@ -409,7 +416,7 @@ MODULE W3ODATMD
     INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
          IPBPO(:,:), ISBPO(:)
 #ifdef W3_MPI
-    INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)
+    type(MPI_Request), POINTER :: IRQBP1(:), IRQBP2(:)
 #endif
     REAL                  :: XFRI, FR1I, TH1I
     REAL, POINTER         :: XBPI(:), YBPI(:), RDBPI(:,:),        &
@@ -479,7 +486,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPASS1
 #ifdef W3_MPI
   INTEGER, POINTER        :: NRQGO, NRQGO2
-  INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
+  type(MPI_Request), POINTER :: IRQGO(:), IRQGO2(:)
 #endif
   LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:),            &
        FLOGRR(:,:),FLOGD(:), FLOG2(:),      &
@@ -493,7 +500,7 @@ MODULE W3ODATMD
 #endif
   INTEGER, POINTER        :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 #ifdef W3_MPI
-  INTEGER, POINTER        :: IRQPO1(:), IRQPO2(:)
+  type(MPI_Request), POINTER :: IRQPO1(:), IRQPO2(:)
 #endif
   REAL, POINTER           :: PTLOC(:,:), PTIFAC(:,:),             &
        DPO(:), WAO(:), WDO(:), ASO(:),      &
@@ -516,7 +523,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPASS3
 #ifdef W3_MPI
   INTEGER, POINTER        :: IT0PNT, IT0TRK, IT0PRT, NRQTR
-  INTEGER, POINTER        :: IRQTR(:)
+  type(MPI_Request), POINTER :: IRQTR(:)
 #endif
   LOGICAL, POINTER        :: O3INIT, STOP
   LOGICAL, POINTER        :: MASK1(:,:), MASK2(:,:)
@@ -527,7 +534,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IFILE4
 #ifdef W3_MPI
   INTEGER, POINTER        :: NRQRS, NBLKRS, RSBLKS
-  INTEGER, POINTER        :: IRQRS(:), IRQRSS(:)
+  type(MPI_Request), POINTER :: IRQRS(:), IRQRSS(:)
   REAL, POINTER           :: VAAUX(:,:,:)
 #endif
   !/
@@ -541,7 +548,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPBPI(:,:), ISBPI(:),                &
        IPBPO(:,:), ISBPO(:)
 #ifdef W3_MPI
-  INTEGER, POINTER        :: IRQBP1(:), IRQBP2(:)
+  type(MPI_Request), POINTER :: IRQBP1(:), IRQBP2(:)
 #endif
   REAL, POINTER           :: XFRI, FR1I, TH1I
   REAL, POINTER           :: XBPI(:), YBPI(:), RDBPI(:,:),        &

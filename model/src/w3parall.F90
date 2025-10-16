@@ -155,6 +155,9 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_MPI
+    use mpi_f08, ONLY: mpi_wtime
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -168,9 +171,6 @@ CONTAINS
 #endif
     INTEGER mpimode
     REAL(8), intent(out) :: eTime
-#ifdef W3_MPI
-    REAL(8) mpi_wtime
-#endif
     mpimode=0
 #ifdef W3_MPI
     mpimode=1
@@ -972,10 +972,10 @@ CONTAINS
     USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
     USE WMMDATMD, ONLY: MDATAS
 #endif
-    IMPLICIT NONE
 #ifdef W3_PDLIB
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
+    IMPLICIT NONE
     INTEGER, intent(in) :: IMOD
     logical, intent(in) :: IsMulti
 #ifdef W3_S
@@ -1578,6 +1578,9 @@ CONTAINS
     use yowNodepool, only: iplg
     use yowDatapool, only: rkind
 #endif
+#ifdef W3_MPI
+    use mpi_f08
+#endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1591,9 +1594,6 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
     INTEGER IPROC, I, ierr, IP, IX, IP_glob
 #ifdef W3_PDLIB
