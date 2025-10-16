@@ -144,7 +144,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, GRAV, TPI, PI, KAPPA
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
-    USE W3ODATMD,  ONLY: NDSE
+    !USE W3ODATMD,  ONLY: NDSE
     USE W3FLD1MD,  ONLY: APPENDTAIL,sig2wn,wnd2z0m,infld,tail_choice,&
          tail_level, tail_transition_ratio1,         &
          tail_transition_ratio2
@@ -186,24 +186,24 @@ CONTAINS
     real :: wnd_z, wnd_z_mag, wnd_z_proj, wnd_effect
     ! Stress iteration
     REAL :: B1, B2
-    REAL :: USTRI1, USTRF1, USTRI2, USTRF2
-    REAL :: USTGRA, SLO
     LOGICAL :: UST_IT_FLG(2)
     !-Z0 iteration
     REAL :: z01,z02
     !-Wind iteration
     real :: wnd_10_x, wnd_10_y, wnd_10_mag, wnd_10_dir
-    real :: u35_1, v35_1, u35_2, v35_2, u35_3, v35_3
-    REAL :: DIFU10xx, DIFU10yx, DIFU10xy, DIFU10yy
-    REAL :: fd_a, fd_b, fd_c, fd_d
-    REAL :: DU, DV, UITV, VITV, CH
-    REAL :: APAR, DTX(3), DTY(3), DT
-    LOGICAL :: WIFLG, WND_IT_FLG
+    !real :: u35_1, v35_1, u35_2, v35_2, u35_3, v35_3
+    !REAL :: DIFU10xx, DIFU10yx, DIFU10xy, DIFU10yy
+    !REAL :: fd_a, fd_b, fd_c, fd_d
+    !REAL :: DU, DV, UITV, VITV, CH
+    !REAL :: APAR
+    REAL :: DTX(3), DTY(3), DT
+    !LOGICAL :: WND_IT_FLG
+    LOGICAL :: WIFLG
     !-MO stability correction
     LOGICAL :: HEIGHTFLG
     integer :: wi_count, wi
-    real :: wnd_ref_al,wnd_ref_ax
-    real :: wndpa, wndpax, wndpay, wndpe,wndpex, wndpey
+    !real :: wnd_ref_al
+    !real :: wndpa, wndpax, wndpay, wndpe,wndpex, wndpey
     LOGICAL :: NO_ERR
     LOGICAL :: ITERFLAG
     INTEGER :: ITTOT

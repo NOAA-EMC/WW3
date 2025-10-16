@@ -199,13 +199,13 @@ module WMESMFMD
   !/
   !/ Specify default data typing
   !/
-  implicit none
-  !/
   !/ Include MPI definitions
   !/
 #ifdef W3_MPI
-  include "mpif.h"
+  use mpi_f08
 #endif
+  !/
+  implicit none
   !/
   !/ Specify default accessibility
   !/
