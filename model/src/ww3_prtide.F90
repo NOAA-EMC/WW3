@@ -192,6 +192,9 @@ PROGRAM W3PRTIDE
   !
   LOGICAL                 :: TIDEFILL
   !
+#ifdef W3_S
+  INTEGER, SAVE           :: IENT = 0
+#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/
