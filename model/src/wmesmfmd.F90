@@ -757,7 +757,7 @@ contains
     integer, parameter :: iwt=2
     real(8) :: wstime, wftime
     integer :: idsi, idso, idss, idst, idse
-    integer :: mpiComm = -99
+    type(MPI_COMM) :: mpicomm = -99
     logical :: configIsPresent
     type(ESMF_Config) :: config
     character(ESMF_MAXSTR) :: wrkdir = '.'
