@@ -315,7 +315,7 @@ CONTAINS
     !/       reserved.  WAVEWATCH III is a trademark of the NWS.
     !/       No unauthorized use without permission.
     !/
-    USE W3SERVMD, ONLY: EXTIOF
+    USE W3SERVMD, ONLY: EXTIOF, EXTCDE
 #ifdef W3_MPI
     use mpi_f08
 #endif
@@ -5733,6 +5733,7 @@ CONTAINS
     !     LO      INTEGER      input    First element
     !     HI      INTEGER      input    Last element
     !
+    USE W3SERVMD, ONLY: EXTIOF, EXTCDE
     IMPLICIT NONE
     !/
     INTEGER, INTENT(IN) :: LO,HI
@@ -5740,7 +5741,6 @@ CONTAINS
     !/
     !     Local variables
     !     ----------------------------------------------------------------
-    EXTERNAL :: ABORT
     LOGICAL :: LOOP
     INTEGER :: TOP, BOT
     REAL    :: VAL, TMP
@@ -5767,16 +5767,16 @@ CONTAINS
     !/    --- Check array size and bounds. ---
     IF ( SIZE(ARRAY).EQ. 0 ) THEN
       WRITE(6,199)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
       WRITE(6,201)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
       WRITE(6,203)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
       WRITE(6,205)
-      CALL ABORT
+      CALL EXTCDE(1)
     END IF
     !
     TOP = LO
@@ -5859,6 +5859,7 @@ CONTAINS
     !     LO      INTEGER      input    First element
     !     HI      INTEGER      input    Last element
     !
+    USE W3SERVMD, ONLY: EXTIOF, EXTCDE
     IMPLICIT NONE
     !/
     INTEGER, INTENT(IN) :: LO,HI
@@ -5866,7 +5867,6 @@ CONTAINS
     !/
     !     Local variables
     !     ----------------------------------------------------------------
-    EXTERNAL :: ABORT
     INTEGER :: TOP, BOT, I
     REAL    :: VAL, TMP
     LOGICAL :: LOOP
@@ -5893,16 +5893,16 @@ CONTAINS
     !/    --- Check array size and bounds. ---
     IF ( SIZE(ARRAY).EQ. 0 ) THEN
       WRITE(6,199)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
       WRITE(6,201)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
       WRITE(6,203)
-      CALL ABORT
+      CALL EXTCDE(1)
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
       WRITE(6,205)
-      CALL ABORT
+      CALL EXTCDE(1)
     END IF
     !
     TOP = LO
