@@ -887,7 +887,7 @@ contains
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return
     call ESMF_VMGet(vm, petCount=npet, localPet=lpet, &
-         mpiCommunicator=mpiComm, rc=rc)
+         mpiCommunicator=int(mpiComm), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return
     nmproc = npet
     improc = lpet + 1
