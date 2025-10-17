@@ -5771,13 +5771,13 @@ CONTAINS
       CALL EXTCDE(1)
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
       WRITE(6,201)
-      CALL EXTCDE(1)
+      CALL EXTCDE(2)
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
       WRITE(6,203)
-      CALL EXTCDE(1)
+      CALL EXTCDE(3)
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
       WRITE(6,205)
-      CALL EXTCDE(1)
+      CALL EXTCDE(4)
     END IF
     !
     TOP = LO
@@ -5895,16 +5895,16 @@ CONTAINS
     !/    --- Check array size and bounds. ---
     IF ( SIZE(ARRAY).EQ. 0 ) THEN
       WRITE(6,199)
-      CALL EXTCDE(1)
+      CALL EXTCDE(5)
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
       WRITE(6,201)
-      CALL EXTCDE(1)
+      CALL EXTCDE(6)
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
       WRITE(6,203)
-      CALL EXTCDE(1)
+      CALL EXTCDE(7)
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
       WRITE(6,205)
-      CALL EXTCDE(1)
+      CALL EXTCDE(8)
     END IF
     !
     TOP = LO
