@@ -227,12 +227,11 @@ PROGRAM W3PRNC
   USE W3TIMEMD
   USE W3NMLPRNCMD
   USE NETCDF
+#ifdef W3_MPI
+  use mpi_f08
+#endif
   !
   IMPLICIT NONE
-  !
-#ifdef W3_MPI
-  INCLUDE "mpif.h"
-#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

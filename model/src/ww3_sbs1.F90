@@ -178,21 +178,21 @@ PROGRAM W3SBS1
   !/
   USE WMMDATMD, ONLY: MDSE, MDST, MDSS, NMPROC, IMPROC, NMPSCR,   &
        NRGRD, STIME, ETIME
-  !/
-  IMPLICIT NONE
   !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi_f08
 #endif
+  !/
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
-  INTEGER              :: MPI_COMM = -99, IERR, NDST1, NDST2 = -1,&
-       NXW = -1, NYW = -1, TNEXT(2), TOLD(2),  &
-       I
+  INTEGER              :: IERR, NDST1, NDST2 = -1,&
+       NXW = -1, NYW = -1, TNEXT(2), TOLD(2), I
 #ifdef W3_MPI
   INTEGER              :: IERR_MPI
+  type(MPI_COMM)       :: mpicomm
 #endif
   INTEGER, PARAMETER   :: SLEEP1 = 10 , SLEEP2 = 10
   INTEGER, ALLOCATABLE :: TEND(:,:)
@@ -209,9 +209,9 @@ PROGRAM W3SBS1
   !
 #ifdef W3_MPI
   CALL MPI_INIT      ( IERR_MPI )
-  MPI_COMM = MPI_COMM_WORLD
-  CALL MPI_COMM_SIZE ( MPI_COMM, NMPROC, IERR_MPI )
-  CALL MPI_COMM_RANK ( MPI_COMM, IMPROC, IERR_MPI )
+  mpicomm = MPI_COMM_WORLD
+  CALL MPI_COMM_SIZE ( mpicomm, NMPROC, IERR_MPI )
+  CALL MPI_COMM_RANK ( mpicomm, IMPROC, IERR_MPI )
   IMPROC = IMPROC + 1
 #endif
   !
@@ -238,7 +238,7 @@ PROGRAM W3SBS1
   !
   ! ... Separate test output file
   !
-  CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', MPI_COMM )
+  CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', mpicomm )
   !
   !/ ------------------------------------------------------------------- /
   ! 2.  Setting up test files
@@ -326,7 +326,7 @@ PROGRAM W3SBS1
     END DO
     !
 #ifdef W3_MPI
-    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+    CALL MPI_BARRIER ( mpicomm, IERR_MPI )
 #endif
     CALL WMWAVE ( TEND )
     !
@@ -348,7 +348,7 @@ PROGRAM W3SBS1
   IF ( IMPROC .EQ. NMPSCR ) WRITE (*,999)
   !
 #ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  CALL MPI_BARRIER ( mpicomm, IERR_MPI )
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
   !

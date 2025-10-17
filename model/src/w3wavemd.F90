@@ -493,8 +493,8 @@ CONTAINS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
+#ifdef W3_MPI 
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -503,7 +503,7 @@ CONTAINS
     INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
     LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 #ifdef W3_OASIS
-    INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
+    type(MPI_COMM), INTENT(IN), OPTIONAL :: ID_LCOMM
     INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2)
 #endif
     !/
@@ -536,7 +536,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NRQMAX
-    INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATCO(:), STATIO(:)
 #endif
     INTEGER                 :: IXrel
     REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
@@ -1847,8 +1847,8 @@ CONTAINS
                 !
 #ifdef W3_MPI
                 IF ( NRQSG1 .GT. 0 ) THEN
-                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
-                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
+                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1:NRQSG1,1), IERR_MPI)
+                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1:NRQSG1,2), IERR_MPI)
                 END IF
 #endif
                 !
@@ -1923,9 +1923,9 @@ CONTAINS
                 !
 #ifdef W3_MPI
                 IF ( NRQSG1 .GT. 0 ) THEN
-                  ALLOCATE ( STATCO(MPI_STATUS_SIZE,NRQSG1) )
-                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1,1), STATCO, IERR_MPI)
-                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1,2), STATCO, IERR_MPI)
+                  ALLOCATE ( STATCO(NRQSG1) )
+                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,1), STATCO, IERR_MPI)
+                  CALL MPI_WAITALL (NRQSG1, IRQSG1(1:NRQSG1,2), STATCO, IERR_MPI)
                   DEALLOCATE ( STATCO )
                 END IF
 #endif
@@ -2531,7 +2531,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        IF ( NRQMAX .NE. 0 ) ALLOCATE ( STATIO(MPI_STATUS_SIZE,NRQMAX) )
+        IF ( NRQMAX .NE. 0 ) ALLOCATE ( STATIO(NRQMAX) )
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 2')
         !
@@ -3034,7 +3034,7 @@ CONTAINS
     !/
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -3050,8 +3050,8 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #endif
 #ifdef W3_MPI
-    INTEGER                 :: STATUS(MPI_STATUS_SIZE,NSPEC),  &
-         IOFF, IERR_MPI, JSEA, ISEA,     &
+    type(MPI_STATUS)        :: STATUS(NSPEC)
+    INTEGER                 :: IOFF, IERR_MPI, JSEA, ISEA,     &
          IXY, IS0, IB0, NPST, J
 #endif
 #ifdef W3_S
@@ -3107,7 +3107,7 @@ CONTAINS
 #ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 2 ) THEN
       IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), STATUS, IERR_MPI )
       BSTAT(IBFLOC) = 0
 #endif
 #ifdef W3_MPIT
@@ -3124,7 +3124,7 @@ CONTAINS
       BSTAT(IBFLOC) = 1
       BISPL(IBFLOC) = ISPLOC
       IOFF =  1 + (ISPLOC-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), IERR_MPI )
 #endif
 #ifdef W3_MPIT
       STRT(10:10) = 'g'
@@ -3146,7 +3146,7 @@ CONTAINS
     !
 #ifdef W3_MPI
     IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
-    IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
+    IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), STATUS, IERR_MPI )
 #endif
     !
 #ifdef W3_MPIT
@@ -3181,7 +3181,7 @@ CONTAINS
         BSTAT(IB0) = 1
         BISPL(IB0) = IS0
         IOFF       = 1 + (IS0-1)*NRQSG2
-        IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+        IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,1), IERR_MPI )
         NPST       = NPST + 1
 #endif
 #ifdef W3_MPIT
@@ -3350,7 +3350,7 @@ CONTAINS
     !/
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -3366,9 +3366,8 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #endif
 #ifdef W3_MPI
-    INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J,   &
-         STATUS(MPI_STATUS_SIZE,NSPEC),  &
-         JSEA, IB0
+    INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J, JSEA, IB0
+    type(MPI_STATUS)        :: STATUS(NSPEC)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
@@ -3426,7 +3425,7 @@ CONTAINS
     !
 #ifdef W3_MPI
     IOFF   = 1 + (ISPLOC-1)*NRQSG2
-    IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
+    IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), IERR_MPI )
     BSTAT(IBFLOC) = 2
 #endif
 #ifdef W3_MPIT
@@ -3457,12 +3456,12 @@ CONTAINS
       IF ( BSTAT(IB0) .EQ. 2 ) THEN
         IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
         IF ( NRQSG2 .GT. 0 ) THEN
-          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF,2), DONE, STATUS, IERR_MPI )
+          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), DONE, STATUS, IERR_MPI )
         ELSE
           DONE   = .TRUE.
         END IF
         IF ( DONE .AND. NRQSG2.GT.0 ) THEN
-          CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
+          CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), STATUS, IERR_MPI )
         END IF
         IF ( DONE ) THEN
           BSTAT(IB0) = 0
@@ -3489,7 +3488,7 @@ CONTAINS
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
           IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
-          IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
+          IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF:IOFF+NRQSG2-1,2), STATUS, IERR_MPI )
           BSTAT(IB0) = 0
 #endif
 #ifdef W3_MPIT

@@ -58,11 +58,10 @@ PROGRAM WW3_SYSTRK
   !/
   USE W3STRKMD
   USE W3TIMEMD, ONLY: TDIFF
-  IMPLICIT NONE
 #ifdef W3_MPI
-
-  INCLUDE "mpif.h"
+  use mpi_f08
 #endif
+  IMPLICIT NONE
   !
   !  1. Purpose :
   !

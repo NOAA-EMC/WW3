@@ -209,7 +209,7 @@ CONTAINS
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE
 
     !/
-    INCLUDE "mpif.h"
+    use mpi_f08
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -223,7 +223,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    !!      INCLUDE "mpif.h"
+    !!      use mpi_f08
     INTEGER :: istat
     INTEGER :: I, J, IBND_MAP, ISEA, IP, IX, JSEA, nb
     INTEGER :: IP_glob
@@ -931,7 +931,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1259,7 +1259,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1555,7 +1555,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1914,7 +1914,7 @@ CONTAINS
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     use yowDatapool, only: rtype, istatus
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: string
     REAL VcollExp(1)
     REAL rVect(1)
@@ -1997,7 +1997,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     !
     REAL*8, INTENT(in) :: V(NSEAL)
     CHARACTER(*), INTENT(in) :: string
@@ -2501,7 +2501,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: maxidx
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
@@ -3017,7 +3017,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg, np
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: eFile
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
     !
@@ -5520,7 +5520,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use YOWNODEPOOL, only: npa, iplg
     use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
-    USE MPI, only : MPI_SUM, MPI_INT
+    use mpi_f08, only : MPI_SUM, MPI_INT, MPI_ALLREDUCE
     USE W3ADATMD, only: MPI_COMM_WCMP
     USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
@@ -5548,6 +5548,8 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
+    use mpi_f08
+
     implicit none
     LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
@@ -6402,7 +6404,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only: PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
     use yowRankModule,     only: ipgl_npa
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
 #endif
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
