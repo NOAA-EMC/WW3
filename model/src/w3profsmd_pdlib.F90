@@ -5235,6 +5235,7 @@ CONTAINS
     REAL    :: RD1, RD2, RD10, RD20
     INTEGER :: IK, ITH, ISEA
     INTEGER :: IBI, IP_glob, ISP, JX
+
 #ifdef W3_S
     CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION')
 #endif
@@ -5603,6 +5604,11 @@ CONTAINS
     INTEGER ierr, i
     INTEGER JP_glob
     INTEGER is_converged, itmp
+
+#ifdef W3_TRNK
+    integer :: expVA
+    real    :: trVA
+#endif
 
     INTEGER :: TESTNODE = 923
 
@@ -6324,6 +6330,23 @@ CONTAINS
       endif
     endif
 #endif
+
+#ifdef W3_TRNK
+    !plugback in single precision VA
+    DO IP = 1, npa
+      DO ISP=1,NSPEC
+        if (VA(ISP,IP) .gt. tiny(1.0) )then
+          expVA=nint(log10( VA(ISP,IP) ) )
+          trVA = 10.**( expVA - B_JGS_TRUNK_DIGITS )
+          if ( trVA .gt. tiny(1.0) ) then
+            VA(ISP,IP) = ANINT( VA(ISP,IP)  / trVA )  * trVA
+          endif
+        endif
+      ENDDO
+    ENDDO
+#endif
+
+
     !
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION LOOP 7')
     !

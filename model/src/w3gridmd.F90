@@ -942,6 +942,9 @@ MODULE W3GRIDMD
   REAL*8  :: JGS_PMIN
   REAL*8  :: JGS_DIFF_THR
   REAL*8  :: JGS_NORM_THR
+#ifdef W3_TRNK
+  INTEGER :: JGS_TRUNK_DIGITS
+#endif
   REAL*8  :: SOLVERTHR_SETUP
   REAL*8  :: CRIT_DEP_SETUP
   !
@@ -1109,6 +1112,9 @@ MODULE W3GRIDMD
        JGS_NORM_THR,                              &
        JGS_NLEVEL,                                &
        JGS_SOURCE_NONLINEAR,                      &
+#ifdef W3_TRNK
+       JGS_TRUNK_DIGITS,                          &
+#endif
        SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
        CRIT_DEP_SETUP
   NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, &
@@ -2480,6 +2486,9 @@ CONTAINS
     JGS_NORM_THR = 1.E-20
     JGS_NLEVEL = 0
     JGS_SOURCE_NONLINEAR = .FALSE.
+#ifdef W3_TRNK
+    JGS_TRUNK_DIGITS = 4
+#endif
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
 
@@ -2496,6 +2505,9 @@ CONTAINS
     B_JGS_NORM_THR = JGS_NORM_THR
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
+#ifdef W3_TRNK
+    B_JGS_TRUNK_DIGITS = JGS_TRUNK_DIGITS
+#endif
 
     nbSel=0
 
@@ -6342,7 +6354,7 @@ CONTAINS
 2922 FORMAT ( '  &SNL1 LAMBDA =',F7.3,', NLPROP =',E10.3,       &
          ', KDCONV =',F7.3,', KDMIN =',F7.3,','/           &
          '        SNLCS1 =',F7.3,', SNLCS2 =',F7.3,        &
-         ', SNLCS3 = ',F7.3,','/                            &
+         ', SNLCS3 = ',F7.3','/                            &
          '        IQTYPE =',I2,', TAILNL =',F5.1,','/      &
          '        GQMNF1 =',I2,', GQMNT1 =',I2,',',        &
          ' GQMNQ_OM2 =',I2,', GQMTHRSAT =',E11.4,', GQMTHRCOU =',F4.3,','/ &
@@ -6714,7 +6726,12 @@ CONTAINS
          ',  JGS_DIFF_THR=', F8.3,                              &
          ',  JGS_NORM_THR=', F8.3,                              &
          ',  JGS_NLEVEL=', I3,                                  &
+#ifdef W3_TRNK
+         ',  JGS_TRUNK_DIGITS=', I3,                            &
+#endif
          ',  JGS_SOURCE_NONLINEAR=', L3 / )
+
+
     !
 960 FORMAT (/'  Miscellaneous ',A/                                   &
          ' --------------------------------------------------')
