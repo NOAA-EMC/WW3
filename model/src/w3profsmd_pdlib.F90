@@ -5539,6 +5539,7 @@ CONTAINS
     USE W3PARALL, only : ListISPprevDir, ListISPnextDir
     USE W3PARALL, only : JX_TO_JSEA
     USE W3GDATMD, only: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+    
     USE yowfunction, only : pdlib_abort
     USE yowNodepool, only: np_global
     USE W3DISPMD, only : WAVNU_LOCAL
@@ -5548,6 +5549,9 @@ CONTAINS
 #endif
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
+#endif
+#ifdef W3_TRNK
+    USE W3GDATMD, only: B_JGS_TRUNK_DIGITS
 #endif
     use mpi_f08
 
@@ -6332,15 +6336,16 @@ CONTAINS
 #endif
 
 #ifdef W3_TRNK
-    !plugback in single precision VA
+    !
+    ! Truncate precision to B_JGS_TRUNK_DIGITS to enforce bit for bit reproducability
+    ! across repeated wavewatch runs.
+    !
     DO IP = 1, npa
       DO ISP=1,NSPEC
         if (VA(ISP,IP) .gt. tiny(1.0) )then
           expVA=nint(log10( VA(ISP,IP) ) )
           trVA = 10.**( expVA - B_JGS_TRUNK_DIGITS )
-          if ( trVA .gt. tiny(1.0) ) then
-            VA(ISP,IP) = ANINT( VA(ISP,IP)  / trVA )  * trVA
-          endif
+          if (trVA .gt. tiny(1.0)) VA(ISP,IP) = ANINT(VA(ISP,IP) / trVA) * trVA
         endif
       ENDDO
     ENDDO
