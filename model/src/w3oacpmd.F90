@@ -231,9 +231,6 @@ CONTAINS
 #ifdef W3_SMC
     REAL                 :: DLON, DLAT
 #endif
-!#ifdef W3_MPI
-!    type(MPI_COMM)       :: mpicomm
-!#endif
     !/ ------------------------------------------------------------------- /
     !
     IF (LD_MASTER) THEN
