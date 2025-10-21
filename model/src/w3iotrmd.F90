@@ -249,12 +249,12 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_MPI
+    use mpi_f08
+#endif
     !
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -282,7 +282,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
-    INTEGER, ALLOCATABLE    :: STATUS(:,:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATUS(:)
 #endif
     REAL                    :: XN, YN, XT, YT, RD, X, Y, WX, WY,    &
          SPEC(NK,NTH), FACTOR, ASPTRK(NTH,NK),&
@@ -344,7 +344,7 @@ CONTAINS
 #ifdef W3_MPI
     IF ( NRQTR .NE. 0 ) THEN
       CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
-      ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
+      ALLOCATE ( STATUS(NRQTR) )
       CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
       DEALLOCATE ( STATUS )
     END IF
@@ -721,7 +721,7 @@ CONTAINS
 #ifdef W3_MPI
     IT     = IT0TRK
     IROOT  = NAPTRK - 1
-    ALLOCATE ( STATUS(MPI_STATUS_SIZE,1) )
+    ALLOCATE ( STATUS(1) )
 #endif
     !
     DO IY=1, NY
@@ -829,7 +829,7 @@ CONTAINS
 #ifdef W3_MPI
                 CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
                      IFROM, IT, MPI_COMM_WAVE,   &
-                     STATUS, IERR_MPI )
+                     STATUS(1), IERR_MPI )
 #endif
                 !
                 DO IK=1, NK

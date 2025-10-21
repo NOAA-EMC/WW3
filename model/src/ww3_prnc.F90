@@ -227,18 +227,15 @@ PROGRAM W3PRNC
   USE W3TIMEMD
   USE W3NMLPRNCMD
   USE NETCDF
+#ifdef W3_MPI
+  use mpi_f08
+#endif
   !
   IMPLICIT NONE
-  !
-#ifdef W3_MPI
-  INCLUDE "mpif.h"
-#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
-  EXTERNAL                :: CHECK_ERROR
-  EXTERNAL                :: INTERP
   TYPE(NML_FORCING_T)     :: NML_FORCING
   TYPE(NML_FILE_T)        :: NML_FILE
   TYPE(T_GSU)             :: GSI
@@ -2492,11 +2489,8 @@ PROGRAM W3PRNC
 #ifdef W3_T3
 9065 FORMAT (' TEST W3PRNC : OUTPUT FIELD(S) :'/)
 #endif
-  !/
-  !/ End of W3PRNC ----------------------------------------------------- /
-  !/
 
-END PROGRAM W3PRNC
+CONTAINS
 
 !==============================================================================
 !>
@@ -2697,3 +2691,8 @@ SUBROUTINE CHECK_ERROR(IRET, ILINE)
 END SUBROUTINE CHECK_ERROR
 
 !==============================================================================
+  !/
+  !/ End of W3PRNC ----------------------------------------------------- /
+  !/
+
+END PROGRAM W3PRNC

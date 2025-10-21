@@ -197,10 +197,9 @@ CONTAINS
          UD, XPART(DIMP,0:DIMXP)
     INTEGER                 :: IPG1,IPI(NPMAX), ILEN(NPMAX), IP,     &
          IPNOW, IFLD, INOTAB, IPNT, ITAB,      &
-         DOUTP, FCSTI, NZERO
-    REAL                    :: AFR, AGE, DDMMAXR, DELDM, DELDMR,     &
-         DELDW, DELHS, DELTP, DHSMAXR,  &
-         DTPMAXR, HMAX, HSTOT, TP, UDIR, FACT
+         FCSTI, NZERO
+    REAL                    :: AFR, AGE, DELDM,      &
+         DELDW, DELHS, DELTP, HMAX, HSTOT, TP, UDIR, FACT
     REAL                    :: HSP(NPMAX), TPP(NPMAX), &
          DMP(NPMAX), WNP(NPMAX), HSD(NPMAX),   &
          TPD(NPMAX), WDD(NPMAX)
@@ -214,7 +213,6 @@ CONTAINS
     CHARACTER(LEN=9)        :: CPART
 #endif
     CHARACTER(LEN=664)      :: BLANK2 !,CSVBLINE
-    CHARACTER               :: STIME*8,FORM*20,FORM1*2
     CHARACTER(LEN=16)       :: PART2
     !/
     !/ ------------------------------------------------------------------- /
