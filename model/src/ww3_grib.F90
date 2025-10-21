@@ -163,9 +163,6 @@ PROGRAM W3GRIB
   !/ ------------------------------------------------------------------- /
   !/ Local variables
   !/
-  EXTERNAL                :: BAOPENW
-  EXTERNAL                :: GRIBCREATE, ADDGRID, ADDFIELD, GRIBEND, WRYTE
-  EXTERNAL                :: BAOPEN, PUTGB
   INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSTRC,   &
        NTRACE, IERR, IOTEST, I,J,K, IFI,IFJ,&
        ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&

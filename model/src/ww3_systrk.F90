@@ -58,11 +58,11 @@ PROGRAM WW3_SYSTRK
   !/
   USE W3STRKMD
   USE W3TIMEMD, ONLY: TDIFF
-  IMPLICIT NONE
+  USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_MPI
-
-  INCLUDE "mpif.h"
+  use mpi_f08
 #endif
+  IMPLICIT NONE
   !
   !  1. Purpose :
   !
@@ -78,7 +78,6 @@ PROGRAM WW3_SYSTRK
   !
   !  3. Parameters :
   !
-  EXTERNAL     :: ABORT
   LOGICAL      :: testout
   PARAMETER (testout = .FALSE.)
   CHARACTER    :: filename*80, paramFile*32
@@ -211,7 +210,7 @@ PROGRAM WW3_SYSTRK
     IF (.NOT.file_exists) THEN
       WRITE(20,2000)
       WRITE(6,2000)
-      CALL ABORT
+      CALL EXTCDE(1)
     END IF
     OPEN(unit=10,file='ww3_systrk.inp',status='old')
 
