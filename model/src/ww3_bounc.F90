@@ -164,8 +164,6 @@ PROGRAM W3BOUNC
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
-  EXTERNAL :: CHECK_ERR
-
   TYPE(NML_BOUND_T)       :: NML_BOUND
   !
   INTEGER                 :: IX, IY, ISEA, I,JJ,IP,IP1,J,IT,       &
@@ -842,12 +840,8 @@ PROGRAM W3BOUNC
        '     SPEC FILE DOES NOT EXIST : ',A/)
   !
   !
-  !/
-  !/ End of W3BOUNC ---------------------------------------------------- /
-  !/
-END PROGRAM W3BOUNC
-!/ ------------------------------------------------------------------- /
 
+CONTAINS
 
 !==============================================================================
 !> @brief Check input return status for error value
@@ -876,3 +870,8 @@ SUBROUTINE CHECK_ERR(IRET)
 END SUBROUTINE CHECK_ERR
 
 !==============================================================================
+  !/
+  !/ End of W3BOUNC ---------------------------------------------------- /
+  !/
+END PROGRAM W3BOUNC
+!/ ------------------------------------------------------------------- /

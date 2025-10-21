@@ -58,7 +58,7 @@ PROGRAM WW3_SYSTRK
   !/
   USE W3STRKMD
   USE W3TIMEMD, ONLY: TDIFF
-  USE W3SERVMD, ONLY: EXTCDE, EXTOPN
+  USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_MPI
   use mpi_f08
 #endif
@@ -210,7 +210,7 @@ PROGRAM WW3_SYSTRK
     IF (.NOT.file_exists) THEN
       WRITE(20,2000)
       WRITE(6,2000)
-      CALL EXTOPN(6,1,'W3SYSTRK','INPUT',41)
+      CALL EXTCDE(1)
     END IF
     OPEN(unit=10,file='ww3_systrk.inp',status='old')
 

@@ -144,7 +144,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, GRAV, TPI, PI, KAPPA
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
-    !USE W3ODATMD,  ONLY: NDSE
     USE W3FLD1MD,  ONLY: APPENDTAIL,sig2wn,wnd2z0m,infld,tail_choice,&
          tail_level, tail_transition_ratio1,         &
          tail_transition_ratio2

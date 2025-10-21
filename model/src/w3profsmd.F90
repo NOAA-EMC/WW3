@@ -1106,7 +1106,6 @@ CONTAINS
     REAL*8  :: INIU(NX)
 
     external bcgstab
-    external ::  ILU0, RUNRC
 
     POS_TRICK(1,1) = 2
     POS_TRICK(1,2) = 3
@@ -2089,7 +2088,6 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   real*8 ddot
   logical stopbis, brkdn
   external ddot, stopbis, brkdn
-  external :: bisinit, tidycg
   !
   real*8 one
   parameter(one=1.0D0)
@@ -3788,7 +3786,6 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   integer n,ipar(16),ia(n+1),ja(*),ju(*),jau(*)
   real*8 fpar(16),rhs(n),sol(n),guess(n),wk(*),a(*),au(*)
   external solver
-  external :: amux, atmux, lusol, lutsol
   !-----------------------------------------------------------------------
   !     the actual tester. It starts the iterative linear system solvers
   !     with a initial guess suppied by the user.
@@ -3872,7 +3869,6 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
   integer n
   real*8 a(*),alu(*),w(n+1),droptol
   integer ja(*),ia(n+1),jlu(*),ju(n),jw(2*n),lfil,iwk,ierr
-  external :: qsplit
   !----------------------------------------------------------------------*
   !                      *** ILUT preconditioner ***                     *
   !      incomplete LU factorization with dual truncation mechanism      *
@@ -4296,8 +4292,6 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
 
   real*8  :: hh(im+1,im), c(im), s(im), rs(im+1)
   real*8  :: iw(n)
-
-  external :: amux, lusol, daxpy
 
   logical :: lblas = .false.      ! use sparskit matvec and external blas libs (true), don't use them (false)
   logical :: lilu  = .true.      ! use simple ilu preconditioner
