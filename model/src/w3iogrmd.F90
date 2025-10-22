@@ -88,7 +88,7 @@ MODULE W3IOGRMD
   !/
   !/ Private parameter statements (ID strings)
   !/
-  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2021-08-06'
+  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2024-11-25'
   CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
   !/
