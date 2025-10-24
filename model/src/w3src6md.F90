@@ -4,7 +4,7 @@
 !>
 !> @author S. Zieger
 !> @author Q. Liu
-!> @date   11-Oct-2024
+!> @date   02-Jan-2025
 !>
 
 #include "w3macros.h"
@@ -22,7 +22,7 @@
 !>
 !> @author S. Zieger
 !> @author Q. Liu
-!> @date   02-Dec-2024
+!> @date   02-Jan-2025
 !>
 MODULE W3SRC6MD
   !/
@@ -39,7 +39,8 @@ MODULE W3SRC6MD
   !/                                                         (S. Zieger)
   !/    26-Jun-2017 : Recalibration of ST6                ( verison 6.06 )
   !/                                                         (Q. Liu   )
-  !/    11-Oct-2024 : Add Charnock parameter              ( verison 7.14 )
+  !/    02-Jan-2025 : Add Charnock parameter and consider ( verison 7.14 )
+  !/                  DAIR variable                          (S. Zieger)
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -290,7 +291,7 @@ CONTAINS
   !>
   !> @author S. Zieger
   !> @author Q. Liu
-  !> @date   13-Aug-2021
+  !> @date   02-Jan-2025
   !>
   SUBROUTINE W3SIN6 (A, CG, WN2, UABS, USTAR, USDIR, CD, DAIR, &
        TAUWX, TAUWY, TAUNWX, TAUNWY, CHARN, S, D )
@@ -308,7 +309,7 @@ CONTAINS
     !/
     !/    26-Jun-2018 : UPROXY Update & UABS                ( version 6.06 )
     !/                                                        (Q. Liu)
-    !/    13-Aug-2021 : Consider DAIR a variable            ( version 7.14 )
+    !/    02-Jan-2025 : Consider DAIR a variable            ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -814,7 +815,7 @@ CONTAINS
     !/                                                        (S. Zieger)
     !/    26-Jun-2018 : UPROXY, DSII10Hz Updates            ( version 6.06 )
     !/                                                        (Q. Liu   )
-    !/    02-Dec-2024 : Consider DAIR a variable           ( version 7.14 )
+    !/    02-Jan-2025 : Consider DAIR a variable           ( version 7.14 )
     !
     !     Rogers et al. (2012) JTECH 29(9), 1329-1346
     !
@@ -861,7 +862,7 @@ CONTAINS
     !
     !     Parameter list
     !     ----------------------------------------------------------------
-    !      S       R.A. I  Wind input energy density spectrum  (S_{in}(σ, θ))
+    !      S       R.A. I  Wind input energy density spectrum Sin(sigma,theta)
     !      CINV    R.A. I  Inverse phase speed                  1/C(sigma)
     !      U10     Real I  Wind speed (10m)
     !      USTAR   Real I  Friction velocity
@@ -998,7 +999,7 @@ CONTAINS
       END IF
       !
       CINV10Hz(1:NK)          = CINV
-      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=σ/g
+      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=sigma/grav
       !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
       SDENS10Hz(NK+1:NK10Hz)  = SDENS10Hz(NK)  * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
       SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
