@@ -1269,8 +1269,7 @@ contains
 
     ! local variables
     integer :: year, mon, day ! year, month, day as integers
-    integer :: tdate          ! temporary date
-    integer :: date           ! coded-date (yyyymmdd)
+    integer :: tdate          ! temporary date (yyyymmdd)
     integer, parameter          :: SecPerDay = 86400 ! Seconds per day
     character(len=*), parameter :: subname = ' (wav_shr_mod:timeInit) '
     !-------------------------------------------------------------------------------
@@ -1283,9 +1282,9 @@ contains
       rc = ESMF_FAILURE
     end if
 
-    tdate = abs(date)
+    tdate = abs(ymd)
     year = int(tdate/10000)
-    if (date < 0) year = -year
+    if (ymd < 0) year = -year
     mon = int( mod(tdate,10000)/  100)
     day = mod(tdate,  100)
 

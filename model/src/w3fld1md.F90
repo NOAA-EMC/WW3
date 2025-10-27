@@ -174,7 +174,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: GRAV, DWAT, TPI, PI, KAPPA
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
-    USE W3ODATMD, ONLY: NDSE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -199,9 +198,7 @@ CONTAINS
     REAL                    ::  wnd_in_mag, wnd_in_dir
     !For Calculating Tail
     REAL                    ::  KMAX, KTAILA, KTAILB, KTAILC
-    REAL                    ::  SAT, z01, z02, u10
-    LOGICAL                 ::  ITERFLAG
-    INTEGER                 ::  COUNT
+    REAL                    ::  SAT, u10
     !For Iterations
     REAL                    ::  DTX, DTY, iter_thresh, &
          USTSM, Z0SM, Z1
@@ -222,10 +219,9 @@ CONTAINS
          APAR, CH,UITV, VITV,USTL,&
          CK
     !For adding stability to wind profile
-    REAL                    ::  WND_TOP, ANG_TOP, WND_PA, WND_PE,   &
-         WND_PEx, WND_PEy, WND_PAx, WND_PAy, &
-         CDM
-    INTEGER                 ::  NKT, K, T, Z2, ITER, ZI, ZII, &
+    !REAL                    :: WND_TOP, ANG_TOP, WND_PE, WND_PEx, ND_PEy, WND_PAx, WND_PAy, CDM
+    REAL                    ::  WND_PA
+    INTEGER                 ::  NKT, K, T, Z2, ITER, ZI,  &
          I, CTR, ITERATION, KA1, KA2, &
          KA3, KB
     ! For defining extended spectrum with appended tail.
@@ -836,7 +832,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3ODATMD, ONLY: NDSE
     USE W3GDATMD, ONLY: TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -936,7 +931,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: TPI, PI
     USE W3GDATMD, ONLY: NTH, TH, DTH
-    USE W3ODATMD, ONLY: NDSE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -1200,7 +1194,7 @@ CONTAINS
     !/
     real    :: wn1,wn2 !,sig1,sig2,dsigdk
     real    :: fk, fk_slp
-    integer :: i
+    !integer :: i
     logical :: SWITCH
     !/ ------------------------------------------------------------------- /
     wn1=sig**2/GRAV

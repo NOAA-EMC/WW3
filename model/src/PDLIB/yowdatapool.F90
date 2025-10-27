@@ -37,7 +37,8 @@
 !
 !> Has fancy data
 module yowDatapool
-  use MPI, only: MPI_COMM_WORLD, MPI_INTEGER, MPI_REAL4, MPI_REAL8, MPI_STATUS_SIZE
+  use mpi_f08, only: MPI_COMM_WORLD, MPI_INTEGER, MPI_REAL4, MPI_REAL8, &
+                     MPI_COMM, MPI_STATUS, MPI_Datatype
   implicit none
   !#ifdef USE_SINGLE
   !  !> single precision. Enable with compiler flag -DUSE_SINGLE
@@ -63,17 +64,17 @@ module yowDatapool
 
   !> MPI Communicator.
   !> Should be MPI_COMM_WORLD. If pdlib is run into a existing MPI enviroment, comm is set to a new communicator
-  integer,public,save :: comm
+  type(MPI_COMM),public,save :: comm
 
   !> MPI Integer Type.
   !> Should be MPI_INTEGER
-  integer,save :: itype = MPI_INTEGER
+  type(MPI_Datatype),save :: itype = MPI_INTEGER
 
   !> MPI Real Type
   !> Shpuld be MPI_REAL8
-  integer :: istatus(MPI_STATUS_SIZE)
+  type(MPI_STATUS) :: istatus
   !#ifdef USE_SINGLE
-  integer, save :: rtype = MPI_REAL4
+  type(MPI_Datatype), save :: rtype = MPI_REAL4
   !#else
   !  integer, save :: rtype = MPI_REAL8
   !#endif

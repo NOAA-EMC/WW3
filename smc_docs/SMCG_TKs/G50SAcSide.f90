@@ -108,7 +108,7 @@ END MODULE Constants
 !    Close all files
       CLOSE(16)
 
- 9999  PRINT*, ' AdapGrid completed '
+      PRINT*, ' AdapGrid completed '
 
  END PROGRAM AdapGrid 
 !  End of main program
@@ -192,7 +192,7 @@ END MODULE Constants
       WRITE(6,*) " Start creating u boundary face II JJ=", II, JJ
 
 !!    Exclude last cell, the North Polar cell.
-      DO 111 L=1, NC-1
+      DO L=1, NC-1
 !!    Loop over all cells.
 !     DO 111 L=1, NC
          i=0
@@ -237,93 +237,91 @@ END MODULE Constants
          END DO
 
          IF(kk+ij .gt. 2*ICE(4,L) )  WRITE(6,*) "Over done i-side for cell L,ij,kk=", L, ij, kk
-         IF(kk+ij .ge. 2*ICE(4,L) )  GOTO  111
+         IF(kk+ij .ge. 2*ICE(4,L) )  CYCLE
 
-          IF(ij .eq. 0)  THEN
+         IF(ij .eq. 0)  THEN
 !!  Full boundary cell for west side
-               II=II+1
-               ISD(1,II)=ICE(1,L)
-               ISD(2,II)=ICE(2,L)
-               ISD(3,II)=ICE(4,L)
+              II=II+1
+              ISD(1,II)=ICE(1,L)
+              ISD(2,II)=ICE(2,L)
+              ISD(3,II)=ICE(4,L)
 !!  New boundary cells proportional to cell x-sizes 
 !!  Updated for any 2**n sizes
-!              ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
-               ISD(5,II)=-INT( LOG(FLOAT(ICE(3, L)))/LOG(2.) + 0.01 )
-               ISD(6,II)=L
-          ENDIF
-          IF(kk .eq. 0)  THEN
+!             ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+              ISD(5,II)=-INT( LOG(FLOAT(ICE(3, L)))/LOG(2.) + 0.01 )
+              ISD(6,II)=L
+         ENDIF
+         IF(kk .eq. 0)  THEN
 !!  Full boundary cell for east side
-               II=II+1
-               ISD(1,II)=LM
-               ISD(2,II)=ICE(2,L)
-               ISD(3,II)=ICE(4,L)
-               ISD(5,II)=L
+              II=II+1
+              ISD(1,II)=LM
+              ISD(2,II)=ICE(2,L)
+              ISD(3,II)=ICE(4,L)
+              ISD(5,II)=L
 !!  Updated for any 2**n sizes
-!              ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
-               ISD(6,II)=-INT( LOG(FLOAT(ICE(3, L)))/LOG(2.) + 0.01 )
-          ENDIF
+!             ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+              ISD(6,II)=-INT( LOG(FLOAT(ICE(3, L)))/LOG(2.) + 0.01 )
+         ENDIF
 
 !!  Half cell size west boundary faces
-          IF(ij .gt. 0  .and. ij .lt. ICE(4,L) )  THEN
-             IF( i .eq. 0 )  THEN
+         IF(ij .gt. 0  .and. ij .lt. ICE(4,L) )  THEN
+            IF( i .eq. 0 )  THEN
 !!  lower half west cell face
-               II=II+1
-               ISD(1,II)=ICE(1,L)
-               ISD(2,II)=ICE(2,L)
-               ISD(3,II)=ICE(4,L)/2
+              II=II+1
+              ISD(1,II)=ICE(1,L)
+              ISD(2,II)=ICE(2,L)
+              ISD(3,II)=ICE(4,L)/2
 !!  Updated for any 2**n sizes
-               ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+              ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
 !!  Size 1 for cell 0, size 2 uses cell -1 and size 4 uses cell -2
-               ISD(6,II)=L
-             ENDIF
-             IF( j .eq. 0 )  THEN
+              ISD(6,II)=L
+            ENDIF
+            IF( j .eq. 0 )  THEN
 !!  Upper half west cell face
-               II=II+1
-               ISD(1,II)=ICE(1,L)
-               ISD(2,II)=ICE(2,L)+ICE(4,L)/2
-               ISD(3,II)=ICE(4,L)/2
+              II=II+1
+              ISD(1,II)=ICE(1,L)
+              ISD(2,II)=ICE(2,L)+ICE(4,L)/2
+              ISD(3,II)=ICE(4,L)/2
 !!  Updated for any 2**n sizes
-               ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
-               ISD(6,II)=L
-             ENDIF
-          ENDIF
+              ISD(5,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+              ISD(6,II)=L
+            ENDIF
+         ENDIF
 
 !!  Half cell size east boundary faces
-          IF(kk .gt. 0  .and. kk .lt. ICE(4,L) )  THEN
-             IF( k .eq. 0 )  THEN
+         IF(kk .gt. 0  .and. kk .lt. ICE(4,L) )  THEN
+            IF( k .eq. 0 )  THEN
 !!  lower half east cell face
-               II=II+1
-               ISD(1,II)=LM
-               ISD(2,II)=ICE(2,L)
-               ISD(3,II)=ICE(4,L)/2
+              II=II+1
+              ISD(1,II)=LM
+              ISD(2,II)=ICE(2,L)
+              ISD(3,II)=ICE(4,L)/2
 !!  Size 1 for cell 0, size 2 uses cell -1 and size 4 uses cell -2
-               ISD(5,II)=L
+              ISD(5,II)=L
 !!  Updated for any 2**n sizes
-               ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
-             ENDIF
-             IF( n .eq. 0 )  THEN
+              ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+            ENDIF
+            IF( n .eq. 0 )  THEN
 !!  Upper half west cell face
-               II=II+1
-               ISD(1,II)=LM
-               ISD(2,II)=ICE(2,L)+ICE(4,L)/2
-               ISD(3,II)=ICE(4,L)/2
+              II=II+1
+              ISD(1,II)=LM
+              ISD(2,II)=ICE(2,L)+ICE(4,L)/2
+              ISD(3,II)=ICE(4,L)/2
 !!  Size 1 for cell 0, size 2 uses cell -1 and size 4 uses cell -2
-               ISD(5,II)=L
+              ISD(5,II)=L
 !!  Updated for any 2**n sizes
-               ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
-             ENDIF
-          ENDIF
-
- 111  CONTINUE
-
+              ISD(6,II)=-INT( LOG(FLOAT(ISD(3,II)))/LOG(2.) + 0.01 )
+            ENDIF
+         ENDIF
+      ENDDO
 
 !     Set boundary v faces
       WRITE(6,*) " Start creating v boundary face II JJ=", II, JJ
 
 !!    Exclude the last polar cell
-      DO 222 L=1, NC-1
+      DO L=1, NC-1
 !!    Loop over all cells
-!     DO 222 L=1, NC
+!     DO L=1, NC
          i=0
          j=0
          ij=0
@@ -361,97 +359,96 @@ END MODULE Constants
          END DO
 
          IF(nn+ij .gt. 2*ICE(3,L) )  WRITE(6,*)  "Over done j-side for L, ij, nn=", L, ij, nn
-         IF(nn+ij .ge. 2*ICE(3,L) )  GOTO  222
+         IF(nn+ij .ge. 2*ICE(3,L) )  CYCLE
 
-          IF(ij .eq. 0)  THEN
+         IF(ij .eq. 0)  THEN
 !!  Full boundary cell for south side
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)
-               JSD(2,JJ)=ICE(2,L)
-               JSD(3,JJ)=ICE(3,L)
+            JJ=JJ+1
+            JSD(1,JJ)=ICE(1,L)
+            JSD(2,JJ)=ICE(2,L)
+            JSD(3,JJ)=ICE(3,L)
 !!  New boundary cells proportional to cell sizes 
 !!  Updated for any 2**n sizes
-               JSD(5,JJ)=-INT( LOG(FLOAT(ICE(3,L)))/LOG(2.) + 0.01 )
-               JSD(6,JJ)=L
-               JSD(8,JJ)=ICE(4,L)
+            JSD(5,JJ)=-INT( LOG(FLOAT(ICE(3,L)))/LOG(2.) + 0.01 )
+            JSD(6,JJ)=L
+            JSD(8,JJ)=ICE(4,L)
 !!  No cells over Antarctic land so there is no S Polar cell.
-          ENDIF
-          IF(nn .eq. 0)  THEN
+         ENDIF
+         IF(nn .eq. 0)  THEN
 !!  Full boundary cell for north side
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)
-               JSD(2,JJ)=ICE(2,L)+ICE(4,L)
-               JSD(3,JJ)=ICE(3,L)
-               JSD(5,JJ)=L
+            JJ=JJ+1
+            JSD(1,JJ)=ICE(1,L)
+            JSD(2,JJ)=ICE(2,L)+ICE(4,L)
+            JSD(3,JJ)=ICE(3,L)
+            JSD(5,JJ)=L
 !!  North polar cell takes the whole last 4 rows above JSD=ICE(2,NC).
 !!  Note ICE(2,L) represents lower-side of the cell.  Polar cell is the last cell NC.
-             IF( ICE(2,L)+ICE(4,L) .eq. ICE(2,NC) ) THEN
-               JSD(6,JJ)=NC
-               WRITE(6,*) "Set north pole v face for cell L", L
-             ELSE
+            IF( ICE(2,L)+ICE(4,L) .eq. ICE(2,NC) ) THEN
+              JSD(6,JJ)=NC
+              WRITE(6,*) "Set north pole v face for cell L", L
+            ELSE
 !!  Updated for any 2**n sizes
                JSD(6,JJ)=-INT( LOG(FLOAT(ICE(3,L)))/LOG(2.) + 0.01 )
-             ENDIF
-               JSD(8,JJ)=ICE(4,L)
-          ENDIF
+            ENDIF
+            JSD(8,JJ)=ICE(4,L)
+         ENDIF
 
 !!  Half cell size south boundary faces
-          IF(ij .gt. 0  .and. ij .lt. ICE(3,L) )  THEN
-             IF( i .eq. 0 )  THEN
+         IF(ij .gt. 0  .and. ij .lt. ICE(3,L) )  THEN
+            IF( i .eq. 0 )  THEN
 !!  left half cell face
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)
-               JSD(2,JJ)=ICE(2,L)
-               JSD(3,JJ)=ICE(3,L)/2
+              JJ=JJ+1
+              JSD(1,JJ)=ICE(1,L)
+              JSD(2,JJ)=ICE(2,L)
+              JSD(3,JJ)=ICE(3,L)/2
 !!  New boundary cells proportional to cell sizes 
 !!  Updated for any 2**n sizes
-               JSD(5,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
-               JSD(6,JJ)=L
-               JSD(8,JJ)=ICE(4,L)
-             ENDIF
-             IF( j .eq. 0 )  THEN
+              JSD(5,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
+              JSD(6,JJ)=L
+              JSD(8,JJ)=ICE(4,L)
+            ENDIF
+            IF( j .eq. 0 )  THEN
 !!  right half cell face
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)+ICE(3,L)/2
-               JSD(2,JJ)=ICE(2,L)
-               JSD(3,JJ)=ICE(3,L)/2
+              JJ=JJ+1
+              JSD(1,JJ)=ICE(1,L)+ICE(3,L)/2
+              JSD(2,JJ)=ICE(2,L)
+              JSD(3,JJ)=ICE(3,L)/2
 !!  New boundary cells proportional to cell sizes 
 !!  Updated for any 2**n sizes
-               JSD(5,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
-               JSD(6,JJ)=L
-               JSD(8,JJ)=ICE(4,L)
-             ENDIF
-          ENDIF
+              JSD(5,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
+              JSD(6,JJ)=L
+              JSD(8,JJ)=ICE(4,L)
+            ENDIF
+         ENDIF
 
 !!  Half cell size north boundary faces
-          IF(nn .gt. 0  .and. nn .lt. ICE(3,L) )  THEN
-             IF( k .eq. 0 )  THEN
+         IF(nn .gt. 0  .and. nn .lt. ICE(3,L) )  THEN
+            IF( k .eq. 0 )  THEN
 !!  left half north cell face
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)
-               JSD(2,JJ)=ICE(2,L)+ICE(4,L)
-               JSD(3,JJ)=ICE(3,L)/2
-               JSD(5,JJ)=L
+              JJ=JJ+1
+              JSD(1,JJ)=ICE(1,L)
+              JSD(2,JJ)=ICE(2,L)+ICE(4,L)
+              JSD(3,JJ)=ICE(3,L)/2
+              JSD(5,JJ)=L
 !!  New boundary cells proportional to cell sizes 
 !!  Updated for any 2**n sizes
-               JSD(6,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
-               JSD(8,JJ)=ICE(4,L)
-             ENDIF
-             IF( n .eq. 0 )  THEN
+              JSD(6,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
+              JSD(8,JJ)=ICE(4,L)
+            ENDIF
+            IF( n .eq. 0 )  THEN
 !!  right half north cell face
-               JJ=JJ+1
-               JSD(1,JJ)=ICE(1,L)+ICE(3,L)/2
-               JSD(2,JJ)=ICE(2,L)+ICE(4,L)
-               JSD(3,JJ)=ICE(3,L)/2
-               JSD(5,JJ)=L
+              JJ=JJ+1
+              JSD(1,JJ)=ICE(1,L)+ICE(3,L)/2
+              JSD(2,JJ)=ICE(2,L)+ICE(4,L)
+              JSD(3,JJ)=ICE(3,L)/2
+              JSD(5,JJ)=L
 !!  New boundary cells proportional to cell sizes 
 !!  Updated for any 2**n sizes
-               JSD(6,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
-               JSD(8,JJ)=ICE(4,L)
-             ENDIF
-          ENDIF
-
- 222  CONTINUE
+              JSD(6,JJ)=-INT( LOG(FLOAT(JSD(3,JJ)))/LOG(2.) + 0.01 )
+              JSD(8,JJ)=ICE(4,L)
+            ENDIF
+         ENDIF
+      ENDDO
 
 !   Store top level U V side numbers in NU NV 
       NU=II
@@ -633,9 +630,9 @@ END MODULE Constants
 
    PRINT*, ' I J-Sides output done '
 
- 999  PRINT*, ' Sub CellSide ended.'
+   PRINT*, ' Sub CellSide ended.'
 
-      RETURN
+   RETURN
 
  END SUBROUTINE CellSide
 

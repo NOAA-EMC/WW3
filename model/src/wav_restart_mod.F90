@@ -288,7 +288,7 @@ contains
     end if
 
     ! read a netcdf restart
-    wave_communicator%mpi_val = MPI_COMM_WAVE
+    wave_communicator = MPI_COMM_WAVE
 #ifdef W3_PDLIB
     nseal_cpl = nseal - ng
 #else

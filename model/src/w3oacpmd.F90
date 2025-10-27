@@ -130,8 +130,12 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !
+#ifdef W3_MPI
+    use mpi_f08
+#endif
     ! * Argument
-    INTEGER, INTENT(OUT) :: ID_LCOMM                   ! Model local communicator
+    type(MPI_COMM), INTENT(OUT)       :: ID_LCOMM      ! Model local communicator
+    INTEGER :: ID_LCOMM_INT
     !
     !----------------------------------------------------------------------
     ! * Executable part
@@ -143,7 +147,8 @@ CONTAINS
     ENDIF
     !
     !! Get the value of a local MPI communicator to be used by WW3 for its internal parallelisation
-    CALL OASIS_GET_LOCALCOMM(ID_LCOMM, IL_ERR)
+    CALL OASIS_GET_LOCALCOMM(ID_LCOMM_INT, IL_ERR)
+    ID_LCOMM%mpi_val = ID_LCOMM_INT
     IF (IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_INIT', 'Problem during oasis_get_localcomm')
     ENDIF
@@ -206,14 +211,14 @@ CONTAINS
     USE W3GDATMD,  ONLY: NSEA, X0, Y0, MRFct, SX, SY, IJKCel
 #endif
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
     LOGICAL, INTENT(IN) :: LD_MASTER    ! MASTER process or not
-    INTEGER, INTENT(IN) :: ID_LCOMM     ! Model local communicator
+    type(MPI_COMM), INTENT(IN)       :: ID_LCOMM ! Model local communicator 
     !
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -300,9 +305,9 @@ CONTAINS
         ALLOCATE ( AREA(NNODES,1), CORLON(NNODES,1,4), CORLAT(NNODES,1,4) )
         ALLOCATE ( MASK(NNODES,1) )
         DO I=1, NNODES
-          ! lat/lon
-          LON(I,1) = X0 + (IJKCel(1,I) + IJKCel(3,I)*0.5)*DLON
-          LAT(I,1) = Y0 + (IJKCel(2,I) + IJKCel(4,I)*0.5)*DLAT
+          ! lat/lon (see e.g. ww3_ounf)
+          LON(I,1) = X0 + (IJKCel(1,I) + IJKCel(3,I)*0.5 - 1.0)*DLON
+          LAT(I,1) = Y0 + (IJKCel(2,I) + IJKCel(4,I)*0.5 - 1.0)*DLAT
           ! corners
           CORLON(I,1,1) = X0 + IJKCel(1,I)*DLON
           CORLON(I,1,2) = X0 + (IJKCel(1,I) + IJKCel(3,I))*DLON

@@ -10,6 +10,7 @@
 module wav_shel_inp
 
   use w3odatmd, only: nogrp, ngrpp, FNMGRD, FNMPNT, FNMRST
+  use mpi_f08
 
   implicit none
   private ! except
@@ -30,8 +31,6 @@ module wav_shel_inp
   logical, public           :: flg2(nogrp)        !< @public flags for whole group - not currently used in cesm
   real, allocatable, public :: x(:)               !< @public x locations for point output
   real, allocatable, public :: y(:)               !< @public y locations for point output
-
-  include "mpif.h"
 
   !===============================================================================
 contains
@@ -99,7 +98,7 @@ contains
   !===============================================================================
   !> Read ww3_shel.inp Or ww3_shel.nml
   !!
-  !! @param[in]  mpi_comm           mpi communicator
+  !! @param[in]  mpicomm           mpi communicator
   !! @param[in]  mds                an array of unit numbers
   !! @param[in]  time0_overwrite    the initial time for overwriting the nml file, optional
   !! @param[in]  timen_overwrite    the endding time for overwriting the nml file, optional
@@ -107,7 +106,7 @@ contains
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 01-05-2022
-  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite, rstfldlist)
+  subroutine read_shel_config(mpicomm, mds, time0_overwrite, timen_overwrite, rstfldlist)
 
     use wav_shr_flags
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t, nml_output_path_t
@@ -134,7 +133,7 @@ contains
     use wav_kind_mod  , only : CL => shr_kind_cl
 
     ! input/output parameters
-    integer,           intent(in) :: mpi_comm
+    type(MPI_COMM),    intent(in) :: mpicomm
     integer,           intent(in) :: mds(:)
     integer,           intent(in),  optional :: time0_overwrite(2)
     integer,           intent(in),  optional :: timen_overwrite(2)
@@ -274,7 +273,7 @@ contains
       ! Read namelist
       !--------------------
 
-      call w3nmlshel (mpi_comm, ndsi, trim(fnmpre)//'ww3_shel.nml', nml_domain, nml_input, &
+      call w3nmlshel (mpicomm, ndsi, trim(fnmpre)//'ww3_shel.nml', nml_domain, nml_input, &
            nml_output_type, nml_output_date, nml_output_path, nml_homog_count, nml_homog_input, ierr)
 
       !--------------------
@@ -1041,7 +1040,7 @@ contains
                 else
                   ndsi2  = ndss
 #ifdef W3_MPI
-                  call mpi_barrier (mpi_comm,ierr_mpi)
+                  call mpi_barrier (mpicomm,ierr_mpi)
 #endif
                   open (ndss,file=trim(fnmpre)//'ww3_shel.scratch')
                   rewind (ndss)
@@ -1094,12 +1093,12 @@ contains
               if ( npts.eq.0 .and. iaproc.eq.napout ) write (ndso,2947)
               if ( iaproc .eq. 1 ) then
 #ifdef W3_MPI
-                call mpi_barrier ( mpi_comm, ierr_mpi )
+                call mpi_barrier ( mpicomm, ierr_mpi )
 #endif
                 close (ndss,status='delete')
               else
 #ifdef W3_MPI
-                call mpi_barrier ( mpi_comm, ierr_mpi )
+                call mpi_barrier ( mpicomm, ierr_mpi )
 #endif
                 close (ndss)
               end if
