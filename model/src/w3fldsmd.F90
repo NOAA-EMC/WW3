@@ -201,7 +201,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    USE W3ODATMD, only : IAPROC
     USE CONSTANTS, ONLY: file_endian
 
     IMPLICIT NONE
@@ -622,7 +621,6 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
     LOGICAL                 :: WRITE
-    INTEGER                 :: I, IX
     !
     !/
     !/ ------------------------------------------------------------------- /
@@ -1581,7 +1579,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: ISTAT, NRT
+    INTEGER                 :: ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1918,7 +1916,7 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
     TYPE(T_GSU)             :: GSU
-    INTEGER                 :: IX, IY, I, J, NNBR, II(4), JJ(4),    &
+    INTEGER                 :: IX, IY, NNBR, II(4), JJ(4),    &
          MSKC, IFOUND, IMASK, ICOR1
     REAL                    :: RR(4), X, Y
     REAL, POINTER           :: PLAT(:,:), PLON(:,:)
