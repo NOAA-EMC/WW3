@@ -7,7 +7,7 @@ $
    F F     Water levels
    T F     Currents
    T F     Winds
-   F F     Ice concentrations
+   T F     Ice concentrations
    F F     Atmospheric momentum
    F F     Air density
    F       Assimilation data : Mean parameters
