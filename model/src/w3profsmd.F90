@@ -1105,8 +1105,6 @@ CONTAINS
     REAL*8  :: AU(NNZ+1)
     REAL*8  :: INIU(NX)
 
-    external bcgstab
-
     POS_TRICK(1,1) = 2
     POS_TRICK(1,2) = 3
     POS_TRICK(2,1) = 3
@@ -1664,11 +1662,6 @@ CONTAINS
 
   END SUBROUTINE SETDEPTH
 
-  !/ ------------------------------------------------------------------- /
-
-END MODULE W3PROFSMD
-
-
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -2083,12 +2076,6 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !               here, so that the right-preconditioning may be applied
   !               at the end
   !-----------------------------------------------------------------------
-  !     external routines used
-  !
-  real*8 ddot
-  logical stopbis, brkdn
-  external ddot, stopbis, brkdn
-  !
   real*8 one
   parameter(one=1.0D0)
   !
@@ -2368,6 +2355,7 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
 end subroutine bcgstab
 !-----------------------------------------------------------------------
 subroutine implu(np,umm,beta,ypiv,u,permut,full)
+  implicit none
   real*8 umm,beta,ypiv(*),u(*),x, xpiv
   logical full, perm, permut(*)
   integer np,k,npm1
@@ -2500,8 +2488,7 @@ end subroutine givens
 logical function stopbis(n,ipar,mvpi,fpar,r,delx,sx)
   implicit none
   integer n,mvpi,ipar(16)
-  real*8 fpar(16), r(n), delx(n), sx, ddot
-  external ddot
+  real*8 fpar(16), r(n), delx(n), sx
   !-----------------------------------------------------------------------
   !     function for determining the stopping criteria. return value of
   !     true if the stopbis criteria is satisfied.
@@ -2732,9 +2719,8 @@ subroutine mgsro(full,lda,n,m,ind,ops,vec,hh,ierr)
   !     External routines used: real*8 ddot
   !-----------------------------------------------------------------------
   integer i,k
-  real*8  nrm0, nrm1, fct, thr, ddot, zero, one, reorth
+  real*8  nrm0, nrm1, fct, thr, zero, one, reorth
   parameter (zero=0.0D0, one=1.0D0, reorth=0.98D0)
-  external ddot
   !
   !     compute the norm of the input vector
   !
@@ -2853,6 +2839,7 @@ end subroutine mgsro
 ! 1)     M A T R I X    B Y    V E C T O R     P R O D U C T S         c
 !----------------------------------------------------------------------c
 subroutine amux (n, x, y, a,ja,ia)
+  implicit none
   real*8  x(*), y(*), a(*)
   integer n, ja(*), ia(*)
   !-----------------------------------------------------------------------
@@ -2899,6 +2886,7 @@ subroutine amux (n, x, y, a,ja,ia)
 end subroutine amux
 !-----------------------------------------------------------------------
 subroutine amuxms (n, x, y, a,ja)
+  implicit none
   real*8  x(*), y(*), a(*)
   integer n, ja(*)
   !-----------------------------------------------------------------------
@@ -2941,6 +2929,7 @@ subroutine amuxms (n, x, y, a,ja)
 end subroutine amuxms
 !-----------------------------------------------------------------------
 subroutine atmux (n, x, y, a, ja, ia)
+  implicit none
   real*8 x(*), y(*), a(*)
   integer n, ia(*), ja(*)
   !-----------------------------------------------------------------------
@@ -2990,6 +2979,7 @@ subroutine atmux (n, x, y, a, ja, ia)
 end subroutine atmux
 !-----------------------------------------------------------------------
 subroutine atmuxr (m, n, x, y, a, ja, ia)
+  implicit none
   real*8 x(*), y(*), a(*)
   integer m, n, ia(*), ja(*)
   !-----------------------------------------------------------------------
@@ -3088,6 +3078,7 @@ subroutine amuxe (n,x,y,na,ncol,a,ja)
 end subroutine amuxe
 !-----------------------------------------------------------------------
 subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
+  implicit none
   integer n, ndiag, idiag, ioff(idiag)
   real*8 x(n), y(n), diag(ndiag,idiag)
   !-----------------------------------------------------------------------
@@ -3140,6 +3131,7 @@ subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
 end subroutine amuxd
 !-----------------------------------------------------------------------
 subroutine amuxj (n, x, y, jdiag, a, ja, ia)
+  implicit none
   integer n, jdiag, ja(*), ia(*)
   real*8 x(n), y(n), a(*)
   !-----------------------------------------------------------------------
@@ -3195,6 +3187,7 @@ end subroutine amuxj
 !-----------------------------------------------------------------------
 subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
   !-----------------------------------------------------------------------
+  implicit none
   integer nr, nc, ia(nr+1), ja(*), ka(*), kvstr(nr+1), kvstc(*)
   real*8  a(*), x(*), b(*)
   !-----------------------------------------------------------------------
@@ -3248,6 +3241,7 @@ end subroutine vbrmv
 ! 2)     T R I A N G U L A R    S Y S T E M    S O L U T I O N S       c
 !----------------------------------------------------------------------c
 subroutine lsol (n,x,y,al,jal,ial)
+  implicit none
   integer n, jal(*),ial(n+1)
   real*8  x(n), y(n), al(*)
   !-----------------------------------------------------------------------
@@ -3291,6 +3285,7 @@ subroutine lsol (n,x,y,al,jal,ial)
 end subroutine lsol
 !-----------------------------------------------------------------------
 subroutine ldsol (n,x,y,al,jal)
+  implicit none
   integer n, jal(*)
   real*8 x(n), y(n), al(*)
   !-----------------------------------------------------------------------
@@ -3334,6 +3329,7 @@ subroutine ldsol (n,x,y,al,jal)
 end subroutine ldsol
 !-----------------------------------------------------------------------
 subroutine lsolc (n,x,y,al,jal,ial)
+  implicit none
   integer n, jal(*),ial(*)
   real*8  x(n), y(n), al(*)
   !-----------------------------------------------------------------------
@@ -3378,6 +3374,7 @@ subroutine lsolc (n,x,y,al,jal,ial)
 end subroutine lsolc
 !-----------------------------------------------------------------------
 subroutine ldsolc (n,x,y,al,jal)
+  implicit none
   integer n, jal(*)
   real*8 x(n), y(n), al(*)
   !-----------------------------------------------------------------------
@@ -3425,6 +3422,7 @@ subroutine ldsolc (n,x,y,al,jal)
 end subroutine ldsolc
 !-----------------------------------------------------------------------
 subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
+  implicit none
   integer n, nlev, jal(*), ilev(nlev+1), lev(n)
   real*8 x(n), y(n), al(*)
   !-----------------------------------------------------------------------
@@ -3477,6 +3475,7 @@ subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
 end subroutine ldsoll
 !-----------------------------------------------------------------------
 subroutine usol (n,x,y,au,jau,iau)
+  implicit none
   integer n, jau(*),iau(n+1)
   real*8  x(n), y(n), au(*)
   !-----------------------------------------------------------------------
@@ -3520,6 +3519,7 @@ subroutine usol (n,x,y,au,jau,iau)
 end subroutine usol
 !-----------------------------------------------------------------------
 subroutine udsol (n,x,y,au,jau)
+  implicit none
   integer n, jau(*)
   real*8  x(n), y(n),au(*)
   !-----------------------------------------------------------------------
@@ -3564,6 +3564,7 @@ subroutine udsol (n,x,y,au,jau)
 end subroutine udsol
 !-----------------------------------------------------------------------
 subroutine usolc (n,x,y,au,jau,iau)
+  implicit none
   real*8  x(*), y(*), au(*)
   integer n, jau(*),iau(*)
   !-----------------------------------------------------------------------
@@ -3608,6 +3609,7 @@ subroutine usolc (n,x,y,au,jau,iau)
 end subroutine usolc
 !-----------------------------------------------------------------------
 subroutine udsolc (n,x,y,au,jau)
+  implicit none
   integer n, jau(*)
   real*8 x(n), y(n), au(*)
   !-----------------------------------------------------------------------
@@ -3784,8 +3786,25 @@ end subroutine qsplit
 subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   implicit none
   integer n,ipar(16),ia(n+1),ja(*),ju(*),jau(*)
-  real*8 fpar(16),rhs(n),sol(n),guess(n),wk(*),a(*),au(*)
-  external solver
+  real*8 fpar(16),rhs(n),sol(n),guess(n),a(*),au(*)
+  real*8 wk(*)
+  !
+  abstract interface
+    subroutine solver_proto(n,rhs,sol,ipar,fpar,w)
+      implicit none
+      !integer, intent(in)    :: n
+      !real*8,  intent(in)    :: rhs(n)
+      !integer, intent(inout) :: ipar(16)
+      !real*8,  intent(inout) :: sol(n), fpar(16)
+      !real*8,  intent(inout) :: w(n,8)
+      integer n
+      real*8 rhs(n), sol(n), w(n,8)
+      integer ipar(16)
+      real*8 fpar(16)
+    end subroutine solver_proto
+  end interface
+  procedure(solver_proto) :: solver
+  !
   !-----------------------------------------------------------------------
   !     the actual tester. It starts the iterative linear system solvers
   !     with a initial guess suppied by the user.
@@ -3797,6 +3816,7 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   !     local variables
   !
   integer       :: i, its
+  real*8        :: w_2d(n, 8)
   !      real          :: dtime, dt(2), time
   !     external dtime
   save its
@@ -3816,9 +3836,13 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   !
   ipar(1) = 0
   !     time = dtime(dt)
-
+  ! --- Convert 1D -> 2D ---
+  w_2d = RESHAPE(wk(1:n*8), [n, 8])
+  
   do
-    call solver(n,rhs,sol,ipar,fpar,wk)
+    call solver(n,rhs,sol,ipar,fpar,w_2d)
+
+    wk(1:n*8) = RESHAPE(w_2d, [n*8])
 
     if (ipar(7).ne.its) then
       its = ipar(7)
@@ -4208,7 +4232,7 @@ end subroutine ilut
 !----------------------------------------------------------------------
 !       subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ipoint1, ipoint2, ierr)
 subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
-
+  implicit none
   !implicit real*8 (a-h,o-z)
   real*8 a(*), alu(*), tl
   integer n, ju0, ii, jj, i, j, jcol, js, jf, jm, jrow, jw, ierr
@@ -4535,6 +4559,7 @@ end subroutine pgmres
 !     subroutine from blas1.f90
 !-----------------------------------------------------------------------
 DOUBLE PRECISION FUNCTION DNRM2(N,X)
+  implicit none
   !     .. Scalar Arguments ..
   INTEGER N
   !     ..
@@ -4608,6 +4633,7 @@ SUBROUTINE DLASSQ( N, X, SCALE, SUMSQ )
   ! -- LAPACK auxiliary routine (version 3.1) --
   ! Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
   ! November 2006
+  implicit none
   INTEGER N
   DOUBLE PRECISION SCALE, SUMSQ
   DOUBLE PRECISION X( * )
@@ -4654,6 +4680,7 @@ double precision function ddot(n,dx,dy)
   !     uses unrolled loops for increments equal to one.
   !     jack dongarra, linpack, 3/11/78.
   !
+  implicit none
   double precision dx(*),dy(*)
   integer i,m,mp1,n
   !
@@ -4681,6 +4708,7 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
   !     uses unrolled loops for increments equal to one.
   !     jack dongarra, linpack, 3/11/78.
   !
+  implicit none
   double precision dx(1),dy(1),da
   integer i,incx,incy,ix,iy,m,mp1,n
   !
@@ -4724,3 +4752,7 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
   end do
   return
 end subroutine daxpy
+
+  !/ ------------------------------------------------------------------- /
+
+END MODULE W3PROFSMD
