@@ -428,7 +428,7 @@ CONTAINS
                           TAUWNY, DDDX, DDDY, ALPHA, WN, U10, U10D, TAUA,  &
                           TAUADIR, FCUT, WHITECAP, BEDFORMS, TAUBBL,       &
                           TAUICE, PHIBBL, TAUOCX, TAUOCY, WNMEAN, PHIAW,   &
-                          PHIOC, TWS, PHICE, CHARN, W3SETA
+                          PHIOC, TWS, PHICE, CHARN, W3SETA, ITSTEP
     !/
     USE W3IDATMD,  ONLY : IIDATA, INFLAGS1, FLLEV, FLCUR, FLWIND, FLICE,   &
                           FLTAUA, FLRHOA, FLIC1, FLIC2, FLIC3, FLIC4,      &
@@ -1081,7 +1081,10 @@ CONTAINS
       DTGA   = DTTST / REAL(NT)
       IF ( DTTST .EQ. 0. ) THEN
         IT0    = 0
-        IF ( .NOT.FLZERO ) ITIME  = ITIME - 1
+        IF ( .NOT.FLZERO ) THEN
+          ITIME  = ITIME - 1
+          ITSTEP = ITSTEP - 1
+        END IF
         NT     = 0
       ELSE
         IT0    = 1
@@ -1125,6 +1128,7 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 0')
         !
         ITIME  = ITIME + 1
+        ITSTEP = ITSTEP + 1
         !
         DTG    = REAL(NINT(DTGA+DTRES+0.0001))
         DTRES  = DTRES + DTGA - DTG
