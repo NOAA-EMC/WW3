@@ -5548,7 +5548,6 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
-    use mpi_f08
 
     implicit none
     LOGICAL, INTENT(IN) :: LCALC
