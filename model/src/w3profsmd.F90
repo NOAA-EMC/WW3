@@ -4309,7 +4309,7 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
   real*8  :: rhs(*), sol(*)
 
   real*8  :: eps
-  real*8  :: eps1, epsmac, gam, t, ddot, dnrm2, ro, tl
+  real*8  :: eps1, epsmac, gam, t, ro, tl
 
   integer :: i,i1,j,jj,k,k1,iii,ii,ju0
   integer :: its,jrow,jcol,jf,jm,js,jw
