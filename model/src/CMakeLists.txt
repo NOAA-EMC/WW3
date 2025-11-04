@@ -206,7 +206,7 @@ foreach(program ${programs})
   target_link_libraries(${program} PRIVATE ww3_lib)
 endforeach()
 
-if ("PIO" IN_LIST switches)
+if (UFS_CAP)
   # Building as part of UFS (submodule)
   set(WW3_FLAG_SCOPE PRIVATE)
 else()
