@@ -206,9 +206,17 @@ foreach(program ${programs})
   target_link_libraries(${program} PRIVATE ww3_lib)
 endforeach()
 
-target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
-target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_debug}>")
-target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_release}>")
+if (UFS_CAP)
+  # Building as part of UFS (submodule)
+  set(WW3_FLAG_SCOPE PRIVATE)
+else()
+  # Standalone WW3 build
+  set(WW3_FLAG_SCOPE PUBLIC)
+endif()
+
+target_compile_options(ww3_lib ${WW3_FLAG_SCOPE} "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
+target_compile_options(ww3_lib ${WW3_FLAG_SCOPE} "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_debug}>")
+target_compile_options(ww3_lib ${WW3_FLAG_SCOPE} "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_release}>")
 
 install(
   TARGETS ${programs} ww3_lib
