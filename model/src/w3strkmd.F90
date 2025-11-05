@@ -315,7 +315,7 @@ CONTAINS
     !/       reserved.  WAVEWATCH III is a trademark of the NWS.
     !/       No unauthorized use without permission.
     !/
-    USE W3SERVMD, ONLY: EXTIOF, EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
 #ifdef W3_MPI
     use mpi_f08
 #endif
