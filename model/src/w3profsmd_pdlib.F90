@@ -5681,7 +5681,9 @@ CONTAINS
       END DO
     END DO
 
-    ! For reproducability with ice cuppling VA must be communicated at the start of solver
+    !
+    !    for reproducability state must be communicated at the start of solver
+    !
     CALL PDLIB_exchange2DREAL_zero(VA)
 
     VAOLD = VA(1:NSPEC,1:NSEAL)
