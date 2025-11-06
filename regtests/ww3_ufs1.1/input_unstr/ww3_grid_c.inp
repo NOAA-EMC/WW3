@@ -87,7 +87,6 @@ $
   JGS_DIFF_THR = 1.E-6,
   JGS_PMIN = 3.0,
   JGS_LIMITER = F,
-  JGS_TRUNK_DIGITS = 5,
   JGS_NORM_THR = 1.E-6 /
 $
 $ Mandatory string to identify end of namelist input section.
