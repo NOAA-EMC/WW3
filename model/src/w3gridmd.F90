@@ -3375,6 +3375,9 @@ CONTAINS
            JGS_DIFF_THR,                               &
            JGS_NORM_THR,                               &
            JGS_NLEVEL,                                 &
+#ifdef W3_TRNK
+           JGS_TRUNK_DIGITS,                           &
+#endif
            JGS_SOURCE_NONLINEAR
       !
       WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
