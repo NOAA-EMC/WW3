@@ -44,7 +44,7 @@ module wav_import_export
   end interface FillGlobalInput
 
   type fld_list_type                               !< @private a structure for the list of fields
-    character(len=128) :: stdname                  !< a standard field name
+    character(len=80) :: stdname                  !< a standard field name
     integer :: ungridded_lbound = 0                !< the ungridded dimension lower bound
     integer :: ungridded_ubound = 0                !< the ugridded dimension upper bound
   end type fld_list_type

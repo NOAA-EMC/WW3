@@ -155,6 +155,9 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_MPI
+    use mpi_f08, ONLY: mpi_wtime
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -168,9 +171,6 @@ CONTAINS
 #endif
     INTEGER mpimode
     REAL(8), intent(out) :: eTime
-#ifdef W3_MPI
-    REAL(8) mpi_wtime
-#endif
     mpimode=0
 #ifdef W3_MPI
     mpimode=1
@@ -330,16 +330,15 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-         EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN, DTH, CTHG0S, MAPSF
+    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, ECOS, ESIN, &
+         EC2, ESC, ES2, MAPWN, DMIN, DTH, CTHG0S, MAPSF
+    !USE W3GDATMD, ONLY: CTMAX
     USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX,   &
          DDDY, DW
 #ifdef W3_REFRX
     USE W3ADATMD, ONLY: DCDX, DCDY
 #endif
     USE W3IDATMD, ONLY: FLCUR
-    USE W3ODATMD, only : IAPROC
     IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
@@ -360,7 +359,7 @@ CONTAINS
     REAL, intent(in) :: DTG
     INTEGER :: ISP, IK, ITH, IX, IY
     REAL :: FRK(NK), FRG(NK), DSDD(0:NK+1)
-    REAL :: FACTH, DCXY, DCYX, DCXXYY, DTTST
+    REAL :: FACTH, DCXY, DCYX, DCXXYY
     REAL :: eDCXDX, eDCXDY, eDCYDX, eDCYDY, eDDDX, eDDDY, eCTHG0
     REAL :: VCFLT(NSPEC), DEPTH, FDG
     REAL :: FDDMAX
@@ -493,14 +492,11 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-         EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN, DTH, CTHG0S, MAPSF, SIG
+    USE W3GDATMD, ONLY: NK, NSPEC, SIG, ECOS, ESIN, &
+         EC2, ESC, ES2, MAPWN, CTMAX, DMIN, DTH, CTHG0S, MAPSF, SIG
     USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX,   &
          DDDY, DW
     USE W3IDATMD, ONLY: FLCUR
-    USE W3ODATMD, only : IAPROC
     IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
@@ -516,12 +512,12 @@ CONTAINS
     INTEGER, intent(in) :: ISEA, IP
     REAL, intent(in) :: DTG
     logical, intent(in) :: DoLimiter
-    INTEGER :: ISP, IK, ITH, IX, IY
+    INTEGER :: ISP, IK, IX, IY
     REAL :: FRK(NK), FRG(NK), DSDD(0:NK+1)
-    REAL :: FACTH, DCXY, DCYX, DCXXYY, DTTST
+    REAL :: FACTH, DCXY, DCYX, DCXXYY
     REAL :: eDCXDX, eDCXDY, eDCYDX, eDCYDY, eDDDX, eDDDY, eCTHG0
-    REAL :: VCFLT(NSPEC), DEPTH, FDG, CG1(0:NK+1), WN1(0:NK+1)
-    REAL :: FDDMAX, CFLTHMAX, VELNOFILT, CTMAX_eff
+    REAL :: VCFLT(NSPEC), DEPTH, FDG
+    REAL :: VELNOFILT, CTMAX_eff
 #ifdef W3_S
     CALL STRACE (IENT, 'PROP_REFRACTION_PR3')
 #endif
@@ -654,11 +650,9 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-         EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN, DTH, MAPSF
+    USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP,  &
+         EC2, ESC, ES2, DMIN, MAPSF
     USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, CX, CY, DDDX, DDDY, DW
-    USE W3ODATMD, only : IAPROC
     IMPLICIT NONE
     !/ Parameter list
     !/
@@ -807,11 +801,9 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-         EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN, DTH, MAPSF
+    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DSIP,  &
+         EC2, ESC, ES2, DMIN, MAPSF
     USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, CX, CY, DDDX, DDDY, DW
-    USE W3ODATMD, only : IAPROC
 
     IMPLICIT NONE
 
@@ -833,8 +825,7 @@ CONTAINS
     REAL :: FKC(NTH), FKD0
     REAL :: VCWN(1-NTH:NSPEC+NTH)
     REAL :: DSDD(0:NK+1)
-    REAL :: sumDiff, sumDiff1, sumDiff2, sumDiff3
-    REAL :: sumDiff0, sumDiff4, sumDiff5
+    REAL :: sumDiff
     INTEGER :: IK, ITH, ISP, IY, IX
 
     !/ ------------------------------------------------------------------- /
@@ -972,10 +963,10 @@ CONTAINS
     USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
     USE WMMDATMD, ONLY: MDATAS
 #endif
-    IMPLICIT NONE
 #ifdef W3_PDLIB
-    INCLUDE "mpif.h"
+    use mpi_f08
 #endif
+    IMPLICIT NONE
     INTEGER, intent(in) :: IMOD
     logical, intent(in) :: IsMulti
 #ifdef W3_S
@@ -1097,7 +1088,7 @@ CONTAINS
 #endif
     USE CONSTANTS, ONLY : LPDLIB
     USE W3GDATMD, ONLY: NSEA
-    USE W3ODATMD, ONLY: NTPROC, NAPROC, IAPROC
+    USE W3ODATMD, ONLY: NAPROC, IAPROC
     IMPLICIT NONE
     INTEGER, intent(out) :: NSEALout, NSEALMout
     !/ Local parameters
@@ -1209,8 +1200,8 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !/
-    USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
+    USE W3ODATMD, ONLY: IAPROC, NAPROC
+    USE W3GDATMD, ONLY: UNGTYPE, MAPSF
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
     USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
@@ -1317,7 +1308,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !/
-    USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
+    USE W3ODATMD, ONLY: IAPROC, NAPROC
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
@@ -1444,7 +1435,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !/
-    USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
+    USE W3ODATMD, ONLY: IAPROC, NAPROC
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
@@ -1463,9 +1454,6 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !
-    USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
-    USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
     USE YOWNODEPOOL, ONLY: iplg
 #endif
@@ -1569,7 +1557,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    USE W3GDATMD, ONLY: NSEAL, NSEA, NX
+    USE W3GDATMD, ONLY: NX
 #ifdef W3_PDLIB
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
@@ -1577,6 +1565,9 @@ CONTAINS
     USE yowNodepool, only: npa
     use yowNodepool, only: iplg
     use yowDatapool, only: rkind
+#endif
+#ifdef W3_MPI
+    use mpi_f08
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
@@ -1591,11 +1582,8 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
-    INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
-    INTEGER IPROC, I, ierr, IP, IX, IP_glob
+    INTEGER Status(NX), rStatus(NX)
+    INTEGER IPROC, I, ierr, IP, IP_glob
 #ifdef W3_PDLIB
     REAL(rkind), intent(inout) :: TheVar(NX)
     REAL(rkind) ::  rVect(NX)

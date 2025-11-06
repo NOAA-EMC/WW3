@@ -95,21 +95,24 @@ PROGRAM W3MLTI
   USE OMP_LIB
 #endif
   !/
-  IMPLICIT NONE
-  !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi_f08
 #endif
+  !/
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
-  INTEGER              :: I, MPI_COMM = -99
+  INTEGER              :: I
   INTEGER, ALLOCATABLE :: TEND(:,:)
   LOGICAL              :: FLGNML
 #ifdef W3_MPI
+  type(MPI_COMM)       :: MPICOMM
   INTEGER              :: IERR_MPI
   LOGICAL              :: FLHYBR = .FALSE.
+#else 
+  INTEGER              :: MPICOMM
 #endif
 #ifdef W3_OMPH
   INTEGER              :: THRLEV
@@ -135,10 +138,12 @@ PROGRAM W3MLTI
   ENDIF
 #endif
 #ifdef W3_MPI
-  MPI_COMM = MPI_COMM_WORLD
-  CALL MPI_COMM_SIZE ( MPI_COMM, NMPROC, IERR_MPI )
-  CALL MPI_COMM_RANK ( MPI_COMM, IMPROC, IERR_MPI )
+  MPICOMM = MPI_COMM_WORLD
+  CALL MPI_COMM_SIZE ( MPICOMM, NMPROC, IERR_MPI )
+  CALL MPI_COMM_RANK ( MPICOMM, IMPROC, IERR_MPI )
   IMPROC = IMPROC + 1
+#else 
+  MPICOMM=0
 #endif
   !
   ! 0.c Identifying output to "screen" unit
@@ -161,24 +166,24 @@ PROGRAM W3MLTI
   !
   ! ... Log and screen output, no separate test output file
   !
-  !     CALL WMINIT ( MDSI, MDSO, MDSS, MDST, MDSE, 'ww3_multi.inp', MPI_COMM )
+  !     CALL WMINIT ( MDSI, MDSO, MDSS, MDST, MDSE, 'ww3_multi.inp', MPICOMM )
   !
   ! ... Screen output disabled
   !
-  !     CALL WMINIT ( MDSI, MDSO, MDSO, MDST, MDSE, 'ww3_multi.inp', MPI_COMM )
+  !     CALL WMINIT ( MDSI, MDSO, MDSO, MDST, MDSE, 'ww3_multi.inp', MPICOMM )
   !
   ! ... Separate test output file and file preamble defined
   !
-  !     CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM,        &
+  !     CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPICOMM,        &
   !                   './data/' )
   !
   ! ... Separate test output file
   !
   INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
-    CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
+    CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPICOMM )
   ELSE
-    CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM )
+    CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPICOMM )
   END IF
   !
 
@@ -207,7 +212,7 @@ PROGRAM W3MLTI
   IF ( IMPROC .EQ. NMPSCR ) WRITE (*,999)
   !
 #ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  CALL MPI_BARRIER ( MPICOMM, IERR_MPI )
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
   !
