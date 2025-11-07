@@ -1123,7 +1123,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF,                 &
          NK, NTH, TH, SIG, DTH, DSIP, UNGTYPE,       &
          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
-         HPFAC, HQFAC
+         HPFAC, HQFAC, FETCH
     USE W3ADATMD, ONLY: U10, U10D, CG
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
     USE W3PARALL, only : GET_JSEA_IBELONG
@@ -1177,16 +1177,19 @@ CONTAINS
     A(:,:,:)=0
     DO JSEA=1, NSEAL
       CALL INIT_GET_ISEA(ISEA, JSEA)
-      IF (GTYPE.EQ.UNGTYPE) THEN
+      IF (FETCH>0.0) THEN
+        XGR = FETCH
+      ELSEIF (GTYPE.EQ.UNGTYPE) THEN
         XGR=1.  ! to be fixed later
       ELSE
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
       END IF
-      IF ( FLAGLL ) THEN
+      IF ( FLAGLL .AND. FETCH==0.0 ) THEN
         XGR    = XGR * RADIUS * DERA
       END IF
+      
       !
       U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
       !

@@ -1625,7 +1625,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
          CTMAX, DMIN
-    USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME
+    USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME, ITSTEP
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST
 #ifdef W3_S
@@ -1848,7 +1848,7 @@ CONTAINS
     !
     ! 5.  Propagate ------------------------------------------------------ *
     !
-    IF ( MOD(ITIME,2) .EQ. 0 ) THEN
+    IF ( MOD(ITSTEP,2) .EQ. 0 ) THEN
       IF ( FLCK ) THEN
         DO ITH=1, NTH
           VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)

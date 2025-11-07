@@ -881,8 +881,9 @@
     if [ "$multi08" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s ST4_PR3_UQ_MPI -w work_ST4_PR3_UQ_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
-      echo "$rtst -i i_lowres_multi -w work_lowres         -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -s ST4_PR3_UQ_MPI         -w work_ST4_PR3_UQ_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -i i_lowres_multi         -w work_lowres         -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
+      echo "$rtst -i i_lowres_multi_jonswap -w work_lowres_jonswap -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_08" >> matrix.body
     fi
 
   fi
