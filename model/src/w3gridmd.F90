@@ -942,9 +942,7 @@ MODULE W3GRIDMD
   REAL*8  :: JGS_PMIN
   REAL*8  :: JGS_DIFF_THR
   REAL*8  :: JGS_NORM_THR
-#ifdef W3_TRNK
   INTEGER :: JGS_TRUNK_DIGITS
-#endif
   REAL*8  :: SOLVERTHR_SETUP
   REAL*8  :: CRIT_DEP_SETUP
   !
@@ -1112,9 +1110,7 @@ MODULE W3GRIDMD
        JGS_NORM_THR,                              &
        JGS_NLEVEL,                                &
        JGS_SOURCE_NONLINEAR,                      &
-#ifdef W3_TRNK
        JGS_TRUNK_DIGITS,                          &
-#endif
        SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
        CRIT_DEP_SETUP
   NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, &
@@ -2486,9 +2482,7 @@ CONTAINS
     JGS_NORM_THR = 1.E-20
     JGS_NLEVEL = 0
     JGS_SOURCE_NONLINEAR = .FALSE.
-#ifdef W3_TRNK
-    JGS_TRUNK_DIGITS = 4
-#endif
+    JGS_TRUNK_DIGITS = 5
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
 
@@ -2505,9 +2499,7 @@ CONTAINS
     B_JGS_NORM_THR = JGS_NORM_THR
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
-#ifdef W3_TRNK
     B_JGS_TRUNK_DIGITS = JGS_TRUNK_DIGITS
-#endif
 
     nbSel=0
 
@@ -3375,9 +3367,7 @@ CONTAINS
            JGS_DIFF_THR,                               &
            JGS_NORM_THR,                               &
            JGS_NLEVEL,                                 &
-#ifdef W3_TRNK
            JGS_TRUNK_DIGITS,                           &
-#endif
            JGS_SOURCE_NONLINEAR
       !
       WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
@@ -6729,9 +6719,7 @@ CONTAINS
          ',  JGS_DIFF_THR=', F8.3,                              &
          ',  JGS_NORM_THR=', F8.3,                              &
          ',  JGS_NLEVEL=', I3,                                  &
-#ifdef W3_TRNK
          ',  JGS_TRUNK_DIGITS=', I3,                            &
-#endif
          ',  JGS_SOURCE_NONLINEAR=', L3 / )
 
 

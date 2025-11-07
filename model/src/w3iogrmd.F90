@@ -805,9 +805,7 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-#ifdef W3_TRNK
              B_JGS_TRUNK_DIGITS,                              & 
-#endif
              B_JGS_SOURCE_NONLINEAR
 #ifdef W3_ASCII
         WRITE (NDSA,*)                                        &
@@ -842,9 +840,7 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-#ifdef W3_TRNK
              B_JGS_TRUNK_DIGITS,                              & 
-#endif
              B_JGS_SOURCE_NONLINEAR
 #endif
         !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
@@ -1010,9 +1006,7 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-#ifdef W3_TRNK
              B_JGS_TRUNK_DIGITS,                              & 
-#endif
              B_JGS_SOURCE_NONLINEAR
         IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGR','mod_def.'//FILEXT(:IEXT),51)
         IF (.NOT. GUGINIT) THEN
