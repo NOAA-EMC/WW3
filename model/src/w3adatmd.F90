@@ -948,11 +948,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, NSEAL_tmp
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -1565,11 +1565,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, I
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3XDMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
