@@ -5669,6 +5669,10 @@ CONTAINS
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
     END DO
+    !
+    !    for reproducability state must be communicated at the start of solver
+    !
+    CALL PDLIB_exchange2DREAL_zero(VA)
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
 #ifdef W3_DEBUGSRC
