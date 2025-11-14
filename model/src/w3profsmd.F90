@@ -57,6 +57,12 @@ MODULE W3PROFSMD
   !/ ------------------------------------------------------------------- /
   !/
   PUBLIC
+
+  PRIVATE :: bcgstab, implu, uppdir, givens, stopbis, tidycg, brkdn,     &
+             bisinit, mgsro, amux, amuxms, atmux, atmuxr, amuxe, amuxd,  &
+             amuxj, vbrmv, lsol, ldsol, lsolc, ldsolc, ldsoll, usol,     &
+             udsol, usolc, udsolc, lusol, lutsol, qsplit, runrc, ilut,   &
+             ilu0, pgmres, DNRM2, DLASSQ, ddot, daxpy
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
