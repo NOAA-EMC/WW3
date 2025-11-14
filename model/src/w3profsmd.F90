@@ -3787,16 +3787,11 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   implicit none
   integer n,ipar(16),ia(n+1),ja(*),ju(*),jau(*)
   real*8 fpar(16),rhs(n),sol(n),guess(n),a(*),au(*)
-  real*8 wk(*)
+  real*8, target :: wk(*)
   !
   abstract interface
     subroutine solver_proto(n,rhs,sol,ipar,fpar,w)
       implicit none
-      !integer, intent(in)    :: n
-      !real*8,  intent(in)    :: rhs(n)
-      !integer, intent(inout) :: ipar(16)
-      !real*8,  intent(inout) :: sol(n), fpar(16)
-      !real*8,  intent(inout) :: w(n,8)
       integer n
       real*8 rhs(n), sol(n), w(n,8)
       integer ipar(16)
@@ -3816,7 +3811,7 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   !     local variables
   !
   integer       :: i, its
-  real*8        :: w_2d(n, 8)
+  real*8, pointer :: w_2d(:,:)
   !      real          :: dtime, dt(2), time
   !     external dtime
   save its
@@ -3836,13 +3831,10 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   !
   ipar(1) = 0
   !     time = dtime(dt)
-  ! --- Convert 1D -> 2D ---
-  w_2d = RESHAPE(wk(1:n*8), [n, 8])
+  w_2d(1:n,1:8) => wk(1:n*8)
   
   do
     call solver(n,rhs,sol,ipar,fpar,w_2d)
-
-    wk(1:n*8) = RESHAPE(w_2d, [n*8])
 
     if (ipar(7).ne.its) then
       its = ipar(7)
