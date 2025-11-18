@@ -5520,7 +5520,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use YOWNODEPOOL, only: npa, iplg
     use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
-    use mpi_f08, only : MPI_SUM, MPI_INT, MPI_ALLREDUCE
+    use mpi_f08, only : MPI_SUM, MPI_INT, MPI_ALLREDUCE, MPI_COMM_RANK
     USE W3ADATMD, only: MPI_COMM_WCMP
     USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
