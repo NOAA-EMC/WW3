@@ -467,8 +467,7 @@ contains
         type(MPI_Comm), intent(in) :: comm
         integer, intent(out)       :: ref
       end subroutine SCOTCHFParMETIS_V3_PartGeomKway
-#endif
-
+#else
       subroutine SCOTCH_ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
            vwgt, adjwgt, wgtflag, numflag, ndims, xyz, ncon, nparts, &
            tpwgts, ubvec, options, edgecut, part, comm, ref)
@@ -484,6 +483,7 @@ contains
         type(MPI_Comm), intent(in) :: comm
         integer, intent(out)       :: ref
       end subroutine SCOTCH_ParMETIS_V3_PartGeomKway
+#endif
     end interface
 #endif
 
