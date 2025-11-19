@@ -5235,6 +5235,7 @@ CONTAINS
     REAL    :: RD1, RD2, RD10, RD20
     INTEGER :: IK, ITH, ISEA
     INTEGER :: IBI, IP_glob, ISP, JX
+
 #ifdef W3_S
     CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION')
 #endif
@@ -5538,6 +5539,7 @@ CONTAINS
     USE W3PARALL, only : ListISPprevDir, ListISPnextDir
     USE W3PARALL, only : JX_TO_JSEA
     USE W3GDATMD, only: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+    
     USE yowfunction, only : pdlib_abort
     USE yowNodepool, only: np_global
     USE W3DISPMD, only : WAVNU_LOCAL
@@ -5547,6 +5549,10 @@ CONTAINS
 #endif
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
+#endif
+
+#ifdef W3_TRNK
+    USE W3GDATMD, only: B_JGS_TRUNK_DIGITS
 #endif
 
     implicit none
@@ -5602,6 +5608,11 @@ CONTAINS
     INTEGER ierr, i
     INTEGER JP_glob
     INTEGER is_converged, itmp
+
+#ifdef W3_TRNK
+    integer :: expVA
+    real    :: trVA
+#endif
 
     INTEGER :: TESTNODE = 923
 
@@ -6327,6 +6338,24 @@ CONTAINS
       endif
     endif
 #endif
+
+#ifdef W3_TRNK
+    !
+    ! Truncate precision to B_JGS_TRUNK_DIGITS to enforce bit for bit reproducability
+    ! across repeated wavewatch runs.
+    !
+    DO IP = 1, npa
+      DO ISP=1,NSPEC
+        if (VA(ISP,IP) .gt. tiny(1.0) )then
+          expVA=nint(log10( VA(ISP,IP) ) )
+          trVA = 10.**( expVA - B_JGS_TRUNK_DIGITS )
+          if (trVA .gt. tiny(1.0)) VA(ISP,IP) = ANINT(VA(ISP,IP) / trVA) * trVA
+        endif
+      ENDDO
+    ENDDO
+#endif
+
+
     !
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION LOOP 7')
     !
