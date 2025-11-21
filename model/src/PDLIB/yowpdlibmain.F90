@@ -449,6 +449,44 @@ contains
 
     INTEGER :: np_toSend
 
+#ifdef W3_SCOTCH
+    interface
+#ifdef SCOTCH_707
+      subroutine SCOTCHFParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
+           vwgt, adjwgt, wgtflag, numflag, ndims, xyz, ncon, nparts, &
+           tpwgts, ubvec, options, edgecut, part, comm, ref)
+        import                     :: MPI_Comm
+        integer, intent(in)        :: vtxdist(*), xadj(*), adjncy(*)
+        integer, intent(in)        :: vwgt(*), adjwgt(*)
+        integer, intent(in)        :: wgtflag, numflag, ndims, ncon, nparts
+        real(4), intent(in)        :: xyz(*)
+        real(4), intent(in)        :: tpwgts(*), ubvec(*)
+        integer, intent(in)        :: options(*)
+        integer, intent(out)       :: edgecut
+        integer, intent(inout)     :: part(*)
+        type(MPI_Comm), intent(in) :: comm
+        integer, intent(out)       :: ref
+      end subroutine SCOTCHFParMETIS_V3_PartGeomKway
+#else
+      subroutine SCOTCH_ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
+           vwgt, adjwgt, wgtflag, numflag, ndims, xyz, ncon, nparts, &
+           tpwgts, ubvec, options, edgecut, part, comm, ref)
+        import :: MPI_Comm
+        integer, intent(in)        :: vtxdist(*), xadj(*), adjncy(*)
+        integer, intent(in)        :: vwgt(*), adjwgt(*)
+        integer, intent(in)        :: wgtflag, numflag, ndims, ncon, nparts
+        real(4), intent(in)        :: xyz(*)
+        real(4), intent(in)        :: tpwgts(*), ubvec(*)
+        integer, intent(in)        :: options(*)
+        integer, intent(out)       :: edgecut
+        integer, intent(inout)     :: part(*)
+        type(MPI_Comm), intent(in) :: comm
+        integer, intent(out)       :: ref
+      end subroutine SCOTCH_ParMETIS_V3_PartGeomKway
+#endif
+    end interface
+#endif
+
     !    CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 1")
     ! Create xadj and adjncy arrays. They holds the nodes neighbors in CSR Format
     ! Here, the adjacency structure of a graph is represented by two arrays,
