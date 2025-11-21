@@ -25,7 +25,7 @@
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'CHA EF UST WND HS FP DP PHS PTP PDIR CUR ICE'
+  TYPE%FIELD%LIST          = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
   TYPE%POINT%FILE          = '../input_unstr/ww3_points.list'
 /
 
