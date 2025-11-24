@@ -563,7 +563,7 @@ MODULE W3ADATMD
 #endif
     REAL, POINTER         :: SPPNT(:,:,:)
     !
-    INTEGER               :: ITIME, IPASS, IDLAST, NSEALM
+    INTEGER               :: ITIME, IPASS, IDLAST, NSEALM, ITSTEP
     REAL, POINTER         :: ALPHA(:,:)
     LOGICAL               :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
     !
@@ -685,7 +685,7 @@ MODULE W3ADATMD
 #endif
   REAL, POINTER           :: SPPNT(:,:,:)
   !
-  INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
+  INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM, ITSTEP
   REAL, POINTER           :: ALPHA(:,:)
   LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
   !/
@@ -800,6 +800,7 @@ CONTAINS
       WADATS(I)%IPASS  = 0
       WADATS(I)%IDLAST = 0
       WADATS(I)%NSEALM = 0
+      WADATS(I)%ITSTEP = 0
       WADATS(I)%FLCOLD = .FALSE.
       WADATS(I)%FLIWND = .FALSE.
       WADATS(I)%AINIT  = .FALSE.
@@ -947,11 +948,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, NSEAL_tmp
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -1564,11 +1565,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, I
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3XDMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -2760,6 +2761,7 @@ CONTAINS
     IPASS  => WADATS(IMOD)%IPASS
     IDLAST => WADATS(IMOD)%IDLAST
     NSEALM => WADATS(IMOD)%NSEALM
+    ITSTEP => WADATS(IMOD)%ITSTEP
     FLCOLD => WADATS(IMOD)%FLCOLD
     FLIWND => WADATS(IMOD)%FLIWND
     AINIT  => WADATS(IMOD)%AINIT

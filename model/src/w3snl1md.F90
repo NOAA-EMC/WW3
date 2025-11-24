@@ -1555,10 +1555,10 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: GRAV
     USE W3GDATMD,  ONLY: NK , NTH , XFR , FR1, GQNF1, GQNT1, GQNQ_OM2, NLTAIL, GQTHRCOU
-
 #ifdef W3_S
-    CALL STRACE (IENT, 'INSNLGQM')
+    USE W3SERVMD, ONLY: STRACE
 #endif
+
     IMPLICIT NONE
     !.....LOCAL VARIABLES
     INTEGER           JF    , JT    , JF1   , JT1   , NF1P1 , IAUX , NT , NF , IK
@@ -1582,6 +1582,10 @@ CONTAINS
     DOUBLE PRECISION :: FREQ(NK)
     DOUBLE PRECISION, ALLOCATABLE :: F1SF(:) , X_CHE_TE1(:) , X_CHE_OM2(:) , X_LEG_OM2(:) , W_LEG_OM2(:) &
          ,  MAXCLA(:)
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'INSNLGQM')
+#endif
 
     PI = Acos(-1.)
     LBUF = 500
