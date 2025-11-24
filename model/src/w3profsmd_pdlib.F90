@@ -5760,6 +5760,10 @@ CONTAINS
       ENDIF
     END IF
     CALL APPLY_BOUNDARY_CONDITION(IMOD)
+    !
+    !    for reproducability state must be communicated after BC application 
+    !
+    CALL PDLIB_exchange2DREAL_zero(VA)
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 6')
     !
 #ifdef W3_DEBUGSOLVERCOH
