@@ -140,7 +140,7 @@ endif()
 
 if(UFS_CAP)
   # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
-  if (NOT TARGET esmf)
+  if (NOT TARGET ESMF::ESMF)
     find_package(ESMF MODULE REQUIRED)
   endif()
 
@@ -151,7 +151,7 @@ if(UFS_CAP)
   endif()
 
   target_sources(ww3_lib PRIVATE ${cap_src})
-  target_link_libraries(ww3_lib PUBLIC esmf)
+  target_link_libraries(ww3_lib PUBLIC ESMF::ESMF)
   # Don't build executables when building WW3 ESMF library
   set(programs "")
 endif()
