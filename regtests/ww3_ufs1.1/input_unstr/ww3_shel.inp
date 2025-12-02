@@ -27,7 +27,7 @@ $ Fields of mean wave parameters
 $
    20210401 000000  3600  20210402 000000
    N
-CHA EF UST WND HS FP DP PHS PTP PDIR CUR ICE
+   WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR
 $
 $ Point output                                                          
 $

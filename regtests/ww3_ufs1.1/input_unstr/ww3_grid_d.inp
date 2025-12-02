@@ -28,8 +28,8 @@ $ - Time step information (this information is always read)
 $     maximum global time step, maximum CFL time step for x-y and
 $     k-theta, minimum source term time step (all in seconds).
 $
-$
- 720. 180. 360. 30.
+$ 
+  900. 900. 900. 900.
 $
 $ Start of namelist input section ------------------------------------ $
 $
@@ -60,34 +60,34 @@ $
 &SBT1 
   GAMMA = -0.038 /
 &PRO3 
-  WDTHCG=1.5, 
+  WDTHCG=1.5,
   WDTHTH=1.5 /
 &UNST 
   UGOBCAUTO = F,
   UGOBCDEPTH = -10.,
-  UGBCCFL = F,
   EXPFSN = F,
   EXPFSPSI = F,
   EXPFSFCT = F,
   IMPFSN = F,
-  EXPTOTAL = T,
-  IMPTOTAL = F,
-  IMPREFRACTION = F,
-  IMPFREQSHIFT = F,
-  IMPSOURCE = F,
+  EXPTOTAL = F,
+  IMPTOTAL = T,
+  IMPREFRACTION = T,
+  IMPFREQSHIFT = T,
+  IMPSOURCE = T,
   SETUP_APPLY_WLV = F,
-  SOLVERTHR_SETUP = 1E-14,
-  CRIT_DEP_SETUP = 0.1,
+  SOLVERTHR_SETUP=1E-14,
+  CRIT_DEP_SETUP=0.1,
   JGS_NLEVEL = 0,
-  JGS_USE_JACOBI = F,
+  JGS_USE_JACOBI = T, 
   JGS_BLOCK_GAUSS_SEIDEL = F,
-  JGS_TERMINATE_MAXITER = F,
-  JGS_MAXITER = 1000,
+  JGS_TERMINATE_MAXITER = T,
+  JGS_MAXITER = 1000, 
   JGS_TERMINATE_NORM = F,
-  JGS_TERMINATE_DIFFERENCE = F,
-  JGS_DIFF_THR = 1.E-8,
+  JGS_TERMINATE_DIFFERENCE = T,
+  JGS_DIFF_THR = 1.E-6,
   JGS_PMIN = 3.0,
   JGS_LIMITER = F,
+  JGS_TRUNK_DIGITS = 5,
   JGS_NORM_THR = 1.E-6 /
 $
 $ Mandatory string to identify end of namelist input section.

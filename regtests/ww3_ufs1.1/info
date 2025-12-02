@@ -18,6 +18,8 @@
 #   # grid_a: Domain Decomposition (PDLIB) and Explicit solver              #
 #   # grid_b: Domain Decomposition (PDLIB) and Block Explicit solver        #
 #   # grid_c: Domain Decomposition (PDLIB) and Implicit solver              #
+#   # grid_d: Domain Decomposition (PDLIB) and Block Explicit solver        #
+#   # grid_e: Domain Decomposition (PDLIB) and Implicit solver              #
 # --------------------------------------------------------------------------#
 # if "ufscoarse" option is selected in bin/matrix.base, a coarser grid with #
 # 5 deg. resolution is used for MODEL and INPUT grids.                      #
@@ -34,11 +36,11 @@
 # ww3_ounf and GRIB2 using ww3_grib programs. The grib2 files are with      #
 # rectilinear projection(-o all option).                                    #   
 #                                                                           #
-# Model should be compiled with the switches :                              #
+# Model is compiled with the switches :                                     #
 #                                                                           #
-# NCO NOGRB DIST MPI SCRIP SCRIPNC WRST PR3 UQ FLX0 SEED ST4 STAB0          #
-# NL1 BT1 DB1 MLIM FLD2 TR0 BS0 RWND WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O3 O4     #
-# O5 O6 O7 O14 O15 IC0 IS0 REF0.                                            #
+# NCO PDLIB SCOTCH NOGRB BIN2NC DIST MPI PR3 UQ FLX0 SEED ST4 STAB0 NL1 BT1 # 
+# DB1 MLIM FLD2 TR0 BS0 RWND WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O3 O4 O5 O6 O7    #
+# O14 O15 IC0 IS0 REF0                                                      #
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
@@ -80,6 +82,6 @@
 # --------------------------------------------------------------------------#
 #                                                                           #
 #                                                 Ali Abdolali, April 2021  #
-#                                                     Last Mod : Feb 2023   #
+#                                                     Last Mod : Oct 2025   #
 #                                                                           #
 #############################################################################
