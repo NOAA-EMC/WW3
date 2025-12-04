@@ -3514,6 +3514,7 @@ CONTAINS
     FXPM   = FXPM * GRAV / 28.
     FXFM   = FXFM * TPI
     XFC    = 3.0
+    XFT    = 0.0
 #ifdef W3_ST2
     XFH    = 2.0
     XF1    = 1.75
