@@ -320,6 +320,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
+    USE mpi_f08 
 #endif
     !/
     USE W3SERVMD, ONLY: EXTCDE, EXTIOF
@@ -338,9 +339,8 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
+    IMPLICIT NONE
+    !
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -372,7 +372,7 @@ CONTAINS
 #endif
     INTEGER(KIND=8)         :: RPOS
 #ifdef W3_MPI
-    INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:)
+    type(MPI_STATUS), ALLOCATABLE :: STAT1(:), STAT2(:)
     REAL, ALLOCATABLE       :: VGBUFF(:), VLBUFF(:)
 #endif
     REAL(KIND=LRB), ALLOCATABLE :: WRITEBUFF(:), TMP(:), TMP2(:)
@@ -574,7 +574,7 @@ CONTAINS
         END IF
         IF (TYPE.EQ.'FULL') THEN
           RSTYPE = 2
-        ELSE IF (TYPE.EQ.'WIND') THEN
+        ELSE IF (TYPE.EQ.'WIND' .OR. TYPE.EQ.'FTCH') THEN
           RSTYPE = 1
         ELSE IF (TYPE.EQ.'CALM') THEN
           RSTYPE = 4
@@ -724,7 +724,7 @@ CONTAINS
               NRQ    = NAPROC
             END IF
             !
-            ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
+            ALLOCATE ( STAT1(NRQ) )
             IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
                  ( NRQ, IRQRSS, IERR_MPI )
             !
@@ -736,11 +736,11 @@ CONTAINS
                 !
                 IH     = 1 + NRQ * (IB-1)
                 CALL MPI_WAITALL                         &
-                     ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
+                     ( NRQ, IRQRSS(IH:IH+NRQ-1), STAT1, IERR_MPI )
                 IF ( IB .LT. NBLKRS ) THEN
                   IH     = 1 + NRQ * IB
                   CALL MPI_STARTALL                    &
-                       ( NRQ, IRQRSS(IH), IERR_MPI )
+                       ( NRQ, IRQRSS(IH:IH+NRQ-1), IERR_MPI )
                 END IF
                 !
                 DO ISEA=ISEA0, ISEAN
@@ -762,9 +762,9 @@ CONTAINS
               ELSE
                 !
                 CALL MPI_STARTALL                        &
-                     ( 1, IRQRSS(IB), IERR_MPI )
+                     ( 1, IRQRSS(IB:IB), IERR_MPI )
                 CALL MPI_WAITALL                         &
-                     ( 1, IRQRSS(IB), STAT1, IERR_MPI )
+                     ( 1, IRQRSS(IB:IB), STAT1(1:1), IERR_MPI )
                 !
               END IF
             END DO
@@ -894,7 +894,7 @@ CONTAINS
           !
 #ifdef W3_MPI
           if (associated(irqrs)) then
-            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            ALLOCATE ( STAT2(NRQRS) )
             CALL MPI_WAITALL                               &
                  ( NRQRS, IRQRS , STAT2, IERR_MPI )
             DEALLOCATE ( STAT2 )

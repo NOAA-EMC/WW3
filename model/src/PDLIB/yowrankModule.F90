@@ -90,11 +90,11 @@ contains
   subroutine exchangeIPLG()
     use yowNodepool, only: np, npa, iplg, np_global
     use yowDatapool, only: nTasks, myrank, comm, itype
-    use MPI
+    use mpi_f08
     implicit none
     integer :: i, ierr, stat
-    integer :: sendRqst(nTasks), recvRqst(nTasks)
-    integer :: recvStat(MPI_STATUS_SIZE, nTasks), sendStat(MPI_STATUS_SIZE, nTasks)
+    type(MPI_REQUEST) :: sendRqst(nTasks), recvRqst(nTasks)
+    type(MPI_STATUS)  :: recvStat(nTasks), sendStat(nTasks)
     integer IPglob, J, istat
 
     ! step1 exchange np
