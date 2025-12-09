@@ -1,0 +1,160 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'Global Unstructured'
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+$ number of frequencies (wavenumbers) and directions, relative offset
+$ of first direction in terms of the directional increment [-0.5,0.5].
+$ In versions 1.18 and 2.22 of the model this value was by definiton 0,
+$ it is added to mitigate the GSE for a first order scheme. Note that
+$ this factor is IGNORED in the print plots in ww3_outp.
+$
+$gfs:  1.07  0.035  50  36  0.5
+$gefs: 1.1 0.035  33 36 0.5
+ 1.1 0.035  33 36 0.5
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+   F T T T T T
+$
+$ Set time steps ----------------------------------------------------- $
+$ - Time step information (this information is always read)
+$     maximum global time step, maximum CFL time step for x-y and
+$     k-theta, minimum source term time step (all in seconds).
+$
+$ 
+  900. 900. 900. 900.
+$
+$ Start of namelist input section ------------------------------------ $
+$
+&OUTS 
+  USSP = 1, 
+  IUSSP = 3, 
+  STK_WN = 0.04, 0.110, 0.3305 /
+&SIN4 
+  BETAMAX = 1.315,
+  TAUWSHELTER = 1.0,
+  SWELLF = 0.798,
+  SWELLF2 = -0.0127,
+  SWELLF3 = 0.0151,
+  SWELLF4 = 100025.0,
+  SWELLF5 = 1.1999,
+  SWELLF7 = 235500.0 /
+&SNL1
+  NLPROP = 2.502E7 /
+&SDS4
+  FXFM3 = 2.501,
+  SDSC2 = -2.1975e-05,
+  SDSCUM = -0.4032,
+  SDSC6 = 0.2978,
+  SDSBR = 0.0009035 /
+&MISC 
+  CICE0 = 0.75,
+  CICEN = 0.75 /
+&SBT1 
+  GAMMA = -0.038 /
+&PRO3 
+  WDTHCG=1.5,
+  WDTHTH=1.5 /
+&UNST 
+  UGOBCAUTO = F,
+  UGOBCDEPTH = -10.,
+  EXPFSN = F,
+  EXPFSPSI = F,
+  EXPFSFCT = F,
+  IMPFSN = F,
+  EXPTOTAL = F,
+  IMPTOTAL = T,
+  IMPREFRACTION = T,
+  IMPFREQSHIFT = T,
+  IMPSOURCE = T,
+  SETUP_APPLY_WLV = F,
+  SOLVERTHR_SETUP=1E-14,
+  CRIT_DEP_SETUP=0.1,
+  JGS_NLEVEL = 0,
+  JGS_USE_JACOBI = T, 
+  JGS_BLOCK_GAUSS_SEIDEL = F,
+  JGS_TERMINATE_MAXITER = T,
+  JGS_MAXITER = 1000, 
+  JGS_TERMINATE_NORM = F,
+  JGS_TERMINATE_DIFFERENCE = T,
+  JGS_DIFF_THR = 1.E-6,
+  JGS_PMIN = 3.0,
+  JGS_LIMITER = F,
+  JGS_TRUNK_DIGITS = 5,
+  JGS_NORM_THR = 1.E-6 /
+$
+$ Mandatory string to identify end of namelist input section.
+$
+END OF NAMELISTS
+$
+$ FLAG for grid features
+$ 1 Type of grid 'UNST' 'RECT' 'CURV'
+$ 2 Flag for geographical coordinates (LLG)
+$ 3 Flag for periodic grid
+$
+$ Define grid -------------------------------------------------------- $
+$ Four records containing :
+$  1 NX, NY. As the outer grid lines are always defined as land
+$    points, the minimum size is 3x3.
+$  2 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$    If NX*SX is 360., latitudinal closure is applied.
+$  3 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$  4 Limiting bottom depth (m) to discriminate between land and sea
+$    points, minimum water depth (m) as allowed in model, unit number
+$    of file with bottom depths, scale factor for bottom depths (mult.),
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+$      IDLA : Layout indicator :
+$                  1   : Read line-by-line bottom to top.
+$                  2   : Like 1, single read statement.
+$                  3   : Read line-by-line top to bottom.
+$                  4   : Like 3, single read statement.
+$      IDFM : format indicator :
+$                  1   : Free format.
+$                  2   : Fixed format with above format descriptor.
+$                  3   : Unformatted.
+$      FROM : file type parameter
+$               'UNIT' : open file by unit number only.
+$               'NAME' : open file by name and assign to unit.
+$
+$ Example for longitude-latitude grid (switch !/LLG), for Cartesian
+$ grid the unit is meters (NOT km).
+$
+$
+ 'UNST' T T
+$
+   4.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' '../input_unstr/global_1deg_unstr.msh'
+$
+$
+   10 3 1 '(....)' 'PART' 'mapsta.inp'
+$ Input boundary points ---------------------------------------------- $
+$  Close list by defining point (0,0) (mandatory)
+$
+      0   0   F
+$
+$ Excluded grid points from segment data ( FROM != PART )
+$   First defined as lines, identical to the definition of the input
+$   boundary points, and closed the same way.
+$
+      0   0   F
+$
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body os sea points. Also close by point (0,0)
+$
+      0   0
+$
+$ Output boundary points --------------------------------------------- $
+$
+$  Close list by defining line with 0 points (mandatory)
+$
+       0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
