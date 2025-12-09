@@ -216,11 +216,11 @@ PROGRAM W3OUNP
   USE W3NMLOUNPMD
   USE NETCDF
   !
-  IMPLICIT NONE
-  !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi_f08
 #endif
+  !
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

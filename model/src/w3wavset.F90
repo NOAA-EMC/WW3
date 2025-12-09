@@ -1172,7 +1172,7 @@
       use yowNodepool, only: np, npa
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       USE W3GDATMD, ONLY: NSEAL
-      USE MPI, only : MPI_SUM
+      use mpi_f08, only : MPI_SUM
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1432,7 +1432,7 @@
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       use yowDatapool, only: rtype, istatus
       use yowNodepool, only: np, npa
-      USE MPI, only : MPI_SUM
+      use mpi_f08, only : MPI_SUM
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /

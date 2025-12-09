@@ -160,6 +160,60 @@ PROGRAM W3GRIB
   !
   IMPLICIT NONE
   !/
+#ifdef W3_NCEP2
+  INTERFACE
+    !
+    SUBROUTINE BAOPENW(LU, CFN, IRET)
+      INTEGER, INTENT(IN)          :: LU
+      CHARACTER(LEN=*), INTENT(IN) :: CFN
+      INTEGER, INTENT(OUT)         :: IRET
+    END SUBROUTINE BAOPENW
+    !
+    SUBROUTINE WRYTE(LU, NB, A)
+      INTEGER, INTENT(IN)          :: LU
+      INTEGER, INTENT(IN)          :: NB
+      CHARACTER, INTENT(IN)        :: A(*)
+    END SUBROUTINE WRYTE
+    !
+    SUBROUTINE GRIBCREATE(CGRIB, LCGRIB, LISTSEC0, LISTSEC1, IERR)
+      CHARACTER(LEN=1), INTENT(INOUT) :: CGRIB(*)
+      INTEGER,          INTENT(IN)    :: LCGRIB
+      INTEGER,          INTENT(IN)    :: LISTSEC0(*), LISTSEC1(*)
+      INTEGER,          INTENT(OUT)   :: IERR
+    END SUBROUTINE GRIBCREATE
+    !
+    SUBROUTINE ADDGRID(CGRIB, LCGRIB, IGDS, IGDSTML, IGDSTMLEN,   &
+                   IDEFLIST, IDEFNUM, IERR)
+      CHARACTER(LEN=1), INTENT(INOUT) :: CGRIB(*)
+      INTEGER,          INTENT(IN)    :: LCGRIB, IDEFNUM, IGDSTMLEN
+      INTEGER,          INTENT(IN)    :: IGDS(*), IGDSTML(*), IDEFLIST(*)
+      INTEGER,          INTENT(OUT)   :: IERR
+    END SUBROUTINE ADDGRID
+    !
+    SUBROUTINE ADDFIELD(CGRIB, LCGRIB, IPDSNUM, IPDSTML, IPDSTMLEN, &
+                    COORDLIST, NUMCOORD, IDRSNUM, IDRSTML,      &
+                    IDRSTMLEN, FLD, NGRDPTS, IBMAP, BMAP, IERR)
+      CHARACTER(LEN=1), INTENT(INOUT) :: CGRIB(*)
+      INTEGER,          INTENT(INOUT) :: IDRSTML(*)
+      INTEGER,          INTENT(IN)    :: LCGRIB, IPDSNUM, IPDSTMLEN,    &
+                                         NUMCOORD, IDRSNUM, IDRSTMLEN,  &
+                                         NGRDPTS, IBMAP
+      INTEGER,          INTENT(IN)    :: IPDSTML(*)
+      REAL,             INTENT(IN)    :: COORDLIST(*)
+      REAL,    TARGET,  INTENT(IN)    :: FLD(*)
+      LOGICAL*1,        INTENT(IN)    :: BMAP(*)
+      INTEGER,          INTENT(OUT)   :: IERR
+    END SUBROUTINE ADDFIELD
+    !
+    SUBROUTINE GRIBEND(CGRIB, LCGRIB, LENGRIB, IERR)
+      CHARACTER(LEN=1), INTENT(INOUT) :: CGRIB(*)
+      INTEGER,          INTENT(IN)    :: LCGRIB, LENGRIB
+      INTEGER,          INTENT(OUT)   :: IERR
+    END SUBROUTINE GRIBEND
+    !
+  END INTERFACE
+#endif
+  !/
   !/ ------------------------------------------------------------------- /
   !/ Local variables
   !/
@@ -175,10 +229,11 @@ PROGRAM W3GRIB
   ! GRIB2 specific variables
 #ifdef W3_NCEP2
   INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
-  INTEGER                 :: LISTSEC0(3), LISTSEC1(13),IGDS(5)
-  INTEGER                 :: IDEFLIST, IDEFNUM, KPDSNUM, NUMCOORD
+  INTEGER                 :: LISTSEC0(3), LISTSEC1(13), IGDS(5), IDEFLIST(1)
+  INTEGER                 :: IDEFNUM, KPDSNUM, NUMCOORD
   INTEGER                 :: IBMP, LCGRIB, LENGRIB, IDRSNUM
-  REAL                    :: COORDLIST, XN
+  REAL                    :: XN
+  REAL                    :: COORDLIST(1)
   CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
   INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, &
        LATIN2, LATSP, LONSP
@@ -221,6 +276,7 @@ PROGRAM W3GRIB
   !
   NDSTRC =  6
   NTRACE = 10
+  WORDS = ''
   !
 #ifdef W3_NCO
   !
@@ -278,7 +334,6 @@ PROGRAM W3GRIB
   READ (NDSI,'(A)') LINEIN
   WRITE(NDSO,*)' LINEIN:  ',LINEIN
   READ(LINEIN,*,iostat=ierr) WORDS
-  WRITE (NDSO,*) WORDS
   READ(WORDS( 1 ), * ) TOUT(1)
   READ(WORDS( 2 ), * ) TOUT(2)
   READ(WORDS( 3 ), * ) DTREQ
@@ -734,10 +789,11 @@ PROGRAM W3GRIB
   ! ... Set GRIB2 Data Representation Template Number (Code Table 5.0)
   !
 #ifdef W3_NCEP2
-  IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
+  IDRSNUM = 2 !Complex Packing
 #endif
   !                            clusters with Intel compiler ***
 #ifdef W3_NCEP2
+  !IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
   !IDRSNUM = 0 !simple packing
   !IDRSNUM = 41 !png packing
   !IDRSNUM = 2 !Complex Packing (Grid Point Data)

@@ -209,7 +209,7 @@ CONTAINS
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE
 
     !/
-    INCLUDE "mpif.h"
+    use mpi_f08
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -223,7 +223,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    !!      INCLUDE "mpif.h"
+    !!      use mpi_f08
     INTEGER :: istat
     INTEGER :: I, J, IBND_MAP, ISEA, IP, IX, JSEA, nb
     INTEGER :: IP_glob
@@ -931,7 +931,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1259,7 +1259,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1555,7 +1555,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3ODATMD, only : IAPROC
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
@@ -1914,7 +1914,7 @@ CONTAINS
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     use yowDatapool, only: rtype, istatus
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: string
     REAL VcollExp(1)
     REAL rVect(1)
@@ -1997,7 +1997,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     !
     REAL*8, INTENT(in) :: V(NSEAL)
     CHARACTER(*), INTENT(in) :: string
@@ -2501,7 +2501,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: maxidx
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
@@ -3017,7 +3017,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg, np
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi_f08
     CHARACTER(*), INTENT(in) :: eFile
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
     !
@@ -5235,6 +5235,7 @@ CONTAINS
     REAL    :: RD1, RD2, RD10, RD20
     INTEGER :: IK, ITH, ISEA
     INTEGER :: IBI, IP_glob, ISP, JX
+
 #ifdef W3_S
     CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION')
 #endif
@@ -5520,7 +5521,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use YOWNODEPOOL, only: npa, iplg
     use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
-    USE MPI, only : MPI_SUM, MPI_INT
+    use mpi_f08, only : MPI_SUM, MPI_INT, MPI_ALLREDUCE, MPI_COMM_RANK
     USE W3ADATMD, only: MPI_COMM_WCMP
     USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
@@ -5538,6 +5539,7 @@ CONTAINS
     USE W3PARALL, only : ListISPprevDir, ListISPnextDir
     USE W3PARALL, only : JX_TO_JSEA
     USE W3GDATMD, only: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+    
     USE yowfunction, only : pdlib_abort
     USE yowNodepool, only: np_global
     USE W3DISPMD, only : WAVNU_LOCAL
@@ -5548,6 +5550,11 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
+
+#ifdef W3_TRNK
+    USE W3GDATMD, only: B_JGS_TRUNK_DIGITS
+#endif
+
     implicit none
     LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
@@ -5601,6 +5608,11 @@ CONTAINS
     INTEGER ierr, i
     INTEGER JP_glob
     INTEGER is_converged, itmp
+
+#ifdef W3_TRNK
+    integer :: expVA
+    real    :: trVA
+#endif
 
     INTEGER :: TESTNODE = 923
 
@@ -5668,6 +5680,10 @@ CONTAINS
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
     END DO
+    !
+    !    for reproducability state must be communicated at the start of solver
+    !
+    CALL PDLIB_exchange2DREAL_zero(VA)
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
 #ifdef W3_DEBUGSRC
@@ -6322,6 +6338,24 @@ CONTAINS
       endif
     endif
 #endif
+
+#ifdef W3_TRNK
+    !
+    ! Truncate precision to B_JGS_TRUNK_DIGITS to enforce bit for bit reproducability
+    ! across repeated wavewatch runs.
+    !
+    DO IP = 1, npa
+      DO ISP=1,NSPEC
+        if (VA(ISP,IP) .gt. tiny(1.0) )then
+          expVA=nint(log10( VA(ISP,IP) ) )
+          trVA = 10.**( expVA - B_JGS_TRUNK_DIGITS )
+          if (trVA .gt. tiny(1.0)) VA(ISP,IP) = ANINT(VA(ISP,IP) / trVA) * trVA
+        endif
+      ENDDO
+    ENDDO
+#endif
+
+
     !
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION LOOP 7')
     !
@@ -6402,7 +6436,7 @@ CONTAINS
     use yowDatapool, only: rtype
     use yowExchangeModule, only: PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
     use yowRankModule,     only: ipgl_npa
-    USE MPI, only : MPI_MIN
+    use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
 #endif
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
