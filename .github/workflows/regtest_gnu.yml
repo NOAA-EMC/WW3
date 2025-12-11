@@ -1,4 +1,4 @@
-name: GNU Linux Build
+name: regtest_gnu
 on: [push, pull_request, workflow_dispatch]
 
 # Cancel in-progress workflows when pushing to a branch
@@ -7,10 +7,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  cache_key: gnu11
-  CC: gcc-10
-  FC: gfortran-10
-  CXX: g++-10
+  cache_key: gnu11-1
+  CC: gcc-14
+  FC: gfortran-14
+  CXX: g++-14
 
 
 # Split into a steup step, and a WW3 build step which
@@ -45,7 +45,7 @@ jobs:
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
           sudo apt install cmake
-          git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
+          git clone -c feature.manyFiles=true --depth=2 --branch=spack-stack-1.9.3 https://github.com/JCSDA/spack.git
           source spack/share/spack/setup-env.sh
           spack env create ww3-gnu ww3/model/ci/spack_gnu.yaml
           spack env activate ww3-gnu
@@ -68,14 +68,16 @@ jobs:
           make VERBOSE=1
           cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct ${GITHUB_WORKSPACE}
 
-  build:
+  regtest_gnu:
     needs: setup
-    strategy:
-      matrix:
-        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
     runs-on: ubuntu-latest
 
     steps:
+      - name: install-dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install doxygen gcovr valgrind
+
       - name: checkout-ww3
         uses: actions/checkout@v3
         with:
@@ -95,14 +97,34 @@ jobs:
         run: |
           source spack/share/spack/setup-env.sh
           spack env activate ww3-gnu
+          set -x
           cd ww3
           export CC=mpicc
           export FC=mpif90
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
-          mkdir build && cd build
-          if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
-            cmake .. -DMULTI_ESMF=ON -DSWITCH=multi_esmf
-          else
-            cmake .. -DSWITCH=${{ matrix.switch }}
-          fi
-          make -j2 VERBOSE=1
+          # mkdir build && cd build
+          export LD_LIBRARY_PATH="/home/runner/work/WW3/WW3/spack/var/spack/environments/ww3-gnu/.spack-env/view/:$LD_LIBRARY_PATH"
+          # cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/regtests/unittests/data/switch.io -DCMAKE_BUILD_TYPE=Debug ..
+          # make -j2 VERBOSE=1
+          cd ${GITHUB_WORKSPACE}/ww3
+          ls -l
+          ${GITHUB_WORKSPACE}/ww3/model/bin/ww3_from_ftp.sh -k
+          cd regtests
+          ./bin/run_cmake_test -o all -S -T -s PR1_MPI -w work_PR1_MPI -f -p mpirun -n 24 ../model ww3_tp2.5
+          cd ww3_tp2.5
+          ls -l
+          cd work_PR1_MPI
+          pwd
+          ls -l
+          # ncdump -h out_pnt.ww3.nc > ncdump_out.txt
+          # cat ncdump_out.txt
+          # pwd
+          # cat ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt
+          # cmp ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt ncdump_out.txt
+
+      - name: cache-data
+        id: cache-data
+        uses: actions/cache@v3
+        with:
+          path: ww3/ww3_from_ftp.v7.14.1.tar.gz
+          key: ww3_from_ftp.v7.14.1

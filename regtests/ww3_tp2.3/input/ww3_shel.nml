@@ -21,7 +21,7 @@
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'HS DIR SPR DP EF TH1M STH1M'
+  TYPE%FIELD%LIST          = 'HS DIR SPR DP EF TH1M STH1M TH2M STH2M'
 /
 
 ! -------------------------------------------------------------------- !
