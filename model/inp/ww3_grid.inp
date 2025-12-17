@@ -358,10 +358,11 @@ $                           JGS_LIMITER  : TRUE: Use total (quasi-steady: limits
 $                                          FALSE: default
 $                           JGS_LIMITER_FUNC  : 1 - old limiter (default)
 $                                               2 - alternatnive limiter
-$                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE)
+$                           JGS_TRUNK_DIGITS  : [Only with switch TRNK] Number of digits of precision to truncate solution to at the end of iterative solver. 
+$                                               Can be used to force bit-for-bit reproducibility.
+$                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE) 
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations (default 1E-6)
 $                           CRIT_DEP_SETUP  : Critical depth for setup computations (default 0.1)
-
 $
 $ SMC grid propagation    : Namelist PSMC and default values
 $                           CFLSM  : Maximum CFL no. for propagation, 0.7

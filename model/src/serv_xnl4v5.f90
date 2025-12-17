@@ -497,7 +497,13 @@ real function z_root2(func,x1,x2,xacc,iprint,ierr)
 !
 implicit none
 !
-real func                         ! external function
+abstract interface
+  real function func_proto(x)
+    real, intent(in) :: x
+  end function func_proto
+end interface
+procedure(func_proto) :: func
+!
 real, intent (in) :: x1           ! x-value at one side of interval
 real, intent (in) :: x2           ! x-value at other side of interval
 real, intent (in) :: xacc         ! requested accuracy
@@ -512,7 +518,6 @@ integer luprint                   ! unit of test output
 logical lopen                     ! check if a file is opened
 
 parameter (maxit = 20)
-external func
 !
 integer iter      ! counter for number of iterations
 real fh           ! function value FUNC(xh)
