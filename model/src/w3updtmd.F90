@@ -244,7 +244,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+    USE W3GDATMD, ONLY: NSEA, MAPSF
 #ifdef W3_SMC
     USE W3GDATMD, ONLY: NARC, NGLO, ANGARC
     USE W3GDATMD, ONLY: FSWND, ARCTC
@@ -573,7 +573,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+    USE W3GDATMD, ONLY: NSEA, MAPSF
 #ifdef W3_WCOR
     USE W3GDATMD, ONLY:   WWCOR
 #endif
@@ -586,10 +586,13 @@ CONTAINS
 #ifdef W3_SMC
     USE W3GDATMD, ONLY: NARC, NGLO, ANGARC, ARCTC, FSWND
 #endif
-    USE W3WDATMD, ONLY: TIME, ASF
-    USE W3ADATMD, ONLY: DW, CX, CY, UA, UD, U10, U10D, AS,          &
+    USE W3WDATMD, ONLY: TIME
+    USE W3ADATMD, ONLY: CX, CY, UA, UD, U10, U10D, AS,          &
          UA0, UAI, UD0, UDI, AS0, ASI
     USE W3IDATMD, ONLY: TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, FLCUR
+#ifdef W3_STAB2
+    USE W3WDATMD, ONLY: ASF
+#endif
     !/
     IMPLICIT NONE
     !/
@@ -605,15 +608,19 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-    REAL                    :: D0, DN, DD, DT0N, DT0T, RD, UI2,      &
-         UXR, UYR
+    REAL                    :: D0, DN, DD, DT0N, DT0T, RD, UXR, UYR
+#if defined(W3_OMPG) || defined(W3_WNT2)
+    REAL                    :: UI2
+#endif
 #ifdef W3_WNT2
     REAL                    :: RD2
 #endif
 #ifdef W3_STAB2
     REAL                    :: STAB0, STAB, THARG1, THARG2, COR1, COR2
 #endif
+#if defined(W3_OMPG) || defined(W3_SMC)
     REAL                    :: UDARC
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -916,12 +923,19 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-    REAL                    :: D0, DN, DD, DT0N, DT0T, RD, MI2,      &
-         MXR, MYR
+    REAL                    :: D0, DN, DD, DT0N, DT0T, RD
+#ifdef W3_OMPG
+    REAL                    :: MXR, MYR
+#endif
+#if defined(W3_OMPG) || defined(W3_WNT2)
+    REAL                    :: MI2
+#endif
 #ifdef W3_WNT2
     REAL                    :: RD2
 #endif
+#if defined(W3_OMPG) || defined(W3_SMC)
     REAL                    :: MDARC
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -1120,8 +1134,8 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF,                 &
-         NK, NTH, TH, SIG, DTH, DSIP, UNGTYPE,       &
+    USE W3GDATMD, ONLY : NSEAL, MAPSF,               &
+         NK, NTH, TH, SIG, DTH, UNGTYPE,             &
          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
          HPFAC, HQFAC, FETCH
     USE W3ADATMD, ONLY: U10, U10D, CG
@@ -1129,6 +1143,7 @@ CONTAINS
     USE W3PARALL, only : GET_JSEA_IBELONG
 #ifdef W3_T
     USE W3ARRYMD, ONLY : PRTBLK
+    USE W3GDATMD, ONLY : NX, NY, NSEA, DSIP
 #endif
     !
     IMPLICIT NONE
@@ -1141,23 +1156,21 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local variables
     !/
-    INTEGER                 :: IX, IY, ISEA, JSEA, IK, ITH, ISPROC
+    INTEGER                 :: IX, IY, ISEA, JSEA, IK, ITH
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-#ifdef W3_T
-    INTEGER                 :: IX0, IXN, MAPOUT(NX,NY)
-    INTEGER                 :: NXP = 60
 #endif
     REAL                    :: ALFA(NSEAL), FP(NSEAL), YLN(NSEAL),  &
          AA, BB, CC
     REAL                    :: XGR, U10C, U10DIR, XSTAR, FSTAR,     &
          GAMMA, FR, D1(NTH), D1INT, F1, F2
-    REAL                    :: ETOT, E1I
     REAL                    :: U10MIN =  1.
     REAL                    :: U10MAX = 20.
 #ifdef W3_T
+    INTEGER                 :: IX0, IXN, MAPOUT(NX,NY)
+    INTEGER                 :: NXP = 60
     REAL                    :: HSIG(NX,NY)
+    REAL                    :: ETOT, E1I
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -1381,11 +1394,14 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2, DDEN
+    USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2
 #ifdef W3_RTD
     !!   Use rotation angle and action conversion sub.  JGLi12Jun2012
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD, PoLat
     USE W3SERVMD, ONLY: W3ACTURN
+#endif
+#ifdef W3_T0
+    USE W3GDATMD, ONLY: DDEN
 #endif
     USE W3ADATMD, ONLY: CG
     USE W3ODATMD, ONLY: NBI, ABPI0, ABPIN, ISBPI, IPBPI, RDBPI,     &
@@ -1570,8 +1586,12 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NSEA, NSEA, MAPSF, IICEHMIN, IICEHFAC
-    USE W3WDATMD, ONLY: TIME, TIC1, ICEH
-    USE W3IDATMD, ONLY: TI1, ICEP1, FLIC1
+    USE W3WDATMD, ONLY: TIC1, ICEH
+    USE W3IDATMD, ONLY: TI1, ICEP1
+
+#ifdef W3_T
+    USE W3WDATMD, ONLY: TIME
+#endif
     !/
     IMPLICIT NONE
     !/
@@ -1683,7 +1703,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3IDATMD, ONLY: TI5, ICEP5
     USE W3GDATMD, ONLY: NSEA, MAPSF
-    USE W3WDATMD, ONLY: TIME, TIC5, ICE, ICEH, ICEF, ICEDMAX
+    USE W3WDATMD, ONLY: TIC5, ICE, ICEH, ICEF, ICEDMAX
+
+#ifdef W3_T
+    USE W3WDATMD, ONLY: TIME
+#endif
     !/
     IMPLICIT NONE
     !/
@@ -1835,8 +1859,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPSTA, MAPST2, &
          NSPEC, FICEN
-    USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
+    USE W3WDATMD, ONLY: TICE, ICE, BERG, UST
     USE W3ADATMD, ONLY: NSEALM, CHARN
+#ifdef W3_T
+    USE W3WDATMD, ONLY: TIME
+#endif
 #if defined W3_ST3 || defined(W3_ST4)
     USE W3GDATMD, ONLY: AALPHA
 #endif
@@ -2101,9 +2128,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
          ZB, DMIN, NK, NTH, NSPEC, SIG, DSIP,        &
-         MAPWN, MAPTH, FACHFA, GTYPE, UNGTYPE, W3SETREF
-    USE W3WDATMD, ONLY: TIME, TLEV, WLV, UST
-    USE W3ADATMD, ONLY: CG, WN, DW, HS
+         MAPWN, FACHFA, GTYPE, UNGTYPE, W3SETREF
+    USE W3WDATMD, ONLY: TLEV, WLV, UST
+    USE W3ADATMD, ONLY: CG, WN, DW
     USE W3IDATMD, ONLY: TLN, WLEV
     USE W3SERVMD, ONLY: EXTCDE
     USE W3DISPMD, ONLY: WAVNU1
@@ -2127,6 +2154,11 @@ CONTAINS
 
 #ifdef W3_T3
     USE W3ARRYMD, ONLY: PRT2DS
+    USE W3GDATMD, ONLY: MAPTH
+#endif
+
+#if defined(W3_T) || defined(W3_TIDE)
+    USE W3WDATMD, ONLY: TIME
 #endif
     !/
     IMPLICIT NONE
@@ -2143,7 +2175,7 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-    INTEGER                 :: MAPDRY(NY,NX), ISPROC
+    INTEGER                 :: MAPDRY(NY,NX)
     REAL                    :: DWO(NSEA), KDCHCK, WNO(0:NK+1),      &
          CGO(0:NK+1), DEPTH,                  &
          RDK, RD1, RD2, TA(NTH,NK),           &
@@ -2628,10 +2660,9 @@ CONTAINS
 #ifdef W3_SMC
     USE W3GDATMD, ONLY: FSWND
 #endif
-    USE W3WDATMD, ONLY: TIME, TRHO, RHOAIR
+    USE W3WDATMD, ONLY: TIME, RHOAIR
     USE W3IDATMD, ONLY: TR0, TRN, RH0, RHN
     USE W3ADATMD, ONLY: RA0, RAI
-    USE W3ODATMD, ONLY: IAPROC, NAPROC
     !/
     IMPLICIT NONE
     !/
@@ -2808,8 +2839,7 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF,                &
-         TRFLAG, FICE0, FICEN, FICEL,                &
-         RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
+         TRFLAG, FICE0, FICEN, FICEL, RLGTYPE, CLGTYPE, FLAGLL,     &
          HPFAC, HQFAC, FFACBERG
     USE W3WDATMD, ONLY: ICE, BERG
     USE W3ADATMD, ONLY: ATRNX, ATRNY
@@ -3227,7 +3257,6 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MAPFS, &
          DPDX, DPDY, DQDX, DQDY, FLAGLL, ICLOSE,          &
          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
-    USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR, NAPROC
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_T
     USE W3ARRYMD, ONLY : PRTBLK
@@ -3244,7 +3273,7 @@ CONTAINS
     REAL, INTENT(IN)        :: ZZ(NSEA)
     CHARACTER, INTENT(IN)   :: ZUNIT*(*)
     REAL, INTENT(OUT)       :: DZZDX(NY,NX), DZZDY(NY,NX)
-    INTEGER                 :: ISEA, IX, IY, IXP, IXM, IYP, IYM
+    INTEGER                 :: IX, IY, IXP, IXM, IYP, IYM
 #ifdef W3_T
     INTEGER                 :: ISX, ISY, MAPOUT(NX,NY)
 #endif
