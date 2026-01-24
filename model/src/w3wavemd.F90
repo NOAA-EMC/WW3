@@ -556,6 +556,10 @@ CONTAINS
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
+#ifdef W3_PIO
+    USE W3ODATMD,         ONLY : FNMRST
+    USE W3GDATMD,         ONLY : MAPST2
+#endif
 #if defined(W3_T) || defined(W3_REFRX)
     USE W3GDATMD,  ONLY : NSEA
 #endif
