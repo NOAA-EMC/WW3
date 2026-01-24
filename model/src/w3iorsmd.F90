@@ -312,8 +312,12 @@ CONTAINS
     USE W3IDATMD, ONLY: WXNwrst, WYNwrst
 #endif
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
-         IFILE => IFILE4, FNMPRE, FNMRST, NTPROC, IOSTYP,    &
+         IFILE => IFILE4, FNMPRE, FNMRST, IOSTYP,    &
          FLOGRR, NOGRP, NGRPP, SCREEN
+#ifdef W3_T
+    USE W3ODATMD, ONLY: NTPROC
+#endif
+    !/
 #ifdef W3_MPI
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
@@ -324,7 +328,6 @@ CONTAINS
     USE W3SERVMD, ONLY: EXTCDE, EXTIOF
     USE CONSTANTS, only: LPDLIB, file_endian
     USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
-    USE W3GDATMD, ONLY: NK, NTH
 #ifdef W3_TIMINGS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
@@ -355,15 +358,17 @@ CONTAINS
     !
     INTEGER                 :: IGRD, I, J, LRECL, NSIZE, IERR,      &
          NSEAT, MSPEC, TTIME(2), ISEA, JSEA,  &
-         NREC, NPART, IPART, IX, IY, IXL, IP, &
-         NPRTX2, NPRTY2, IYL, ITMP
+         NREC, NPART, IPART, IY, IXL, NPRTX2, NPRTY2, ITMP
     INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
+#ifdef W3_WRST
+    INTEGER                 :: IX, IYL
+#endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, IH, IB, ISEA0, ISEAN, &
-         NRQ, NSEAL_MIN
+         NRQ, NSEAL_MIN, IP
 #endif
     INTEGER(KIND=8)         :: RPOS
 #ifdef W3_MPI
