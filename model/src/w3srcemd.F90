@@ -498,12 +498,19 @@ CONTAINS
          srce_direct, GRAV, TPI, TPIINV
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
          DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
-         XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
-         FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
+         XFLT, XREL, FXFM, FXPM, DDEN,     &
+         FHMAX, ECOS, ESIN, IICEDISP,      &
          ICESCALES, IICESMOOTH
     USE W3GDATMD, ONLY: IC_NUMERICS
+#if defined(W3_NL5) || defined(W3_NNT)
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
+#endif
+#if defined(W3_T) || defined(W3_ST1) || defined(W3_ST2) || defined(W3_ST3) || defined(W3_ST6)
+    USE W3ODATMD, ONLY: NDST
+#endif
+#if defined(W3_NNT) || defined(W3_PDLIB) || defined(W3_DEBUGSRC)
+    USE W3ODATMD, ONLY: IAPROC
+#endif
     USE W3IDATMD, ONLY: INFLAGS2
     USE W3DISPMD
 #ifdef W3_T
@@ -513,7 +520,7 @@ CONTAINS
     USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE, REFPARS
 #endif
 #ifdef W3_NNT
-    USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
+    USE W3ODATMD, ONLY: SCREEN, FNMPRE
 #endif
 #ifdef W3_FLD1
     USE W3FLD1MD, ONLY: W3FLD1
@@ -549,7 +556,7 @@ CONTAINS
 #endif
 #ifdef W3_ST2
     USE W3SRC2MD
-    USE W3GDATMD, ONLY : ZWIND
+    USE W3GDATMD, ONLY : ZWIND, XFC, XFT
 #endif
 #ifdef W3_ST3
     USE W3SRC3MD
@@ -638,6 +645,7 @@ CONTAINS
 #endif
 #ifdef W3_NNT
     USE W3SERVMD, ONLY: EXTOPN, EXTIOF
+    USE W3ODATMD, ONLY: NDSE
 #endif
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_SRCTRMCOMPUTE
@@ -684,39 +692,42 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER :: IK, ITH, IS, IS0, NSTEPS, NKH, NKH1, &
-         IKS1, IS1, NSPECH, IDT, IERR, ISP
+         IKS1, IS1, NSPECH, IDT
     REAL :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC, &
-         HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI
+         HDT, ZWND, DEPTH, TAUSCX, TAUSCY, FHIGI
     ! Scaling factor for SIN, SDS, SNL
     REAL :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS
-    REAL :: EMEAN, FMEAN, AMAX, CD, Z0, SCAT,    &
-         SMOOTH_ICEDISP
+    REAL :: EMEAN, FMEAN, AMAX, CD, Z0
     REAL :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), ICECOEF2, R(NK)
-    DOUBLE PRECISION :: ATT, ISO
+    DOUBLE PRECISION :: ATT
     REAL :: EBAND, DIFF, EFINISH, HSTOT, PHINL,       &
          FMEAN1, FMEANWS, &
          FACTOR, FACTOR2, DRAT, TAUWAX, TAUWAY,    &
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
-    REAL :: SPECINIT(NSPEC), SPEC2(NSPEC), FRLOCAL, JAC2
-    REAL :: DAM (NSPEC), DAM2(NSPEC), WN2(NSPEC),  &
+    REAL :: SPECINIT(NSPEC), SPEC2(NSPEC)
+    REAL :: DAM (NSPEC), WN2(NSPEC),          &
          VSLN(NSPEC),                         &
          VSIN(NSPEC), VDIN(NSPEC),            &
          VSNL(NSPEC), VDNL(NSPEC),            &
          VSDS(NSPEC), VDDS(NSPEC),            &
          VSBT(NSPEC), VDBT(NSPEC)
-    REAL :: VS(NSPEC), VD(NSPEC), EB(NK)
+    REAL :: VS(NSPEC), VD(NSPEC)
 
     LOGICAL :: SHAVE
     LOGICAL :: LBREAK
     LOGICAL, SAVE :: FIRST = .TRUE.
-    LOGICAL :: PrintDeltaSmDA
-    REAL :: eInc1, eInc2, eVS, eVD, JAC
-    REAL :: DeltaSRC(NSPEC)
+    REAL :: eInc1, eInc2
 
-    REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
     REAL, SAVE :: TAUNUX, TAUNUY
-    LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
+
+#if defined(W3_OMPG) || defined(W3_T) || defined(W3_ST1) || defined(W3_ST2) || defined(W3_ST3) || defined(W3_ST6)
+    LOGICAL, SAVE :: FLTEST = .FALSE.
+#endif
+
+#if defined(W3_OMPG) || defined(W3_NNT)
+    LOGICAL, SAVE :: FLAGNN = .TRUE.
+#endif
 
 #ifdef W3_OMPG
     !$omp threadprivate( TAUNUX, TAUNUY)
@@ -724,6 +735,13 @@ CONTAINS
     !$omp threadprivate( FIRST )
 #endif
 
+#if defined(W3_PDLIB) || defined(W3_REF1)
+    INTEGER :: ISP
+#endif
+
+#if defined(W3_ST0) || defined(W3_ST1) || defined(W3_ST2) || defined(W3_ST6) || defined(W3_FLX2) || defined(W3_FLX3)
+    REAL :: FP
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters dependent on compile switch
@@ -735,6 +753,9 @@ CONTAINS
 #ifdef W3_NNT
     INTEGER, SAVE :: NDSD = 89, NDSD2 = 88, J
     REAL :: QCERR  = 0.     !/XNL2 and !/NNT
+    INTEGER :: IERR
+    REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
+    LOGICAL, SAVE :: FLAGNN = .TRUE.
 #endif
 
 #ifdef W3_NL5
@@ -786,7 +807,9 @@ CONTAINS
 
 #ifdef W3_IS2
     REAL :: VDIR2(NSPEC)
+    REAL :: SCAT, SMOOTH_ICEDISP
     DOUBLE PRECISION :: SCATSPEC(NTH)
+    DOUBLE PRECISION :: ISO
 #endif
 
 #ifdef W3_UOST
@@ -806,7 +829,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-    REAL :: FMEANS, FH1, FH2, FAGE, DLWMEAN
+    REAL :: FH1, FH2, FAGE, DLWMEAN
     REAL :: BRLAMBDA(NSPEC)
 #endif
 
@@ -820,6 +843,9 @@ CONTAINS
 
 #ifdef W3_PDLIB
     REAL :: PreVS, DVS, SIDT, FAKS, MAXDAC
+    LOGICAL :: PrintDeltaSmDA
+    REAL :: DeltaSRC(NSPEC), DAM2(NSPEC)
+    REAL :: FRLOCAL, JAC, JAC2, eVS, eVD
 #endif
 
 #ifdef W3_NNT
@@ -2578,7 +2604,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    USE W3GDATMD, only : NTH, NK, NSPEC
+    USE W3GDATMD, only : NSPEC
     IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
@@ -2594,7 +2620,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
 
-    INTEGER             :: ISP, ITH, IK, IS
+    INTEGER             :: IS
     REAL, INTENT(IN)    :: SPEC(NSPEC)
     REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
 #ifdef W3_S
@@ -2667,7 +2693,7 @@ CONTAINS
 #endif
     !
 
-    USE W3GDATMD, only : NTH, NK, NSPEC
+    USE W3GDATMD, only : NSPEC
     IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
@@ -2682,7 +2708,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER             :: ISP, ITH, IK, IS
+    INTEGER             :: IS
     REAL, INTENT(IN)    :: SPEC(NSPEC)
     REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
 #ifdef W3_S
