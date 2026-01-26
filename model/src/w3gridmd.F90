@@ -632,10 +632,11 @@ MODULE W3GRIDMD
   !
   REAL                    :: RXFR, RFR1, SIGMA, SXFR, FACHF,      &
        VSC, VSC0, VOF,                      &
-       ZLIM, X, Y, XP,  XO0, YO0, DXO, DYO, &
+       ZLIM, X, Y, XP,                      &
        XO, YO, RD(4), RDTOT,                &
        FACTOR, RTH0, FMICHE, RWNDC,         &
        WCOR1, WCOR2
+  DOUBLE PRECISION        :: XO0, YO0, DXO, DYO
   !
   CHARACTER(LEN=4)        :: GSTRG, CSTRG
   !
