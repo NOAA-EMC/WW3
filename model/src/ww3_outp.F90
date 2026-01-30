@@ -224,13 +224,15 @@ PROGRAM W3OUTP
   USE W3GDATMD
   USE W3WDATMD, ONLY: TIME
   USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
-       DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
-       ICEO, ICEHO, ICEFO, DIMP
+       DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE, DIMP
+#ifdef W3_IS2
+  USE W3ODATMD, ONLY: ICEO, ICEHO, ICEFO
+#endif
 #ifdef W3_FLX5
   USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
 #endif
-  USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
-       HST, TPT, DMT, ASCBLINE, CSVBLINE
+  USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP,       &
+       ASCBLINE, CSVBLINE
 #ifdef W3_NCO
   USE W3BULLMD, ONLY: CASCBLINE
 #endif
@@ -1417,7 +1419,7 @@ CONTAINS
     !/
     INTEGER                 :: J, I1, I2, ISP, IKM, ITH,            &
          IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
-         I, NPART, IP, IX, IY, ISEA
+         I, NPART, IX, IY
     INTEGER, SAVE           :: IPASS  = 0
 #ifdef W3_S
     INTEGER, SAVE           :: IENT   = 0
@@ -1430,15 +1432,20 @@ CONTAINS
          SPP, CD, USTAR, FACTOR, UNORM, ESTAR,&
          FPSTAR, FACF, FACE, FACS, HMAT, WNA, &
          XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
-         YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
+         YSTAR, ZWND, Z0, USTD, EMEAN,        &
          FMEAN, WNMEAN, UDIRCA, X, Y, CHARN,  &
-         M2KM, ICEF, ICEDMAX, ICETHICK,       &
-         ICECON
+         M2KM
+#if defined(W3_ST0) || defined(W3_ST1) || defined(W3_ST2) || defined(W3_ST6) || defined(W3_LN1)
+    REAL                    :: FHIGH
+#endif
+
 #ifdef W3_FLX5
-    REAL                     ::TAUA, TAUADIR, RHOAIR
+    REAL                    :: TAUA, TAUADIR, RHOAIR
 #endif
 #ifdef W3_IS2
-    REAL                    :: WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
+    REAL                    :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), R(NK)
+    REAL                    :: DIA2(NTH,NK)
+    REAL                    :: ICEF, ICEDMAX, ICETHICK, ICECON
 #endif
 #ifdef W3_ST1
     REAL                    :: AMAX, FH1, FH2
@@ -1448,10 +1455,10 @@ CONTAINS
 #endif
 #ifdef W3_ST3
     REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
-         TAUWNX, TAUWNY
+         TAUWNX, TAUWNY, ICE
 #endif
 #ifdef W3_ST4
-    REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
+    REAL                    :: AMAX, FMEANWS, TAUWX, TAUWY, &
          TAUWNX, TAUWNY, FMEAN1, WHITECAP(1:4), DLWMEAN
 #endif
 #ifdef W3_ST6
@@ -1461,21 +1468,21 @@ CONTAINS
     REAL                    :: TAUSCX, TAUSCY
 #endif
 #ifdef W3_BT4
+    INTEGER                 :: ISEA
     REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
 #endif
-    REAL                    :: ICE
 #ifdef W3_STAB2
     REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
          THARG1, THARG2
 #endif
     REAL, SAVE              :: HSMIN  = 0.05
-    REAL                    :: WN(NK), CG(NK), R(NK)
+    REAL                    :: WN(NK), CG(NK)
     REAL                    :: E(NK,NTH), E1(NK), APM(NK),           &
          THBND(NK), SPBND(NK), A(NTH,NK),      &
          WN2(NTH,NK)
     REAL                    :: DIA(NTH,NK), SWN(NK,NTH), SNL(NK,NTH),&
          SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
-         STT(NK,NTH), DIA2(NTH,NK)
+         STT(NK,NTH)
     REAL                    :: XLN(NTH,NK), XIN(NTH,NK), XNL(NTH,NK),&
          XTR(NTH,NK), XDS(NTH,NK), XDB(NTH,NK),&
          XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
