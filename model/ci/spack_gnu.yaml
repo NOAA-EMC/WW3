@@ -7,12 +7,12 @@ spack:
   - metis@5.1.0~shared
   - parmetis@4.0.3~shared
   - scotch@7.0.1+mpi+metis~shared
-  - netcdf-c@4.7.4~dap
-  - netcdf-fortran@4.5.3
+  - netcdf-c@4.9.2~dap
+  - netcdf-fortran@4.6.1
   - jasper@2.0.32
   - g2@3.4.5
   - bacio@2.4.1
-  - w3emc@2.9.2
+  - w3emc@2.12.0
   - parallelio@2.5.9+fortran~pnetcdf
   - esmf@8.4.2~debug~xerces+external-parallelio
   view: true

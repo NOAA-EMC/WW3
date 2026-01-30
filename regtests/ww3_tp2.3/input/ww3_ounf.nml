@@ -9,7 +9,7 @@
   FIELD%TIMESTART        =  '19680606 000000'
   FIELD%TIMESTRIDE       =  '86400.'
   FIELD%TIMECOUNT        =  '999'
-  FIELD%LIST             =  'HS DIR SPR DP EF TH1M STH1M'
+  FIELD%LIST             =  'HS DIR SPR DP EF TH1M STH1M TH2M STH2M'
   FIELD%PARTITION        =  '0 1 2'
   FIELD%TYPE             =  4
 /
