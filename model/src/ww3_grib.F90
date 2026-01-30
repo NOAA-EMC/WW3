@@ -218,7 +218,7 @@ PROGRAM W3GRIB
   !/ Local variables
   !/
   INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSTRC,   &
-       NTRACE, IERR, IOTEST, I,J , IFI, IFJ,&
+       NTRACE, IERR, IOTEST, I, J, IFI, IFJ,&
        ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&
        FTIME(2), CID, PID, GID, GDS, IOUT,  &
        GDTN
