@@ -2408,7 +2408,6 @@ CONTAINS
     INTEGER              :: ISFINISHED !, INEXT, IPREV
     INTEGER              :: INEXT(3), IPREV(3)
     INTEGER              :: ZNEXT, IP, I, IE, IPNEXT, IPPREV, COUNT
-    integer nb0, nb1, nbM1
     STATUS = -1
     INEXT=(/ 2, 3, 1 /) !IPREV=1+MOD(I+1,3)
     IPREV=(/ 3, 1, 2 /) !INEXT=1+MOD(I,3)
