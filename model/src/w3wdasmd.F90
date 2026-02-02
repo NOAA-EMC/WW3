@@ -194,10 +194,12 @@ CONTAINS
     USE W3GDATMD
     USE W3WDATMD
     USE W3ADATMD
-    USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,   &
-         NAPLOG, NAPOUT, NAPERR
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
+#endif
+    !
+#ifdef W3_T
+    USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC, NAPOUT, NAPERR
 #endif
     !
 #ifdef W3_MPI
@@ -218,9 +220,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters :
     !/
-    INTEGER                 :: J
 #ifdef W3_T
-    INTEGER                 :: MREC, MDAT, IREC, IDAT
+    INTEGER                 :: MREC, MDAT, IREC, IDAT, J
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
