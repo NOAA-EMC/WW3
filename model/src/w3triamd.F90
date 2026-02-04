@@ -549,11 +549,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-
-#ifdef W3_PDLIB
-    use yowElementpool, only: ne_global
-    use yowNodepool, only: np_global
-#endif
     USE W3GDATMD, ONLY : TRIGP, NTRI, NX
     IMPLICIT NONE
     !/
@@ -2073,7 +2068,7 @@ CONTAINS
          FLAGLL,  IEN, TRIA, NSEAL, NTRI
 #ifdef W3_PDLIB
     USE yowElementpool
-    use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
+    use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA
     USE yowExchangeModule, only : PDLIB_exchange1Dreal
 #endif
 
