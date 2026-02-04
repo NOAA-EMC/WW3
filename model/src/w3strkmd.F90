@@ -432,10 +432,9 @@ CONTAINS
     LOGICAL    :: endloop
 
 #ifdef W3_MPI
-    INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2, ic
+    INTEGER    :: rank, irank, nproc, DOMSIZE, tag1, tag2, ic
     !      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR
     type(MPI_STATUS) :: MPI_STAT 
-    INTEGER    :: REQ(16)
     !    INTEGER    :: ISTAT(MPI_STATUS_SIZE,16)
     REAL       :: COMMARR1(44)
     INTEGER    :: COMMARR2(11)
