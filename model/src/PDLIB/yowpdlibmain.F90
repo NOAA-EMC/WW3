@@ -65,17 +65,17 @@ contains
   subroutine initFromGridDim(MNP, MNE, INE_global, secDim, MPIcomm)
     use mpi_f08,           only: MPI_COMM
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
-    use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
+    use yowNodepool,       only: np_global, np, np_perProcSum, ng
     use yowElementpool,    only: ne_global,ne
     use yowSidepool,       only: ns, ns_global
     use yowExchangeModule, only: nConnDomains, setDimSize
-    use yowRankModule,     only: initRankModule, ipgl_npa
+    use yowRankModule,     only: initRankModule
 
     integer, intent(in) :: MNP, MNE
     integer, intent(in) :: INE_global(3,MNE)
     integer, intent(in) :: secDim
     type(MPI_COMM), intent(in) :: MPIcomm
-    integer :: istat, memunit
+    integer :: memunit
 
     ! note: myrank=0 until after initMPI is called, so only rank=0 file
     ! contains the 'section 1' information
@@ -433,12 +433,16 @@ contains
     ! Parmetis
     ! Node neighbor information
     integer :: wgtflag, numflag, ndims, nparts, edgecut, ncon
-    integer, allocatable :: xadj(:), part(:), vwgt(:), adjwgt(:), vtxdist(:), options(:), adjncy(:), iweights(:)
+    integer, allocatable :: xadj(:), part(:), vwgt(:), adjwgt(:), vtxdist(:), options(:), adjncy(:)
+#ifdef WEIGHTS
+    integer, allocatable :: iweights(:)
+    integer :: itmp
+    logical :: lexist = .false.
+#endif
     ! parmetis need single precision
     real(4), allocatable :: xyz(:), tpwgts(:), ubvec(:)
-    integer :: IP_glob, itmp
+    integer :: IP_glob
     integer :: ref
-    logical :: lexist = .false.
     ! Node to domain mapping.
     ! np_global long. give the domain number for die global node number
     integer, allocatable :: node2domain(:)
@@ -1018,7 +1022,7 @@ contains
   subroutine findConnDomains
     use yowerr,          only: parallel_abort
     use yowNodepool,       only: ghosts, ng, t_Node
-    use yowDatapool,       only: nTasks, myrank
+    use yowDatapool,       only: nTasks
     use yowExchangeModule, only: neighborDomains, initNbrDomains
 
     integer :: i, stat, itemp
@@ -1102,7 +1106,7 @@ contains
   subroutine exchangeGhostIds
     use yowerr
     use yowNodepool,       only: np, t_node, nodes
-    use yowDatapool,       only: nTasks, myrank, comm
+    use yowDatapool,       only: myrank, comm
     use yowExchangeModule, only: neighborDomains, nConnDomains, createMPITypes
     use mpi_f08
 
@@ -1232,7 +1236,7 @@ contains
     use yowElementpool, only: ne, ne_global, INE, belongto, ielg
     use yowerr,         only: parallel_abort
     use yowDatapool,    only: myrank
-    use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
+    use yowNodepool,    only: np, nodes_global, iplg, t_Node, ghostlg, ng, npa
     use yowNodepool,    only: x, y, z
     use w3gdatmd,       only: xgrd, ygrd, zb
 
@@ -1352,12 +1356,11 @@ contains
   !*                                                                    *
   !**********************************************************************
   subroutine ComputeTRIA_IEN_SI_CCON
-    use yowElementpool, only: ne, ne_global, INE, ielg
+    use yowElementpool, only: ne, INE
     use yowExchangeModule, only : PDLIB_exchange1Dreal
     use yowerr,       only: parallel_abort
-    use yowDatapool,    only: myrank
-    use yowNodepool,    only: np_global, np, iplg, t_Node, ghostlg, ng, npa
-    use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
+    use yowNodepool,    only: t_Node, npa
+    use yowNodepool,    only: x, y, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
 
     integer I1, I2, I3, stat, IE, NI(3)
     real  :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
@@ -1452,10 +1455,9 @@ contains
   !*                                                                    *
   !**********************************************************************
   subroutine ComputeIA_JA_POSI_NNZ
-    use yowElementpool, only: ne, ne_global, INE, ielg
+    use yowElementpool, only: ne, INE
     use yowerr,       only: parallel_abort
-    use yowDatapool,    only: myrank
-    use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
+    use yowNodepool,    only: t_Node, npa
     use yowNodepool,    only: PDLIB_CCON, PDLIB_IA, PDLIB_JA, PDLIB_JA_IE, PDLIB_IA_P, PDLIB_JA_P
     use yowNodepool,    only: PDLIB_NNZ, PDLIB_POSI, PDLIB_IE_CELL, PDLIB_POS_CELL, PDLIB_IE_CELL2
     use yowNodepool,    only: PDLIB_POS_CELL2, PDLIB_I_DIAG
