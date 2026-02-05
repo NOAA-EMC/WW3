@@ -331,11 +331,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IGRD, IERR, I, J, MTH, MK, ISEA, IX, IY
+    INTEGER                 :: IGRD, IERR, I, MTH, MK, IX, IY
     INTEGER                 :: IEXT, IPRE
-#ifdef W3_ST4
-    INTEGER                 :: IK, ITH, IK2, ITH2
-#endif
     INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, IP
@@ -344,12 +341,22 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_T
-    INTEGER                 :: K
+    INTEGER                 :: K, ISEA
 #endif
-    LOGICAL                 :: WRITE, FLTEST = .FALSE., TESTLL,     &
-         FLSNL2 = .FALSE.
-    LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.,  &
-         FLIS  = .FALSE.
+#if defined(W3_T) || defined(W3_SMC)
+    INTEGER                 :: J
+#endif
+    LOGICAL                 :: WRITE, FLTEST = .FALSE.
+#if defined(W3_NL2) || defined(W3_MPI)
+    LOGICAL                 :: FLSNL2 = .FALSE.
+#endif
+    LOGICAL, SAVE           :: FLDISP = .FALSE.
+#if defined(W3_ST2) || defined(W3_ST3)
+    LOGICAL, SAVE           :: FLINP = .FALSE.
+#endif
+#ifdef W3_IS2
+    LOGICAL, SAVE           :: FLIS  = .FALSE.
+#endif
     CHARACTER(LEN=10)       :: VERTST
     CHARACTER(LEN=13)       :: TEMPXT
     CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
@@ -360,7 +367,6 @@ CONTAINS
          FNAMEP, FNAMEG, FNAMEF, FNAMEI
     CHARACTER(LEN=35)       :: IDTST
     CHARACTER(LEN=60)       :: MESSAGE(5)
-    LOGICAL                 :: GLOBAL
 
     REAL, ALLOCATABLE       :: XGRD4(:,:), YGRD4(:,:)
 

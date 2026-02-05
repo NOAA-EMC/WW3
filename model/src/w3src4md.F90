@@ -229,7 +229,7 @@ CONTAINS
     USE CONSTANTS, ONLY: TPIINV, GRAV, nu_air
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DDEN, WWNMEANP, &
          WWNMEANPTAIL, FTE, FTF, SSTXFTWN,&
-         SSTXFTFTAIL, ESIN, ECOS, ZZWND, SSDSC
+         SSTXFTFTAIL, ESIN, ECOS, SSDSC
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -240,6 +240,7 @@ CONTAINS
     !
 #ifdef W3_FLX5
     USE W3FLX5MD
+    USE W3GDATMD, ONLY: ZZWND
 #endif
     IMPLICIT NONE
     !/
@@ -550,8 +551,10 @@ CONTAINS
     REAL                    :: COSU, SINU, TAUX, TAUY, USDIRP, USTP
     REAL                    :: TAUPX, TAUPY, UST2, TAUW, TAUWB
     REAL   , PARAMETER      :: EPS1 = 0.00001, EPS2 = 0.000001
+#if defined(W3_T) || defined(W3_STAB3)
     REAL                    :: Usigma           !standard deviation of U due to gustiness
     REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
+#endif
     REAL                    :: CM,UCN,ZCN, &
          Z0VISC, Z0NOZ, EB,  &
          EBX, EBY, AORB, AORB1, FW, UORB,  &

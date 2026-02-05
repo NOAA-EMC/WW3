@@ -1697,7 +1697,7 @@ CONTAINS
 #endif
     REAL, SAVE              :: TOPFAC = 1.1
     REAL                    :: FTOP, RLINES, FACFR, FSC, FLINE,    &
-         EMAX, EMIN, EXTR, FLOC
+         EMAX, EMIN, EXTR
     LOGICAL                 :: FLSCLE
     CHARACTER               :: STRA*10, STRA2*2, STRAX*2, PNUM2*2
     DIMENSION               :: PNUM2(NFM2)
