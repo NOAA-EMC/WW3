@@ -3363,8 +3363,6 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER                 :: IX, IY
-    INTEGER                 :: NEIGH1(0:7)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -3372,8 +3370,12 @@ CONTAINS
     REAL                    :: COSAVG, SINAVG, THAVG, CLAT
     INTEGER                 :: J, K
 #endif
-
+#if defined(W3_REF1) || defined(W3_REFT)
+    INTEGER                 :: IX, IY
+    INTEGER                 :: NEIGH1(0:7)
     REAL                    :: ANGLES(0:7)
+#endif
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
