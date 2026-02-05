@@ -2569,7 +2569,7 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
-         MGRPP, ISEA, MOSWLL, IK, IFI, IFJ
+         MGRPP, ISEA, MOSWLL, IFI, IFJ
     INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

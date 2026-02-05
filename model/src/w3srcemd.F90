@@ -497,11 +497,13 @@ CONTAINS
     USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
          srce_direct, GRAV, TPI, TPIINV
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
-         DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
-         XFLT, XREL, FXFM, FXPM, DDEN,     &
-         FHMAX, ECOS, ESIN, IICEDISP,      &
+         DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP,                &
+         XFLT, XREL, DDEN, FHMAX, ECOS, ESIN, IICEDISP,             &
          ICESCALES, IICESMOOTH
     USE W3GDATMD, ONLY: IC_NUMERICS
+#if defined(W3_ST1) || defined(W3_ST6)
+    USE W3GDATMD, ONLY: FXFM, FXPM
+#endif
 #if defined(W3_NL5) || defined(W3_NNT)
     USE W3WDATMD, ONLY: TIME
 #endif

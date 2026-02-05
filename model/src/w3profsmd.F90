@@ -344,8 +344,8 @@ CONTAINS
     !
     USE W3TIMEMD, ONLY: DSEC21
     !
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, CLATS,                 &
-         NTH, ECOS, ESIN, IEN, INDEX_CELL,                          &
+    USE W3GDATMD, ONLY: NX, NY, MAPSF, CLATS,                 &
+         NTH, ECOS, ESIN, IEN, INDEX_CELL,                    &
          TRIGP, IE_CELL, POS_CELL, SI, IOBP
 
     USE W3ADATMD, ONLY: CG, CX, CY
@@ -1323,9 +1323,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                      &
-         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBDP
+         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS
+    USE W3GDATMD, ONLY : REFPARS, IOBPA
 #endif
     USE W3ADATMD, ONLY: CG, ITER
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
@@ -1626,7 +1626,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    USE W3GDATMD, ONLY: DMIN, IOBDP, MAPFS, NX
+    USE W3GDATMD, ONLY: DMIN, IOBDP, NX
     USE W3ADATMD, ONLY: DW
 
     IMPLICIT NONE
