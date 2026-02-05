@@ -805,8 +805,16 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
     LOGICAL                 :: WRITE
-    INTEGER                 :: I, IX, TIDE_MF1
+#ifdef W3_TIDE
+    INTEGER                 :: TIDE_MF1
     CHARACTER(LEN=100)      :: LIST(70)
+#endif
+#ifdef W3_TIDET
+    INTEGER                 :: IX
+#endif
+#if defined(W3_TIDE) || defined(W3_TIDET)
+    INTEGER                 :: I
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/

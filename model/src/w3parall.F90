@@ -1081,9 +1081,13 @@ CONTAINS
     use yowRankModule, only : rank
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
 #endif
+#ifdef W3_DIST
     USE CONSTANTS, ONLY : LPDLIB
+#endif
     USE W3GDATMD, ONLY: NSEA
-    USE W3ODATMD, ONLY: NAPROC, IAPROC
+#if defined(W3_DIST) || defined(W3_PDLIB)
+    USE W3ODATMD, ONLY: IAPROC, NAPROC
+#endif
     IMPLICIT NONE
     INTEGER, intent(out) :: NSEALout, NSEALMout
     !/ Local parameters
@@ -1195,12 +1199,14 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !/
-    USE W3ODATMD, ONLY: IAPROC, NAPROC
-    USE W3GDATMD, ONLY: UNGTYPE, MAPSF
-    USE CONSTANTS, ONLY : LPDLIB
+    USE W3ODATMD, ONLY: NAPROC
+    USE W3GDATMD, ONLY: UNGTYPE
 #ifdef W3_PDLIB
     USE yowRankModule, only : IPGL_TO_PROC
     use yowNodepool, only: ipgl, iplg
+    USE W3ODATMD, ONLY: IAPROC
+    USE W3GDATMD, ONLY: MAPSF
+    USE CONSTANTS, ONLY : LPDLIB
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
@@ -1216,7 +1222,10 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     INTEGER, intent(in) :: ISEA
     INTEGER, intent(out) :: JSEA, ISPROC
+#ifdef W3_PDLIB
     INTEGER IP_glob
+#endif
+
 #ifdef W3_S
     CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC')
 #endif
@@ -1304,11 +1313,12 @@ CONTAINS
 #endif
     !/
     USE W3ODATMD, ONLY: IAPROC, NAPROC
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
+    USE W3GDATMD, ONLY: UNGTYPE
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
     USE yowRankModule, only : IPGL_npa
     use yowNodepool, only: ipgl, iplg
+    USE W3GDATMD, ONLY: MAPSF, GTYPE
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
@@ -1325,7 +1335,10 @@ CONTAINS
     !/
     INTEGER, intent(in) :: ISEA
     INTEGER, intent(out) :: JSEA, IBELONG
-    INTEGER ISPROC, IX, JX
+    INTEGER ISPROC
+#ifdef W3_PDLIB
+    INTEGER :: IX, JX
+#endif
 #ifdef W3_S
     CALL STRACE (IENT, 'GET_JSEA_IBELONG')
 #endif
@@ -1430,11 +1443,17 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !/
-    USE W3ODATMD, ONLY: IAPROC, NAPROC
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
-    USE CONSTANTS, ONLY : LPDLIB
+    USE W3GDATMD, ONLY: UNGTYPE
 #ifdef W3_PDLIB
     USE YOWNODEPOOL, ONLY: iplg
+    USE W3GDATMD, ONLY: GTYPE
+#endif
+#ifdef W3_DIST
+    USE CONSTANTS, ONLY : LPDLIB
+#endif
+    !/
+#if defined(W3_DIST) || defined(W3_PDLIB)
+    USE W3ODATMD, ONLY: IAPROC, NAPROC
 #endif
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1577,14 +1596,14 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER Status(NX), rStatus(NX)
-    INTEGER IPROC, I, ierr, IP, IP_glob
+    INTEGER Status(NX)
 #ifdef W3_PDLIB
     REAL(rkind), intent(inout) :: TheVar(NX)
     REAL(rkind) ::  rVect(NX)
+    INTEGER     ::  IP, IP_glob, IPROC, I, ierr
+    INTEGER     ::  rStatus(NX)
 #else
     DOUBLE PRECISION, intent(inout) :: TheVar(NX)
-    DOUBLE PRECISION                ::  rVect(NX)
 #endif
     Status=0
 #ifdef W3_S

@@ -2065,11 +2065,12 @@ CONTAINS
     ! 10. Source code :
     USE CONSTANTS
     USE W3GDATMD, ONLY : TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
-         FLAGLL,  IEN, TRIA, NSEAL, NTRI
+         FLAGLL,  IEN, TRIA, NTRI
 #ifdef W3_PDLIB
     USE yowElementpool
     use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA
     USE yowExchangeModule, only : PDLIB_exchange1Dreal
+    USE W3GDATMD, ONLY : NSEAL
 #endif
 
     IMPLICIT NONE

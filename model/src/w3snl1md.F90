@@ -836,8 +836,9 @@ CONTAINS
     REAL             :: q_dfac, SATVAL(NK), SUME, ACCVAL, ACCMAX, AMPFAC
     DOUBLE PRECISION :: RAISF, FREQ(NK)
     DOUBLE PRECISION :: TSTOT(NTH,NK) , TSDER(NTH,NK), F(NTH,NK)
+#ifdef W3_TGQM
     DOUBLE PRECISION :: TEMP
-
+#endif
     !.....LOCAL VARIABLES
     INTEGER             JF    , JT    , JF1   , JT1  , IQ_OM2 &
          , JFM0  , JFM1  , JFM2  , JFM3  , IXF1 , IXF2   &
