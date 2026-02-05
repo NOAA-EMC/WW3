@@ -260,7 +260,10 @@ contains
 
     ! local variables
     type(ESMF_Time)             :: esmfTime, startTime, currTime, stopTime
-    type(ESMF_TimeInterval)     :: TimeOffset, timeStep
+    type(ESMF_TimeInterval)     :: TimeOffset
+#ifdef W3_CESMCOUPLED
+    type(ESMF_TimeInterval)     :: timeStep
+#endif
     type(ESMF_Calendar)         :: calendar
     type(ESMF_Info)             :: info
     type(ESMF_VM)               :: vm
