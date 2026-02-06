@@ -421,9 +421,7 @@ CONTAINS
     USE W3GDATMD, ONLY: QI5NNZ
 #endif
 #ifdef W3_PDLIB
-    use yowNodepool, only: npa, np
-    use yowRankModule, only : rank
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+    USE W3GDATMD, ONLY: UNGTYPE
 #endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -443,9 +441,6 @@ CONTAINS
     !/
     INTEGER                 :: JGRID, NSEALM, NSEATM
     INTEGER                 :: NSEAL_DUMMY, ISEA
-#ifdef W3_PDLIB
-    INTEGER IRANK
-#endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif

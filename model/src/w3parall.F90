@@ -959,7 +959,7 @@ CONTAINS
     USE yowNodepool, only: np_global
     USE W3ODATMD, ONLY: NTPROC, NAPROC, IAPROC
     USE W3GDATMD, ONLY: MAPSF, NSEA
-    USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
     USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
     USE WMMDATMD, ONLY: MDATAS
 #endif
@@ -1078,13 +1078,8 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
 #ifdef W3_PDLIB
-    use yowDatapool, only: istatus
-    use yowNodepool, only: npa
     use yowRankModule, only : rank
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
-#endif
-#ifdef W3_MPI
-    USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
 #endif
 #ifdef W3_DIST
     USE CONSTANTS, ONLY : LPDLIB
@@ -1207,7 +1202,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NAPROC
     USE W3GDATMD, ONLY: UNGTYPE
 #ifdef W3_PDLIB
-    USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
+    USE yowRankModule, only : IPGL_TO_PROC
     use yowNodepool, only: ipgl, iplg
     USE W3ODATMD, ONLY: IAPROC
     USE W3GDATMD, ONLY: MAPSF
@@ -1321,7 +1316,7 @@ CONTAINS
     USE W3GDATMD, ONLY: UNGTYPE
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
-    USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot, IPGL_npa
+    USE yowRankModule, only : IPGL_npa
     use yowNodepool, only: ipgl, iplg
     USE W3GDATMD, ONLY: MAPSF, GTYPE
 #endif
@@ -1578,7 +1573,7 @@ CONTAINS
     !
     USE W3GDATMD, ONLY: NX
 #ifdef W3_PDLIB
-    USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+    USE W3ODATMD, only : IAPROC, NAPROC
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
     use yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa
