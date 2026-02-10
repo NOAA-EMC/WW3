@@ -285,9 +285,6 @@ contains
     use w3idatmd    , only: HSL
 #else
     use wav_shr_mod , only : casename
-#ifdef W3_MPI
-    use wmmdatmd    , only: mpi_comm_grd
-#endif
 #endif
 
     ! input/output variables
@@ -568,7 +565,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, USSP, HS, tauox, tauoy, wnmean, taubbl
+    use w3adatmd      , only : USSP, tauox, tauoy, wnmean, taubbl
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -578,7 +575,7 @@ contains
 #ifdef W3_CESMCOUPLED
     use w3odatmd      , only : naproc, iaproc
     use w3wdatmd      , only : ASF, UST
-    use w3adatmd      , only : USSHX, USSHY, UD
+    use w3adatmd      , only : USSX, USSY, USSHX, USSHY, UD, HS
     use w3idatmd      , only : HSL
 #endif
 
@@ -598,8 +595,10 @@ contains
 
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: charno(:)
+#ifdef W3_CESMCOUPLED
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_lasl(:)
+#endif
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
 

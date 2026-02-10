@@ -1383,7 +1383,6 @@ CONTAINS
     LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
     ! SWW: angle between wind and waves
     ! LHSL: local surface layer depth
-    REAL                    :: SWW
     REAL                    :: LHSL
     ! tmp variable for surface layer averaged Stokes drift
     REAL                    :: USSCOH
