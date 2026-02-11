@@ -151,7 +151,7 @@ contains
     use yowerr
     use mpi_f08
     use yowNodepool, only: ghostgl, np, ipgl
-    use yowDatapool, only: rtype, itype
+    use yowDatapool, only: rtype
     implicit none
     class(t_neighborDomain), intent(inout) :: this
 
@@ -249,7 +249,7 @@ contains
   !> \note MPI send tag: 10000 + neighbor MPI rank
   subroutine PDLIB_exchange1Dreal(U)
     use yowDatapool, only: comm, myrank, rkind
-    use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
+    use yowNodepool, only: t_Node, ghosts, npa
     use yowerr
     use mpi_f08
     implicit none
@@ -302,10 +302,12 @@ contains
   !> \note MPI send tag: 30000 + neighbor MPI rank
   subroutine PDLIB_exchange2Dreal(U)
     use yowDatapool, only: comm, myrank, rkind
-    use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
+    use yowNodepool, only: t_Node, ghosts
     use yowerr
     use mpi_f08
+#ifdef W3_DEBUGEXCH
     USE W3ODATMD, only : IAPROC
+#endif
     implicit none
     real(kind=rkind), intent(inout) :: U(:,:)
 
@@ -417,7 +419,6 @@ contains
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
     type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
-    character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
 
@@ -487,7 +488,6 @@ contains
     integer :: i, ierr, tag
     type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
     type(MPI_STATUS)  :: recvStat(nConnDomains), sendStat(nConnDomains)
-    character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
     !     if(size(U,2) /= npa+1) then

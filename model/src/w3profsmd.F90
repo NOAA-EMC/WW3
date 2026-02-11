@@ -136,16 +136,13 @@ CONTAINS
     !
     USE W3TIMEMD, ONLY: DSEC21
     !
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL, CLATS,   &
-         FLCX, FLCY, NK, NTH, DTH, XFR,              &
-         ECOS, ESIN, SIG,  PFMOVE,IEN,               &
-         NTRI, TRIGP, CCON ,                         &
-         IE_CELL, POS_CELL, IOBP, IOBPD, IOBDP,      &
-         FSN, FSPSI, FSFCT, FSNIMP, GTYPE, UNGTYPE
+    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, CLATS,            &
+         NTH, ECOS, ESIN, IOBP,                                       & 
+         IOBDP, FSN, FSPSI, FSFCT, FSNIMP, UNGTYPE
 
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-    USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX, DW
+    USE W3ADATMD, ONLY: CG, CX, CY
     USE W3IDATMD, ONLY: FLCUR
     !      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
     !                          ISBPI, BBPI0, BBPIN
@@ -347,17 +344,14 @@ CONTAINS
     !
     USE W3TIMEMD, ONLY: DSEC21
     !
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
-         FLCX, FLCY, NK, NTH, DTH, XFR,              &
-         ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
-         NTRI, TRIGP, CCON ,                         &
-         IE_CELL, POS_CELL, COUNTRI, SI, IOBP
+    USE W3GDATMD, ONLY: NX, NY, MAPSF, CLATS,                 &
+         NTH, ECOS, ESIN, IEN, INDEX_CELL,                    &
+         TRIGP, IE_CELL, POS_CELL, SI, IOBP
 
-    USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, DW
+    USE W3ADATMD, ONLY: CG, CX, CY
     USE W3IDATMD, ONLY: FLCUR
 #ifdef W3_T
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
-         ISBPI, BBPI0, BBPIN
+    USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
 #endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -531,15 +525,14 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,  &
+    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                      &
+         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,           &
          IOBPA, FSBCCFL
 #ifdef W3_REF1
     USE W3GDATMD, ONLY : REFPARS
 #endif
-    USE W3WDATMD, ONLY: TIME
-    USE W3ADATMD, ONLY: CG, ITER, DW
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -582,13 +575,13 @@ CONTAINS
     !
     ! local double
     !
-    REAL*8  :: UTILDE, BOUNDARY_FORCING
+    REAL*8  :: UTILDE
     REAL*8  :: CFLXY
     REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
     REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL*8  :: DTSI(NX), U(NX)
     REAL*8  :: DTMAXGL, DTMAXEXP, REST
-    REAL*8  :: LAMBDA(2), KTMP(3), CLOC(2,3)
+    REAL*8  :: LAMBDA(2), KTMP(3)
     REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
     REAL*8  :: KKSUM(NX), ST(NX)
     REAL*8  :: NM(NTRI)
@@ -778,14 +771,13 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-         IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ, IOBDP
+    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                        &
+         IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBDP
 #ifdef W3_REF1
     USE W3GDATMD, ONLY :  REFPARS
 #endif
-    USE W3WDATMD, ONLY: TIME
     USE W3ADATMD, ONLY: CG, ITER
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+    USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -828,13 +820,13 @@ CONTAINS
     !:
     ! local double
     !
-    REAL*8  :: UTILDE, BOUNDARY_FORCING
+    REAL*8  :: UTILDE
     REAL*8  :: FT, CFLXY
     REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
     REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL*8  :: DTSI(NX), U(NX)
     REAL*8  :: DTMAXGL, DTMAXEXP, REST
-    REAL*8  :: LAMBDA(2), KTMP(3), TMP(3)
+    REAL*8  :: LAMBDA(2), KTMP(3)
     REAL*8  :: THETA_L(3), BET1(3), BETAHAT(3)
     REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
     REAL*8  :: KKSUM(NX), ST(NX)
@@ -1032,15 +1024,14 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
+    USE W3GDATMD, ONLY : NTH, NTRI, NX, CCON, IE_CELL,POS_CELL,     &
+         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IAA, JAA, POSI,    &
          TRIA, NNZ
 #ifdef W3_REF1
     USE W3GDATMD, ONLY : REFPARS
 #endif
-    USE W3WDATMD, ONLY: TIME
-    USE W3ADATMD, ONLY: CG, ITER
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+    USE W3ADATMD, ONLY: CG
+    USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1084,7 +1075,6 @@ CONTAINS
     !:
     ! local double
     !
-    REAL*8  :: BOUNDARY_FORCING
     REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
     REAL*8  :: U(NX)
     REAL*8  :: DTMAXGL
@@ -1332,14 +1322,13 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA, IOBDP
+    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                      &
+         IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS
+    USE W3GDATMD, ONLY : REFPARS, IOBPA
 #endif
-    USE W3WDATMD, ONLY: TIME
     USE W3ADATMD, ONLY: CG, ITER
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+    USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1383,7 +1372,7 @@ CONTAINS
     !:
     ! local double
     !
-    REAL*8  :: UTILDE, BOUNDARY_FORCING
+    REAL*8  :: UTILDE
     REAL*8  :: FT, CFLXY
     REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
     REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
@@ -1637,8 +1626,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+    USE W3GDATMD, ONLY: DMIN, IOBDP, NX
     USE W3ADATMD, ONLY: DW
 
     IMPLICIT NONE
@@ -1655,7 +1643,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !
-    INTEGER :: JSEA, ISEA, IX, IP
+    INTEGER :: IP
     REAL*8, PARAMETER :: DTHR = 10E-6
 #ifdef W3_S
     CALL STRACE (IENT, 'SETDEPTH')

@@ -1414,7 +1414,7 @@ CONTAINS
     !/ Local parameters
     !/
     REAL                      :: SECDAY=86400.0d0
-    INTEGER                   :: TIMEZONE(8), TZ
+    INTEGER                   :: TZ
 
     REAL                      :: SECOND
     INTEGER                   :: YEAR, MONTH, DAY, HOUR, MINUTE
@@ -2030,7 +2030,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     USE W3SERVMD, ONLY: EXTIOF
-    USE W3ODATMD, ONLY: NDSE
     !
     IMPLICIT NONE
     !/

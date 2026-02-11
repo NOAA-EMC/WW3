@@ -215,12 +215,15 @@ CONTAINS
     !
     ! 10. Source code :
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NK, NTH, NSPEC, NX, NY, NSEA, MAPSTA, MAPSF,&
-         GTYPE
+    USE W3GDATMD, ONLY: NK, NTH, NX, NY, NSEA, MAPSTA, MAPSF, GTYPE
     USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
          NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
          MAPTH2, MAPWN2
+#ifdef W3_T
+    USE W3GDATMD, ONLY: NSPEC
     USE W3ODATMD, ONLY: NDST
+#endif
+    !/
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -571,7 +574,7 @@ CONTAINS
     !
     ! 10. Source code :
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+    USE W3GDATMD, ONLY: NSEA, MAPSF
     USE W3ADATMD, ONLY: ATRNX, ATRNY, MAPTRN
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -788,14 +791,14 @@ CONTAINS
     USE W3TIMEMD, ONLY: DSEC21
     !
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,      &
-         ICLOSE, FLCX, FLCY, NK, NTH, DTH, XFR,  &
+         ICLOSE, FLCX, FLCY, NTH, DTH, XFR,      &
          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,  &
-         ECOS, ESIN, SIG, WDCG, WDTH, PFMOVE,    &
+         ECOS, ESIN, SIG, WDCG, WDTH,            &
          FLAGLL, DPDX, DPDY, DQDX, DQDY, GSQRT
     USE W3WDATMD, ONLY: TIME
     USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
-         NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
-         MAPTRN, CG, CX, CY, ATRNX, ATRNY, ITIME
+         NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,                       &
+         MAPTRN, CG, CX, CY, ATRNX, ATRNY
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
          ISBPI, BBPI0, BBPIN, IAPROC, NAPERR
@@ -808,6 +811,9 @@ CONTAINS
 #endif
 #ifdef W3_UNO
     USE W3UNO2MD
+#endif
+#ifdef W3_MGG
+    USE W3GDATMD, ONLY: PFMOVE
 #endif
     !/
     IMPLICIT NONE
@@ -1625,7 +1631,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
          CTMAX, DMIN
-    USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME, ITSTEP
+    USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITSTEP
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST
 #ifdef W3_S
@@ -2050,17 +2056,10 @@ CONTAINS
     !
     USE W3TIMEMD, ONLY: DSEC21
     !
-    USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,      &
-         FLCX, FLCY, NK, NTH, DTH, XFR,          &
-         ECOS, ESIN, SIG, WDCG, WDTH, PFMOVE,    &
-         FLAGLL, DPDX, DPDY, DQDX, DQDY, GSQRT
-    USE W3WDATMD, ONLY: TIME
-    USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
-         NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
-         MAPTRN, CG, CX, CY, ATRNX, ATRNY, ITIME
+    USE W3GDATMD, ONLY: NX, NY, MAPSF, CLATS,                 &
+         NK, NTH, ECOS, ESIN, DPDX, DPDY, DQDX, DQDY
+    USE W3ADATMD, ONLY: CG, CX, CY
     USE W3IDATMD, ONLY: FLCUR
-    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
-         ISBPI, BBPI0, BBPIN
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -2077,15 +2076,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: ITH, IK, IXY, IP
-    INTEGER                 :: IX, IY, IXC, IYC, IBI
+    INTEGER                 :: ITH, IK, IXY
+    INTEGER                 :: IX, IY
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-    REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,   &
-         CXMIN, CXMAX, CYMIN, CYMAX
-    REAL                    :: CGC, FGSE = 1.
-    REAL                    :: FTH, FTHX, FTHY, FCG, FCGX, FCGY
     REAL                    :: CP, CQ
     !/
     !/ Automatic work arrays
