@@ -1,4 +1,5 @@
 # The WAVEWATCH III Framework
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/NOAA-EMC/WW3)
 
 WAVEWATCH III<sup>&reg;</sup>  is a community wave modeling framework that includes the
 latest scientific advancements in the field of wind-wave modeling and dynamics.
