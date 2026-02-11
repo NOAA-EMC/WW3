@@ -376,7 +376,7 @@ CONTAINS
     USE W3WDATMD, ONLY: W3SETW, W3DIMW
     USE W3ADATMD, ONLY: W3SETA, W3DIMA
     USE W3IDATMD, ONLY: W3SETI, W3DIMI
-    USE W3ODATMD, ONLY: W3SETO, W3DMO5, FNMRST
+    USE W3ODATMD, ONLY: W3SETO, W3DMO5
     USE W3IOGOMD, ONLY: W3FLGRDUPDT
     USE W3IOGRMD, ONLY: W3IOGR
     USE W3IORSMD, ONLY: W3IORS
@@ -451,10 +451,10 @@ CONTAINS
     USE W3UOSTMD, ONLY: UOST_SETGRID
 #endif
     use w3timemd,        only : set_user_timestring
-    use w3odatmd,        only : runtype, restart_from_binary, use_restartnc, user_restfname
     use w3odatmd,        only : logfile_is_assigned
 #ifdef W3_PIO
     use wav_restart_mod, only : read_restart
+    use w3odatmd,        only : runtype, restart_from_binary, use_restartnc, user_restfname
 #endif
     !/
 #ifdef W3_MPI
@@ -528,10 +528,12 @@ CONTAINS
 #ifdef W3_PDLIB
     INTEGER                 :: IScal(1), IPROC
 #endif
-    logical                 :: exists
     integer                 :: memunit
+#ifdef W3_PIO
+    logical                 :: exists
     character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
     character(len=1024)     :: fname
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !
@@ -2185,8 +2187,6 @@ CONTAINS
          TAUOCX, TAUOCY, WNMEAN, QKK, SKEW, EMBIA1, EMBIA2
 #endif
 
-    USE W3ADATMD, ONLY: USSHX, USSHY
-
 #ifdef W3_MPI
     USE W3GDATMD, ONLY: NK
     USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,  &
@@ -2201,6 +2201,7 @@ CONTAINS
          IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP,                &
          FLOGR2
     USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
+    USE W3ADATMD, ONLY: USSHX, USSHY
 #endif
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY: LPDLIB
@@ -2232,11 +2233,11 @@ CONTAINS
 #ifdef W3_MPI
     LOGICAL                 :: FLGRDALL(NOGRP,NGRPP)
     LOGICAL                 :: FLGRDARST(NOGRP,NGRPP)
+    logical                 :: do_rstsetup
 #endif
 #ifdef W3_MPIT
     CHARACTER(LEN=5)      :: STRING
 #endif
-    logical               :: do_rstsetup
     !/
     !/ ------------------------------------------------------------------- /
     !/

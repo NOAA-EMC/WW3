@@ -559,8 +559,9 @@ CONTAINS
 #ifdef W3_PIO
     use wav_restart_mod , only : write_restart
     use wav_history_mod , only : write_history
+    use w3odatmd        , only : histwr, rstwr, user_restfname
 #endif
-    use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
+    use w3odatmd        , only : use_historync, use_restartnc
     use w3odatmd        , only : logfile_is_assigned, verboselog
     use w3timemd        , only : set_user_timestring
     !
@@ -673,8 +674,10 @@ CONTAINS
     REAL                    :: BACANGL
 #endif
     integer            :: memunit
+#ifdef W3_PIO
     character(len=16)  :: user_timestring    !YYYY-MM-DD-SSSSS
     character(len=256) :: fname
+#endif
     !/ ------------------------------------------------------------------- /
     ! 0.  Initializations
     !
