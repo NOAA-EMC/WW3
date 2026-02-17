@@ -220,7 +220,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY, IX,   &
+    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY,    &
          IAD00, IAD02, IADN0, IADN1, IADN2
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -238,6 +238,9 @@ CONTAINS
 #endif
 #ifdef W3_T2
     REAL                    :: QOLD
+#endif
+#if defined(W3_T0) || defined(W3_T1)
+    INTEGER                 :: IX
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -615,7 +618,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY, IX,   &
+    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY,       &
          IAD00, IAD02, IADN0, IADN1, IADN2
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
@@ -633,6 +636,9 @@ CONTAINS
 #endif
 #ifdef W3_T2
     REAL                    :: QOLD
+#endif
+#if defined(W3_T0) || defined(W3_T1)
+    INTEGER                 :: IX
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -1017,7 +1023,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY, IX,   &
+    INTEGER                 :: IXY, IP, IXYC, IXYU, IXYD, IY,       &
          IAD00, IAD02, IADN0, IADN1, IADN2,   &
          JN, JP
 #ifdef W3_S
@@ -1036,6 +1042,9 @@ CONTAINS
 #endif
 #ifdef W3_T2
     REAL                    :: QOLD
+#endif
+#if defined(W3_T0) || defined(W3_T1)
+    INTEGER                 :: IX
 #endif
     !/
     !/ ------------------------------------------------------------------- /

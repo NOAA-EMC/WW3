@@ -1430,7 +1430,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY, NSPEC
+    USE W3GDATMD, ONLY: W3SETG, NGRIDS, NSPEC
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1445,7 +1445,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: JGRID
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DMO5')
@@ -1648,7 +1647,6 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: NLOW
-    INTEGER                 :: J
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3SETO')

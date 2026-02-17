@@ -156,7 +156,7 @@ PROGRAM W3GRIB
   USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR, RHOAIR
   USE W3ADATMD
   USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
-       FLOGRD, FNMPRE, NOSWLL, NOGE, FLOGD
+       FLOGRD, NOSWLL, NOGE, FLOGD
   !
   IMPLICIT NONE
   !/
@@ -218,7 +218,7 @@ PROGRAM W3GRIB
   !/ Local variables
   !/
   INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSTRC,   &
-       NTRACE, IERR, IOTEST, I,J,K, IFI,IFJ,&
+       NTRACE, IERR, IOTEST, I, J, IFI, IFJ,&
        ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&
        FTIME(2), CID, PID, GID, GDS, IOUT,  &
        GDTN
@@ -244,7 +244,7 @@ PROGRAM W3GRIB
   INTEGER, SAVE           :: IENT = 0
 #endif
   REAL                    :: DTREQ, DTEST, RFTIME
-  LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
+  LOGICAL                 :: FLREQ(NOGRP,NGRPP)
   CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
   CHARACTER(LEN=80)       :: LINEIN
   CHARACTER(LEN=8)        :: WORDS(5)
@@ -1034,7 +1034,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: J, IXY, NDATA
+    INTEGER                 :: IXY, NDATA
     INTEGER                 :: IO
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
