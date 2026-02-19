@@ -808,7 +808,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1) then
+        if (mapsta(iy,ix) /= 0) then
           sw_tauox(jsea) = tauox(jsea)
           sw_tauoy(jsea) = tauoy(jsea)
         endif
@@ -845,7 +845,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1) then
+        if (mapsta(iy,ix) /= 0) then
           sw_wnmean(jsea) = wnmean(jsea)
         endif
       enddo
@@ -864,7 +864,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1) then
+        if (mapsta(iy,ix) /= 0) then
           sw_taubblx(jsea) = taubbl(jsea,1)
           sw_taubbly(jsea) = taubbl(jsea,2)
         endif
@@ -1205,7 +1205,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         sxx1 = 0.0
         syy1 = 0.0
         sxy1 = 0.0
@@ -1233,7 +1233,7 @@ contains
         syy1 = syy1 + fte * abyy/cg(nk,isea)
         sxy1 = sxy1 + fte * abxy/cg(nk,isea)
       end if
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         sxxn(jsea) = sxx1*dwat*grav
         syyn(jsea) = syy1*dwat*grav
         sxyn(jsea) = sxy1*dwat*grav
@@ -1329,7 +1329,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         et = 0.0
         do ik = 1,nk
           factor = dden(ik) / cg(ik,isea)
@@ -1387,7 +1387,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         ebd = 0.0
         bhd1 = 0.0
         do ik = 1,nk
@@ -1443,7 +1443,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         us1 = 0.0
         vs1 = 0.0
         do ik = 1,nk
@@ -1454,8 +1454,8 @@ contains
             abx = abx + a(ith,ik,jsea)*ecos(ith)
             aby = aby + a(ith,ik,jsea)*esin(ith)
           end do
-          kd = max ( 0.001 , wn(ik,isea) * dw(isea) )
-          if (kd .lt. 6.0) then
+          kd = max ( 1.0e-7 , wn(ik,isea) * dw(isea) ) !0.001
+          if (kd .lt. 18.0) then !6.0
             fkd =  factor / sinh(kd)**2
             ussco = fkd*sig(ik)*wn(ik,isea)*cosh(2.0*kd)
           else
@@ -1507,7 +1507,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         uba1 = 0.0
         ubd1 = 0.0
         ubr1 = 0.0
@@ -1521,23 +1521,19 @@ contains
             abx = abx + a(ith,ik,jsea)*ecos(ith)
             aby = aby + a(ith,ik,jsea)*esin(ith)
           end do
-          kd = max ( 0.001 , wn(ik,isea) * dw(isea) )
-          if (kd .lt. 6.0) then
+          !kd = max ( 0.001 , wn(ik,isea) * dw(isea) )
+          kd = max ( 1.0e-7, min(18.,wn(ik,isea)) * dw(isea) )
+          !if (kd .lt. 6.0) then
             fkd =  factor / sinh(kd)**2
             ubr1 = ubr1 + ab*sig(ik)**2 * fkd
             uba1 = uba1 + abx*sig(ik)**2 * fkd
             ubd1 = ubd1 + aby*sig(ik)**2 * fkd
-          end if
+          !end if
         end do !ik
-        ubr1 = sqrt(2.0*max(0.0,ubr1))
-        if (ubr1 .ge. 1.0e-7) then
-          ubd1 = atan2(ubd1,uba1)
-        else
-          ubd1 = 0.0
-        end if
-        uba1 = ubr1
-        ubrx(jsea) = uba1*cos(ubd1)
-        ubry(jsea) = uba1*sin(ubd1)
+        ubr1 = sqrt(2.0*max(0.0,ubr1)) !make ubr1 >=0 already
+        ubd1 = atan2(ubd1,uba1)
+        ubrx(jsea) = ubr1*cos(ubd1)
+        ubry(jsea) = ubr1*sin(ubd1)
       else
         ubrx(jsea) = fval
         ubry(jsea) = fval
@@ -1577,7 +1573,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         etx = 0.0
         ety = 0.0
         do ik = 1,nk
@@ -1638,7 +1634,7 @@ contains
       call init_get_isea(isea, jsea)
       ix  = mapsf(isea,1)                   ! global ix
       iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) == 1) then          ! active sea point
+      if (mapsta(iy,ix) /= 0) then          ! active sea point
         etr = 0.0
         et = 0.0
         do ik = 1,nk
