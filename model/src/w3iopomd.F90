@@ -344,18 +344,15 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE NETCDF
     USE W3GSRUMD, ONLY: W3GRMP
-    USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, GSU,&
-         RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
-         ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
-         MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
-    USE W3GDATMD, ONLY: TRIGP,MAXX, MAXY, DXYMAX
+    USE W3GDATMD, ONLY: GSU, RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
+         ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL, MAPSTA, FILEXT
 #ifdef W3_RTD
     !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-    USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR
+    USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR, X0
     USE W3SERVMD, ONLY: W3LLTOEQ
 #endif
-    USE W3ODATMD, ONLY: W3DMO2, FNMPRE
-    USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
+    USE W3ODATMD, ONLY: W3DMO2
+    USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR,     &
          NOPTS, PTLOC, PTNME, GRDID, IPTINT, PTIFAC
     USE W3SERVMD, ONLY: EXTOPN, EXTIOF
 #ifdef W3_S
@@ -363,6 +360,10 @@ CONTAINS
 #endif
     USE W3TRIAMD, ONLY: IS_IN_UNGRID 
     USE W3GDATMD, ONLY: FILEXT 
+#ifdef W3_O7a
+    USE W3GDATMD, ONLY: NX, NY, ICLOSE, MAPFS, ZB, TRNX, TRNY
+    USE W3ODATMD, ONLY: NAPOUT, SCREEN
+#endif
     !
 #ifdef W3_MPI
     use mpi_f08
@@ -385,8 +386,7 @@ CONTAINS
     !/ Local parameters
     !/
     LOGICAL                 :: INGRID
-    INTEGER                 :: IPT, J, K
-    INTEGER                 :: IX1, IY1, IXS, IYS
+    INTEGER                 :: IPT, K
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -397,7 +397,7 @@ CONTAINS
     INTEGER                 :: ITOUT          ! Triangle index in unstructured grids
 #ifdef W3_O7a
     INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
-         KX, KY, JX, IIX, IX2, IY2, IS1
+         KX, KY, JX, IIX, IX2, IY2, IS1, J, IX1, IY1
     REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
     CHARACTER(LEN=1)         :: SEA(5), LND(5), OUT(5)
     CHARACTER(LEN=9)         :: PARTS
@@ -954,8 +954,7 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
-    USE W3GDATMD, ONLY: NK, NTH, SIG, NX, NY, NSEA, NSEAL,          &
-         MAPSTA, MAPFS
+    USE W3GDATMD, ONLY: NK, NTH, SIG, NSEAL, MAPSTA, MAPFS
 #ifdef W3_RTD
     !!   Use spectral rotation sub and angle.  JGLi12Jun2012
     USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR
@@ -970,9 +969,8 @@ CONTAINS
 #ifdef W3_FLX5
     USE W3ADATMD, ONLY: TAUA, TAUADIR
 #endif
-    USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
-         DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
-         ICEFO, SPCO, NAPROC
+    USE W3ODATMD, ONLY: NOPTS, IPTINT, PTIFAC, IL, IW, II,          &
+         DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO, ICEFO, SPCO
 #ifdef W3_FLX5
     USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
 #endif
@@ -988,6 +986,10 @@ CONTAINS
 #endif
 #ifdef W3_T
     USE W3ARRYMD, ONLY: PRT2DS
+    USE W3ODATMD, ONLY: NDST
+#endif
+#ifdef W3_DIST
+    USE W3ODATMD, ONLY: NAPROC
 #endif
     !
 #ifdef W3_MPI
@@ -1003,8 +1005,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: I, IX1, IY1, IX(4), IY(4), J, IS(4), &
-         IM(4), IK, ITH, ISP
+    INTEGER                 :: I, IX(4), IY(4), J, IS(4), IM(4), IK, ITH, ISP
 #ifdef W3_MPI
     INTEGER                 :: IOFF, IERR_MPI
     type(MPI_STATUS)        :: STAT(4*NOPTS)
@@ -1020,6 +1021,7 @@ CONTAINS
 #endif
     INTEGER                 :: JSEA, ISEA
 #ifdef W3_T
+    INTEGER                 :: IX1, IY1
     REAL                    :: SPTEST(NK,NTH)
 #endif
 #ifdef W3_RTD
@@ -1328,9 +1330,9 @@ CONTAINS
     USE W3ODATMD, ONLY: W3DMO2
     USE W3WDATMD, ONLY: TIME
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
+    USE W3ODATMD, ONLY: NDSE, NDST, IPASS => IPASS2, NOPTS,  &
+         IL, IW, II, PTLOC, DPO, WAO, WDO,                   &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE,         &
          GRDID, ICEO, ICEHO, ICEFO, W3DMO2
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_FLX5
@@ -1350,9 +1352,9 @@ CONTAINS
     LOGICAL :: per_time_step
     INTEGER :: IGRD,MK,MTH
     integer :: fh, itime
-    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time, d_ww3time
-    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len, d_ww3time_len
-    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time 
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
+    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len
+    integer :: v_nk, v_nth, v_ptloc, v_ptnme, v_ww3time 
     integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao,v_taudo, v_dairo
@@ -1617,9 +1619,8 @@ CONTAINS
     USE NETCDF 
     USE W3GDATMD, ONLY: NTH, NK, NSPEC
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-         PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
+    USE W3ODATMD, ONLY: IPASS => IPASS2, NOPTS,               &
+         PTLOC, DPO, WAO, WDO, ASO, CAO, CDO, SPCO, PTNME,    &
          GRDID, ICEO, ICEHO, ICEFO
   USE W3TIMEMD, ONLY: CALTYPE, T2D, U2D, TSUB
 #ifdef W3_FLX5
@@ -1638,9 +1639,9 @@ CONTAINS
     CHARACTER(LEN=124), INTENT(IN), OPTIONAL :: fname
     CHARACTER(LEN=256), INTENT(IN), OPTIONAL :: path
     !
-    integer :: ndim, nvar, fmt, itime, fh
+    integer :: itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
-    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
+    integer :: v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
     integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao, v_taudo, v_dairo
@@ -2212,8 +2213,8 @@ CONTAINS
     !/
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS,    &
+         IL, IW, II, PTLOC, DPO, WAO, WDO,                     &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT,   &
          GRDID, ICEO, ICEHO, ICEFO
 #ifdef W3_FLX5
