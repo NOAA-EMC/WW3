@@ -289,8 +289,8 @@ CONTAINS
     !
     ! 10. Source code :
     !
-    USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
-    USE W3ODATMD, ONLY: NDSE, NDSO
+    USE W3ODATMD, ONLY: IAPROC, NAPOUT
+    USE W3ODATMD, ONLY: NDSO
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -387,8 +387,8 @@ CONTAINS
     !
     ! 10. Source code :
     !
-    USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
-    USE W3ODATMD, ONLY: NDSE, NDSO
+    USE W3ODATMD, ONLY: IAPROC, NAPOUT
+    USE W3ODATMD, ONLY: NDSO
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -401,7 +401,6 @@ CONTAINS
     !/
     CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
     !
-    INTEGER TIDE_MF_ALL
     CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(65)      ! array of names of tidal constituents
     REAL                         :: TIDE_FREQC_ALL(65)        ! array of freq. of tidal constituents
     INTEGER                      :: INDS(65), J, FOUND, NTIDES
@@ -2137,8 +2136,8 @@ CONTAINS
          FX, FXI,  S, S2, S3, UX, VX, UXI, VXI,  &
          WMIN, WMAX, XMID
     REAL                        :: TOLER
-    REAL(KIND=8)                :: AV, SDEV, SUM2, hrm
-    DOUBLE PRECISION            :: X(NR),Y(NR), TIME(NR)
+    REAL(KIND=8)                :: AV, SDEV, hrm
+    DOUBLE PRECISION            :: X(NR),TIME(NR)
     REAL                        :: Q(NMAXPM,NMAXP1),FREQ(MC),AMP(MC),PH(MC)
     DOUBLE PRECISION            :: P(NMAXP1),CENHR,CUMHR
     DOUBLE PRECISION            :: yy

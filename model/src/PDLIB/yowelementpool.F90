@@ -71,7 +71,7 @@ contains
   !> conversione: If a element is connected to domain 1,2 and 3. It belongs to 1,2 and 3.
   !> @param[in] rank optional. If not given, datapool:myrank is used
   function belongTo(ele_in, rank)
-    use yowDatapool, only: myrank, nTasks
+    use yowDatapool, only: myrank
     use yowNodepool, only: t_Node, nodes_global
     implicit none
     integer, intent(in) :: ele_in(3)
@@ -79,7 +79,6 @@ contains
     logical :: belongTo
 
     integer :: myDomainID
-    integer :: nodes(3)
     integer J
 
     if(present(rank) .eqv. .true.) then

@@ -115,13 +115,11 @@ PROGRAM W3GRID_INTERP
   USE W3IOGOMD, ONLY : W3IOGO
   USE W3ADATMD, ONLY : W3DIMA, W3NAUX, W3SETA
   USE W3GDATMD
-  USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, FLOGRD,      &
-       NAPROC, NOSWLL, IDOUT
+  USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, FLOGRD, IDOUT
   USE W3ODATMD, ONLY : W3NOUT, W3SETO
   USE W3IDATMD
   USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
-  USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
-       UST, USTDIR, ASF, RHOAIR
+  USE W3WDATMD, ONLY : WDATAS
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
@@ -129,7 +127,6 @@ PROGRAM W3GRID_INTERP
   USE W3ARRYMD, ONLY : PRTBLK
   USE W3GSRUMD
   USE W3TRIAMD
-  USE W3WDATMD, ONLY: VA
   USE W3IORSMD, ONLY: W3IORS
   !/
   IMPLICIT NONE
@@ -161,7 +158,7 @@ PROGRAM W3GRID_INTERP
   INTEGER, ALLOCATABLE    :: FIDOUT(:), MAP(:,:), TMP_INDX(:)
   REAL                    :: SXT, SYT, XT, YT, XTT
   DOUBLE PRECISION        :: DAREA, SAREA
-  REAL                    :: XCRNR(5),YCRNR(5),DT(4),DX,DY,XSUB,YSUB
+  REAL                    :: XCRNR(5),YCRNR(5),DT(4)
   INTEGER                 :: TOUT(2), NOUT, IOUT
   REAL                    :: DTREQ, DTEST
   INTEGER                 :: IS(4), JS(4)
@@ -175,7 +172,6 @@ PROGRAM W3GRID_INTERP
   CHARACTER               :: COMSTR*1, IDTIME*23, FNAMEWHT*32
   REAL                    :: XXX !< Dummy Value for w3iors call
   LOGICAL                 :: OUTorREST !< True interpolate out_grd or False restart
-  INTEGER                 :: INTYPE !check if this can be removed
   INTEGER, ALLOCATABLE    :: MAPSTA_NG(:,:),MAPST2_NG(:,:) 
   INTEGER, ALLOCATABLE    :: NOINT(:),NOINT2(:),MAPSTATMP(:,:) 
   INTEGER                 :: iNOINT,iNOINT2,JSEA,iloops 
@@ -1133,7 +1129,6 @@ CONTAINS
     !variables for restart 
     LOGICAL                 :: OUTorRESTflag
     REAL                    :: VAAUX(NSPEC), SUMRES(NSPEC)
-    INTEGER                 :: INTYPE 
     REAL                    :: XXX
     INTEGER                 :: MAPSTA_NG(NY,NX),MAPST2_NG(NY,NX)
     !/

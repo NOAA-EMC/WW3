@@ -55,12 +55,15 @@ CONTAINS
   !*                                                                    *
   !**********************************************************************
   SUBROUTINE ComputeListNP_ListNPA_ListIPLG_Kernel
-    USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+    USE W3ODATMD, only : IAPROC, NAPROC
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
-    USE yowDatapool, only: rtype, istatus
+    USE yowDatapool, only: istatus
     USE yowNodepool, only: npa, np, iplg
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
     use mpi_f08
+#ifdef W3_DEBUGINIT
+    USE W3ODATMD, only : NTPROC
+#endif
     IMPLICIT NONE
     integer IPROC, idx, IP, len, istat, sumNP, ierr
     integer, allocatable :: iVect(:)
@@ -195,8 +198,7 @@ CONTAINS
   SUBROUTINE ComputeListNP_ListNPA_ListIPLG
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     USE W3ADATMD, ONLY: MPI_COMM_WAVE
-    USE yowDatapool, only: rtype, istatus
-    USE yowNodepool, only: npa, np, iplg
+    USE yowDatapool, only: istatus
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
     use mpi_f08
     IMPLICIT NONE
@@ -281,9 +283,9 @@ CONTAINS
   !*                                                                    *
   !**********************************************************************
   SUBROUTINE ComputeBoundaryInformation
-    use yowNodepool, only: ListNP, ListNPA, ListIPLG
+    use yowNodepool, only: ListNPA, ListIPLG
     USE W3GDATMD, ONLY: IOBP
-    USE W3ODATMD, only : IAPROC, NAPROC
+    USE W3ODATMD, only : NAPROC
     IMPLICIT NONE
     integer ListFirst(NAPROC), NbSend(NAPROC)
     integer IPROC, eSend, IP, IP_glob, NPAloc

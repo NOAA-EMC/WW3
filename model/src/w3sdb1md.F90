@@ -183,19 +183,22 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     USE CONSTANTS
-    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SDBC1, SDBC2, FDONLY, FSSOURCE, DDEN
-    USE W3ODATMD, ONLY: NDST
+    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SDBC1, SDBC2, FDONLY, DDEN
     USE W3GDATMD, ONLY: SIG
-    USE W3ODATMD, only : IAPROC
     USE W3PARALL, only : THR
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_T
+    USE W3ODATMD, ONLY: NDST
+#endif
 #ifdef W3_T0
     USE W3ARRYMD, ONLY: PRT2DS
+    USE W3ODATMD, ONLY: NDST
 #endif
 #ifdef W3_T1
     USE W3ARRYMD, ONLY: OUTMAT
+    USE W3ODATMD, ONLY: NDST
 #endif
     !/
     IMPLICIT NONE

@@ -155,8 +155,7 @@ PROGRAM W3OUTF
   USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD
   !/
   USE W3GDATMD
-  USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST,      &
-       USTDIR, RHOAIR
+  USE W3WDATMD, ONLY: TIME, WLV, ICE, BERG, UST, USTDIR, RHOAIR
   USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
        THS, FP0, THP0, DTDYN, FCUT,                &
        ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
@@ -173,7 +172,10 @@ PROGRAM W3OUTF
        HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
        WNMEAN, TAUA, TAUADIR, USSHX, USSHY
   USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
-       UNDEF, FLOGRD, FNMPRE, FNMGRD, FNMPNT, FNMRST, NOSWLL, NOGE
+       UNDEF, FLOGRD, FNMPRE, NOSWLL
+#ifdef W3_IS2
+  USE W3WDATMD, ONLY: ICEH, ICEF
+#endif
   !
   IMPLICIT NONE
   !/
@@ -192,7 +194,7 @@ PROGRAM W3OUTF
   CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
        TABNME*9
   LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),     &
-       SCALE, VECTOR, LTEMP(NGRPP)
+       SCALE, VECTOR
   !/
   !/ ------------------------------------------------------------------- /
   !/
@@ -632,7 +634,7 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: NXMAX, NXTOT, NBLOK, IH, IM, IS,     &
-         MFILL, J, ISEA, IX, IY, IXB, IB,     &
+         MFILL, ISEA, IX, IY, IXB, IB,     &
          IXA, NINGRD, JJ, IFI, IFJ
     INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY),          &
          MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),  &
