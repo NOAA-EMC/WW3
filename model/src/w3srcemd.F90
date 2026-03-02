@@ -1,4 +1,4 @@
-!> @file
+
 !> @brief Source term integration routine.
 !>
 !> @author H. L. Tolman
@@ -265,6 +265,7 @@ CONTAINS
     !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
     !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 )
     !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -500,6 +501,7 @@ CONTAINS
          XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
          ICESCALES, IICESMOOTH
+    USE W3GDATMD, ONLY: IC_NUMERICS
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
     USE W3IDATMD, ONLY: INFLAGS2
@@ -555,7 +557,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
     USE W3SRC4MD, ONLY : W3SPR4, W3SIN4, W3SDS4
-    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA
+    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA, SINTAILPAR
 #endif
 #ifdef W3_ST6
     USE W3SRC6MD
@@ -564,6 +566,7 @@ CONTAINS
 #endif
 #ifdef W3_NL1
     USE W3SNL1MD
+    USE W3GDATMD, ONLY: IQTPE
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD
@@ -634,7 +637,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
 #ifdef W3_NNT
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTOPN, EXTIOF
 #endif
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_SRCTRMCOMPUTE
@@ -1033,10 +1036,14 @@ CONTAINS
     TWS = 1./FMEANWS
 #endif
 #ifdef W3_ST4
-    TAUWX=0.
-    TAUWY=0.
-    IF ( IT .eq. 0 ) THEN
+    IF (SINTAILPAR(4).GT.0.5) THEN ! this is designed to keep the bug as an option
+      TAUWX=0.
+      TAUWY=0.
+    END IF
+    IF ( IT .EQ. 0 ) THEN
       LLWS(:) = .TRUE.
+      TAUWX=0.
+      TAUWY=0.
       USTAR=0.
       USTDIR=0.
     ELSE
@@ -1060,7 +1067,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-      CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+      IF (SINTAILPAR(4).GT.0.5) CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
     END IF
@@ -1156,11 +1163,15 @@ CONTAINS
       J      = LEN_TRIM(FNMPRE)
       WRITE (FNAME(11:13),'(I3.3)') IAPROC
       OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,   &
-           ERR=800,IOSTAT=IERR)
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) NK, NTH
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) SIG(1:NK) * TPIINV
+            IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3SRCE','',1,NAMEF=FNAME)
+      WRITE (NDSD,IOSTAT=IERR) NK, NTH
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+      WRITE (NDSD,IOSTAT=IERR) SIG(1:NK) * TPIINV
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       OPEN (NDSD2,FILE=FNMPRE(:J)//'time.ww3',                &
-           FORM='FORMATTED',ERR=800,IOSTAT=IERR)
+            FORM='FORMATTED',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3SRCE','',1,NAMEF='time.ww3')
     END IF
 #endif
     !
@@ -1215,7 +1226,11 @@ CONTAINS
       ! 2.b Nonlinear interactions.
       !
 #ifdef W3_NL1
-      CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      IF (IQTPE.GT.0) THEN
+        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      ELSE
+        CALL W3SNLGQM ( SPEC, CG1, WN1, DEPTH, VSNL, VDNL )
+      END IF
 #endif
 #ifdef W3_NL2
       CALL W3SNL2 ( SPEC, CG1, DEPTH, VSNL, VDNL )
@@ -1235,7 +1250,7 @@ CONTAINS
       IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
-        CALL W3STR1 ( SPEC, SPECOLD, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
+        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX, VSTR, VDTR )
 #endif
 #ifdef W3_PDLIB
       ENDIF
@@ -1316,6 +1331,33 @@ CONTAINS
       CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
            U10ABS, U10DIR, VSUO, VDUO)
 #endif
+      ! Sea Ice Source Terms if IC_NUMERICS namelist flag = True
+      IF (IC_NUMERICS) THEN
+#ifdef W3_IC1
+        IF (ICE .GT. 0) CALL W3SIC1 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
+#endif
+#ifdef W3_IS2
+        IF (ICE .GT. 0) CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
+           VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
+#endif
+#ifdef W3_IC2
+        IF (ICE .GT. 0) CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
+           IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
+#endif
+#ifdef W3_IC3
+        IF (ICE .GT. 0) CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+#endif
+#ifdef W3_IC4
+        IF (ICE .GT. 0) CALL W3SIC4 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
+#endif
+#ifdef W3_IC5
+        IF (ICE .GT. 0) CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+#endif
+      !
+#ifdef W3_IS1
+        IF (ICE .GT. 0) CALL W3SIS1 ( SPEC, ICE, VSIR )
+#endif
+      ENDIF
       !
       ! 2.g Dump training data if necessary
       !
@@ -1323,8 +1365,9 @@ CONTAINS
       WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
       WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
 8888  FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
-      WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
+      WRITE (NDSD,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
            DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       !
       IF ( FLAGNN ) THEN
         DO IK=1, NK
@@ -1336,9 +1379,12 @@ CONTAINS
             DOUT(IK,ITH) = VDNL(IS)
           END DO
         END DO
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) FOUT
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) SOUT
-        WRITE (NDSD,ERR=801,IOSTAT=IERR) DOUT
+        WRITE (NDSD,IOSTAT=IERR) FOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+        WRITE (NDSD,IOSTAT=IERR) SOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
+        WRITE (NDSD,IOSTAT=IERR) DOUT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SRC','',2,ISWRITE=.TRUE.)
       END IF
 #endif
       !
@@ -1375,6 +1421,12 @@ CONTAINS
         VDIN(1:NSPECH) = ICESCALEIN * VDIN(1:NSPECH)
         VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
+        IF(IC_NUMERICS) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+           VSIC(1:NSPECH) = ICE * VSIC(1:NSPECH) ! (see Rogers et al 2016) 
+           VDIC(1:NSPECH) = ICE * VDIC(1:NSPECH)
+#endif
+        ENDIF
       END IF
 
 #ifdef W3_PDLIB
@@ -1414,6 +1466,11 @@ CONTAINS
 #ifdef W3_UOST
         VS(IS) = VS(IS) + VSUO(IS)
 #endif
+        IF ( IC_NUMERICS .AND. ICE.GT.0. ) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+          VS(IS) = VS(IS) + VSIC(IS)
+#endif
+        ENDIF
         VD(IS) =  VDIN(IS) + VDNL(IS)  &
              + VDDS(IS) + VDBT(IS)
 #ifdef W3_ST6
@@ -1428,6 +1485,11 @@ CONTAINS
 #ifdef W3_UOST
         VD(IS) = VD(IS) + VDUO(IS)
 #endif
+        IF ( IC_NUMERICS .AND. ICE.GT.0. ) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+          VD(IS) = VD(IS) + VDIC(IS)
+#endif
+        ENDIF
         DAMAX = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
         AFAC = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
 #ifdef W3_NL5
@@ -1525,8 +1587,13 @@ CONTAINS
                   DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                 ENDIF
                 PreVS  = DVS / FAKS
-                eVS    = PreVS / CG1(IK) * CLATSL
-                eVD    = MIN(0.,VD(ISP))
+                IF (IOBP_LOC(JSEA) .EQ. 3) THEN
+                  eVS = 0
+                  eVD = 0
+                ELSE
+                  eVS    = PreVS / CG1(IK) * CLATSL
+                  eVD    = MIN(0.,VD(ISP))
+                ENDIF
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
@@ -1539,9 +1606,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC
@@ -1553,9 +1620,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
               END DO
             END DO
 
@@ -1684,7 +1751,7 @@ CONTAINS
 #endif
 #ifdef W3_TR1
         DO IS=IS1, NSPECH
-          eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
+          eInc1 = VSTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
 #endif
@@ -1734,6 +1801,14 @@ CONTAINS
                / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
           PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
                / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
+          IF ( IC_NUMERICS .AND. ICE.GT.0 ) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+             PHICE = PHICE + VSIC(IS) * DT * FACTOR             &
+                    / MAX ( 1. , (1.-HDT*VDIC(IS))) ! semi-implicit integration
+             TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIC(IS) * DT &
+                    / MAX ( 1. , (1.-HDT*VDIC(IS)))
+#endif
+          ENDIF
           IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
           HSTOT = HSTOT + SPEC(IS) * FACTOR
         END DO
@@ -1902,6 +1977,13 @@ CONTAINS
       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+      IF (SINTAILPAR(4).LT.0.5) CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
+           AMAX, U10ABS, U10DIR,                          &
+#ifdef W3_FLX5
+           TAUA, TAUADIR, DAIR,                     &
+#endif
+           USTAR, USTDIR,                                 &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
       !
@@ -1938,22 +2020,6 @@ CONTAINS
     DTDYN  = DTDYN / REAL(MAX(1,NSTEPS))
     FCUT   = FHIGH * TPIINV
     !
-    GOTO 888
-    !
-    ! Error escape locations
-    !
-#ifdef W3_NNT
-800 CONTINUE
-    WRITE (NDSE,8000) FNAME, IERR
-    CALL EXTCDE (1)
-    !
-801 CONTINUE
-    WRITE (NDSE,8001) IERR
-    CALL EXTCDE (2)
-#endif
-    !
-888 CONTINUE
-    !
     ! 9.a  Computes PHIOC------------------------------------------ *
     !     The wave to ocean flux is the difference between initial energy
     !     and final energy, plus wind input plus the SNL flux to high freq.,
@@ -1988,6 +2054,13 @@ CONTAINS
     !
     TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1))/DTG
     TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2))/DTG
+    IF (IC_NUMERICS) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+        TAUICE(:)=TAUICE(:)/DTG
+        TAUOX = TAUOX - TAUICE(1)
+        TAUOY = TAUOY - TAUICE(2)
+#endif
+    ENDIF
     TAUWIX=TAUWIX/DTG
     TAUWIY=TAUWIY/DTG
     TAUWNX=TAUWNX/DTG
@@ -2002,6 +2075,11 @@ CONTAINS
     PHIAW =DWAT*GRAV*PHIAW /DTG
     PHINL =DWAT*GRAV*PHINL /DTG
     PHIBBL=DWAT*GRAV*PHIBBL/DTG
+    IF (IC_NUMERICS) THEN
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+       PHICE =-1.*DWAT*GRAV*PHICE/DTG
+#endif
+    ENDIF
     !
     ! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
     !     INFLAGS2(4) is true if ice concentration was ever read during
@@ -2014,133 +2092,136 @@ CONTAINS
 #endif
 
     IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN
-
-      IF (IICEDISP) THEN
-        ICECOEF2 = 1E-6
-        CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
-             SIG,WN_R,CG_ICE,ALPHA_LIU)
+      IF (.NOT. IC_NUMERICS ) THEN
+        IF (IICEDISP) THEN
+          ICECOEF2 = 1E-6
+          CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
+               SIG,WN_R,CG_ICE,ALPHA_LIU)
         !
-        IF (IICESMOOTH) THEN
+          IF (IICESMOOTH) THEN
 #ifdef W3_IS2
-          DO IK=1,NK
-            SMOOTH_ICEDISP=0.
-            IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
-              SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
-            END IF
-            WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
-          END DO
+            DO IK=1,NK
+              SMOOTH_ICEDISP=0.
+              IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
+                SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
+              END IF
+              WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
+            END DO
 #endif
+          END IF
+        ELSE
+          WN_R=WN1
+          CG_ICE=CG1
         END IF
-      ELSE
-        WN_R=WN1
-        CG_ICE=CG1
-      END IF
       !
-      R(:)=1 ! In case IC2 is defined but not IS2
+        R(:)=1 ! In case IC2 is defined but not IS2
       !
 #ifdef W3_IC1
-      CALL W3SIC1 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
+        CALL W3SIC1 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
-      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
+        CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
            VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
 #endif
 #ifdef W3_IC2
-      CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
+        CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
            IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 #endif
 #ifdef W3_IC3
-      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+        CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC4
-      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
+        CALL W3SIC4 ( SPEC,DEPTH, CG1, &
+                                    IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC5
-      CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+        CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 #endif
       !
 #ifdef W3_IS1
-      CALL W3SIS1 ( SPEC, ICE, VSIR )
+        CALL W3SIS1 ( SPEC, ICE, VSIR )
 #endif
-      SPEC2 = SPEC
-      !
-      TAUICE(:) = 0.
-      PHICE = 0.
-      DO IK=1,NK
-        IS = 1+(IK-1)*NTH
+      
+        SPEC2 = SPEC
         !
-        ! First part of ice term integration: dissipation part
-        !
-        ATT=1.
+        TAUICE(:) = 0.
+        PHICE = 0.
+        DO IK=1,NK
+          IS = 1+(IK-1)*NTH
+          !
+          ! First part of ice term integration: dissipation part
+          !
+          ATT=1.
 #ifdef W3_IC1
-        ATT=EXP(ICE*VDIC(IS)*DTG)
+          ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC2
-        ATT=EXP(ICE*VDIC(IS)*DTG)
+          ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC3
-        ATT=EXP(ICE*VDIC(IS)*DTG)
+          ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC4
-        ATT=EXP(ICE*VDIC(IS)*DTG)
+          ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC5
-        ATT=EXP(ICE*VDIC(IS)*DTG)
+          ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IS1
-        ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
+          ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
 #endif
 #ifdef W3_IS2
-        ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
-        IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
-          !
-          ! If there is not re-distribution in directions the scattering is just an attenuation
-          !
-          ATT=ATT*EXP((ICE*VDIR(IS))*DTG)
-        END IF
-#endif
-        SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
-        !
-        ! Second part of ice term integration: scattering including re-distribution in directions
-        !
-#ifdef W3_IS2
-        IF (IS2PARS(2).GE.0) THEN
-          IF (IS2PARS(20).GT.0.5) THEN
+          ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
+          IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
             !
-            ! Case of isotropic back-scatter: the directional spectrum is decomposed into
-            !               - an isotropic part (ISO): eigenvalue of scattering is 0
-            !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
+            ! If there is not re-distribution in directions the scattering is just an attenuation
             !
-            SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-            ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
-            SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
-                 +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
-          ELSE
-            !
-            ! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
-            !
-            SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
-            SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
-                 REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
-                 *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
+            ATT=ATT*EXP((ICE*VDIR(IS))*DTG)
           END IF
-        END IF
 #endif
-        !
-        ! 10.2  Fluxes of energy and momentum due to ice effects
-        !
-        FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
-        FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
-        DO ITH = 1,NTH
-          IS = ITH+(IK-1)*NTH
-          PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR
-          COSI(1)=ECOS(IS)
-          COSI(2)=ESIN(IS)
-          TAUICE(:) = TAUICE(:) - (SPEC(IS)-SPEC2(IS))*FACTOR2*COSI(:)
+          SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
+          !
+          ! Second part of ice term integration: scattering including re-distribution in directions
+          !
+#ifdef W3_IS2
+          IF (IS2PARS(2).GE.0) THEN
+            IF (IS2PARS(20).GT.0.5) THEN
+              !
+              ! Case of isotropic back-scatter: the directional spectrum is decomposed into
+              !               - an isotropic part (ISO): eigenvalue of scattering is 0
+              !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
+              !
+              SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
+              ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
+              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
+                   +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
+            ELSE
+              !
+              ! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
+              !
+              SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
+              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
+                   REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
+                   *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
+            END IF
+          END IF
+#endif
+          !
+          ! 10.2  Fluxes of energy and momentum due to ice effects
+          !
+          FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
+          FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
+          DO ITH = 1,NTH
+            IS = ITH+(IK-1)*NTH
+            PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR
+            COSI(1)=ECOS(IS)
+            COSI(2)=ESIN(IS)
+            TAUICE(:) = TAUICE(:) - (SPEC(IS)-SPEC2(IS))*FACTOR2*COSI(:)
+          END DO
         END DO
-      END DO
-      PHICE =-1.*DWAT*GRAV*PHICE /DTG
-      TAUICE(:)=TAUICE(:)/DTG
+        PHICE =-1.*DWAT*GRAV*PHICE /DTG
+        TAUICE(:)=TAUICE(:)/DTG
+      ENDIF ! end if IC_NUMERICS
     ELSE
 #ifdef W3_IS2
       IF (IS2PARS(10).LT.0.5) THEN
@@ -2244,13 +2325,6 @@ CONTAINS
     RETURN
     !
     ! Formats
-    !
-#ifdef W3_NNT
-8000 FORMAT (/' *** ERROR W3SRCE : ERROR IN OPENING FILE ',A,' ***'/ &
-         '                    IOSTAT = ',I10/)
-8001 FORMAT (/' *** ERROR W3SRCE : ERROR IN WRITING TO FILE ***'/    &
-         '                    IOSTAT = ',I10/)
-#endif
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3SRCE : COUNTERS   : NO LONGER AVAILABLE')

@@ -44,6 +44,17 @@
         ]
     },
     {
+        "name": "scripmpi",
+        "num_switches": "upto1",
+        "description": "use MPI parallelism for SCRIP regridding",
+        "valid-options": [
+            {
+                "name": "SCRIPMPI",
+                "requires": ["SCRIP", "MPI"]
+            }
+        ]
+    },
+    {
         "name": "shared",
         "num_switches": "one",
         "description": "'shared / distributed memory",
@@ -264,7 +275,7 @@
             },
             {
                 "name": "STAB3",
-                "requires": ["ST3", "ST4"]
+                "requires_any": ["ST3", "ST4"]
             }
         ]
     },
@@ -686,6 +697,7 @@
         "valid-options": [
             {
                 "name": "OASACM",
+                "requires": ["OASIS"],
                 "build_files": ["w3agcmmd.F90"]
             }
         ]
@@ -697,6 +709,7 @@
         "valid-options": [
             {
                 "name": "OASOCM",
+                "requires": ["OASIS"],
                 "build_files": ["w3ogcmmd.F90"]
             }
         ]
@@ -708,6 +721,7 @@
         "valid-options": [
             {
                 "name": "OASICM",
+                "requires": ["OASIS"],
                 "build_files": ["w3igcmmd.F90"]
             }
         ]
@@ -718,7 +732,8 @@
         "description": "use of the coupler",
         "valid-options": [
             {
-                "name": "COU"
+                "name": "COU",
+                "requires": ["MPI"]
             }
         ]
     },
@@ -729,6 +744,7 @@
         "valid-options": [
             {
                 "name": "OASIS",
+		"requires": ["MPI"],
                 "build_files": ["w3oacpmd.F90"],
                 "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
 
@@ -746,6 +762,17 @@
         ]
     },
     {
+        "name": "pio",
+        "num_switches": "upto1",
+        "description": "use pio library",
+        "valid-options":[
+            {
+                "name": "PIO",
+                "requires": ["MPI"]
+            }
+        ]
+    },
+    {
         "name": "pdlib",
         "num_switches": "upto1",
         "description": "use pdlib",
@@ -756,16 +783,16 @@
        	    }
         ]
     },
-    {   
-        "name": "ddlib", 
+    {
+        "name": "ddlib",
         "num_switches": "upto1",
         "description": "domain decomposition library",
         "valid-options": [
-            {   
+            {
                 "name": "METIS",
                 "requires": ["PDLIB"]
-            },  
-            {   
+            },
+            {
                 "name": "SCOTCH",
                 "requires": ["PDLIB"]
             }
@@ -811,6 +838,26 @@
         "valid-options": [
             {
                 "name": "B4B"
+            }
+        ]
+    },
+    {
+        "name": "bin2nc",
+        "num_switches": "upto1",
+        "description": "use netcdf instead of binary model output",
+        "valid-options": [
+            {
+                "name": "BIN2NC"
+            }
+        ]
+    },
+    {
+        "name": "ascii",
+        "num_switches": "upto1",
+        "description": "ASCII output for binary .ww3 file",
+        "valid-options": [
+            {
+                "name": "ASCII"
             }
         ]
     }

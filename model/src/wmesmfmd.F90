@@ -167,7 +167,6 @@ module WMESMFMD
   !/
   ! --- ESMF Module
   use ESMF
-
   ! --- NUOPC modules
   use NUOPC
   use NUOPC_Model, parent_SetServices => SetServices
@@ -199,13 +198,14 @@ module WMESMFMD
   !/
   !/ Specify default data typing
   !/
-  implicit none
-  !/
   !/ Include MPI definitions
   !/
 #ifdef W3_MPI
-  include "mpif.h"
+  use mpi_f08
+  use, intrinsic :: iso_c_binding, only: C_INT
 #endif
+  !/
+  implicit none
   !/
   !/ Specify default accessibility
   !/
@@ -260,14 +260,14 @@ module WMESMFMD
   logical                       :: noActiveImpFields         !< noActiveImpFields
   integer                       :: numImpFields         !< numImpFields
   character(64), allocatable    :: impFieldName(:)         !< impFieldName
-  character(128), allocatable   :: impFieldStdName(:)         !< impFieldStdName
+  character(80), allocatable    :: impFieldStdName(:)         !< impFieldStdName
   logical, allocatable          :: impFieldInitRqrd(:)         !< impFieldInitRqrd
   logical, allocatable          :: impFieldActive(:)         !< impFieldActive
   type(ESMF_Field), allocatable :: impField(:)         !< impField
   !
   ! --- Background import fields
   character(10), allocatable    :: mbgFieldName(:)     !< mbgFieldName
-  character(128), allocatable   :: mbgFieldStdName(:)  !< mbgFieldStdName
+  character(80), allocatable    :: mbgFieldStdName(:)  !< mbgFieldStdName
   logical, allocatable          :: mbgFieldActive(:)         !< mbgFieldActive
   type(ESMF_Field), allocatable :: mbgField(:)         !< mbgField
   type(ESMF_Field), allocatable :: bmskField(:)         !< bmskField
@@ -293,7 +293,7 @@ module WMESMFMD
   logical                       :: noActiveExpFields         !< noActiveExpFields
   integer                       :: numExpFields         !< numExpFields
   character(64), allocatable    :: expFieldName(:)         !< expFieldName
-  character(128), allocatable   :: expFieldStdName(:)         !< expFieldStdName
+  character(80), allocatable    :: expFieldStdName(:)         !< expFieldStdName
   integer, allocatable          :: expFieldDim(:)         !< expFieldDim
   logical, allocatable          :: expFieldActive(:)         !< expFieldActive
   type(ESMF_Field), allocatable :: expField(:)         !< expField
@@ -757,7 +757,8 @@ contains
     integer, parameter :: iwt=2
     real(8) :: wstime, wftime
     integer :: idsi, idso, idss, idst, idse
-    integer :: mpiComm = -99
+    type(MPI_COMM) :: mpicomm = MPI_COMM_WORLD
+    integer(C_INT) :: c_int_mpicomm
     logical :: configIsPresent
     type(ESMF_Config) :: config
     character(ESMF_MAXSTR) :: wrkdir = '.'
@@ -887,7 +888,8 @@ contains
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return
     call ESMF_VMGet(vm, petCount=npet, localPet=lpet, &
-         mpiCommunicator=mpiComm, rc=rc)
+          mpiCommunicator=c_int_mpicomm, rc=rc)
+    mpicomm   = MPI_Comm(c_int_mpicomm)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return
     nmproc = npet
     improc = lpet + 1
@@ -2011,6 +2013,7 @@ contains
     !/                  +-----------------------------------+
     !/
     !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -2138,71 +2141,72 @@ contains
     !
     ! If not all import dependencies are satisfied, then return
     !
-    if (.not.allUpdated) goto 1
-    !
-    ! -------------------------------------------------------------------- /
-    ! 2.  All import dependencies are satisfied, so finish initialization
-    !
-    ! 2.a Report all import dependencies are satisfied
-    !
-    write(msg,'(a)') trim(cname)// &
-         ': all inter-model data dependencies SATISFIED'
-    if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-    if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
-    !
-    ! 2.b Setup background blending mask for each import field
-    !
-    do i = 1,numImpFields
-      if (.not.impFieldActive(i)) cycle
-      if (.not.mbgFieldActive(i)) cycle
-      call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
+    if (allUpdated) then
+      !
+      ! -------------------------------------------------------------------- /
+      ! 2.  All import dependencies are satisfied, so finish initialization
+      !
+      ! 2.a Report all import dependencies are satisfied
+      !
+      write(msg,'(a)') trim(cname)// &
+           ': all inter-model data dependencies SATISFIED'
+      if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+      !
+      ! 2.b Setup background blending mask for each import field
+      !
+      do i = 1,numImpFields
+        if (.not.impFieldActive(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
+        call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+      !
+      ! 2.c Get import fields
+      !
+      call GetImport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    enddo
-    !
-    ! 2.c Get import fields
-    !
-    call GetImport(gcomp, rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    !
-    ! 2.d Finish initialization (compute initial state), if not restart
-    !
-    do imod = 1,nrgrd
-      call w3setg ( imod, mdse, mdst )
-      call w3setw ( imod, mdse, mdst )
-      call w3seta ( imod, mdse, mdst )
-      call w3seti ( imod, mdse, mdst )
-      call w3seto ( imod, mdse, mdst )
-      call wmsetm ( imod, mdse, mdst )
-      local = iaproc .gt. 0 .and. iaproc .le. naproc
-      if ( local .and. flcold .and. fliwnd ) call w3uini( va )
-    enddo
-    !
-    ! 2.e Set export fields
-    !
-    call SetExport(gcomp, rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    !
-    ! 2.f Set Updated Field Attribute to "true", indicating to the
-    !     generic code to set the timestamp for these fields
-    !
-    do i = 1,numExpFields
-      if (.not.expFieldActive(i)) cycle
-      call NUOPC_SetAttribute(expField(i), name="Updated", &
+      !
+      ! 2.d Finish initialization (compute initial state), if not restart
+      !
+      do imod = 1,nrgrd
+        call w3setg ( imod, mdse, mdst )
+        call w3setw ( imod, mdse, mdst )
+        call w3seta ( imod, mdse, mdst )
+        call w3seti ( imod, mdse, mdst )
+        call w3seto ( imod, mdse, mdst )
+        call wmsetm ( imod, mdse, mdst )
+        local = iaproc .gt. 0 .and. iaproc .le. naproc
+        if ( local .and. flcold .and. fliwnd ) call w3uini( va )
+      enddo
+      !
+      ! 2.e Set export fields
+      !
+      call SetExport(gcomp, rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      !
+      ! 2.f Set Updated Field Attribute to "true", indicating to the
+      !     generic code to set the timestamp for these fields
+      !
+      do i = 1,numExpFields
+        if (.not.expFieldActive(i)) cycle
+        call NUOPC_SetAttribute(expField(i), name="Updated", &
+             value="true", rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+      !
+      ! 2.g Set InitializeDataComplete Attribute to "true", indicating to the
+      !     generic code that all inter-model data dependencies are satisfied
+      !
+      call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
            value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-    enddo
-    !
-    ! 2.g Set InitializeDataComplete Attribute to "true", indicating to the
-    !     generic code that all inter-model data dependencies are satisfied
-    !
-    call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
-         value="true", rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return
+    end if
     !
     ! -------------------------------------------------------------------- /
     ! Post
     !
-1   rc = ESMF_SUCCESS
+    rc = ESMF_SUCCESS
     call ESMF_VMWtime(wftime)
     wtime(iwt) = wtime(iwt) + wftime - wstime
     wtcnt(iwt) = wtcnt(iwt) + 1

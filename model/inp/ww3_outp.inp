@@ -2,9 +2,10 @@ $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Point output post-processing                           $
 $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s),
-$ and number of output times.
+$ and number of output times, optional per-time-step (1) or single (0)
+$ point output, optional point output prefix
 $
-  19680606 060000  3600.  7
+  19680606 060000  3600.  7   1  gfswave
 $
 $ Points requested --------------------------------------------------- $
 $ Define points for which output is to be generated.

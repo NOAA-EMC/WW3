@@ -13,6 +13,7 @@ MODULE W3DISPMD
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    10-Mar-2016 : Added Liu & Mollo-Christensen
   !/                  dispersion with ice (E. Rogers)     ( version 5.10 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -308,7 +309,7 @@ CONTAINS
       END IF
       IF (DIF .LT. EPS .AND. RDIF .LT. EPS) THEN
         ICON = 1
-        GOTO 100
+        EXIT
       ELSE
         KOLD = K
         F    = GRAV*KOLD*TANH(KOLD*H)-W0**2
@@ -321,10 +322,11 @@ CONTAINS
       END IF
     END DO
     !
-    DIF   = ABS(K-KOLD)
-    RDIF  = DIF/K
-    IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
-100 CONTINUE
+    IF (ICON==0) THEN
+      DIF   = ABS(K-KOLD)
+      RDIF  = DIF/K
+      IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
+    END IF
     IF (2*K*H.GT.25) THEN
       CG = W0/K * 0.5
     ELSE
@@ -425,9 +427,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: I1, I2
     !!/S      INTEGER, SAVE           :: IENT = 0
-    REAL                    :: KH0, KH, TMP, TP, CP, L
+    REAL                    :: KH0, KH, TMP, TP
     REAL, PARAMETER         :: BETA1 = 1.55
     REAL, PARAMETER         :: BETA2 = 1.3
     REAL, PARAMETER         :: BETA3 = 0.216
@@ -782,7 +783,7 @@ CONTAINS
     USE CONSTANTS, ONLY: TPI
     USE W3ODATMD,  ONLY: NDSE
     USE W3SERVMD,  ONLY: EXTCDE
-    USE W3GDATMD, ONLY: NK, IICEHDISP, IICEDDISP, IICEFDISP, IICEHMIN
+    USE W3GDATMD, ONLY: NK, IICEHDISP, IICEDDISP, IICEFDISP
     ! USE W3DISPMD,  ONLY: WAVNU1
 #ifdef W3_S
     USE W3SERVMD,  ONLY: STRACE
@@ -1047,7 +1048,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, TPI, GRAV
-    USE W3GDATMD, ONLY: NK
 #ifdef W3_S
     USE W3SERVMD,  ONLY: STRACE
 #endif

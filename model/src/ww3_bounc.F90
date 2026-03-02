@@ -25,8 +25,9 @@ PROGRAM W3BOUNC
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |           F. Ardhuin              |
   !/                  |           M. Accensi              |
+  !/                  |           D. A. Honegger          |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         21-Jul-2020 |
+  !/                  | Last update :         02-Jan-2025 |
   !/                  +-----------------------------------+
   !/
   !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
@@ -38,6 +39,9 @@ PROGRAM W3BOUNC
   !/    15-May-2018 : Add namelist feature                ( version 6.05 )
   !/    04-May-2020 : Update spectral conversion          ( version 7.11 )
   !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
+  !/    02-Jan-2025 : Change geographic distance method   ( version 7.xx )
+  !/    02-Jan-2025 : Add verbose=2 display output        ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/
   !/    Copyright 2012-2013 National Weather Service (NWS),
@@ -71,6 +75,8 @@ PROGRAM W3BOUNC
   !     ----------------------------------------------------------------
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
@@ -138,7 +144,8 @@ PROGRAM W3BOUNC
   USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3TIMEMD
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_SPHERE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF, &
+                      DIST_HAVERSINE
 #ifdef W3_RTD
   USE W3SERVMD, ONLY: W3EQTOLL
 #endif
@@ -147,18 +154,16 @@ PROGRAM W3BOUNC
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
-
+#ifdef W3_MPI
+  use mpi_f08
+#endif
   !/
   IMPLICIT NONE
   !
-#ifdef W3_MPI
-  INCLUDE "mpif.h"
-#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters
   !/
-
   TYPE(NML_BOUND_T)       :: NML_BOUND
   !
   INTEGER                 :: IX, IY, ISEA, I,JJ,IP,IP1,J,IT,       &
@@ -272,17 +277,23 @@ PROGRAM W3BOUNC
     FILE = NML_BOUND%FILE
 
     NBO2 = 0
-    OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+    OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3BOUNC','SPEC',69,NAMEF=FILE)
     REWIND (NDSL)
     DO
-      READ (NDSL,*,END=400,ERR=802)
+      READ (NDSL,*,IOSTAT=IERR)
+      IF (IERR.LT.0) EXIT
+      IF (IERR.GT.0) THEN
+        WRITE (NDSE,1002) IERR
+        CALL EXTCDE ( 62 )
+      END IF
       NBO2 = NBO2 + 1
     END DO
-400 CONTINUE
     ALLOCATE(SPECFILES(NBO2))
     REWIND (NDSL)
     DO I=1,NBO2
-      READ (NDSL,'(A512)',END=801,ERR=802) SPECFILES(I)
+      READ (NDSL,'(A512)',IOSTAT=IERR) SPECFILES(I)
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3BOUNC','INPUT',61,FIELD='SPECFILES')
     END DO
     CLOSE(NDSL)
 
@@ -292,19 +303,27 @@ PROGRAM W3BOUNC
   ! process old ww3_bounc.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bounc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bounc.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
+      CALL EXTCDE ( 65 )
+    END IF
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3BOUNC','INPUT',61,FIELD='COMSTR')
     IF (COMSTR.EQ.' ') COMSTR = '$'
     WRITE (NDSO,901) COMSTR
 
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) INXOUT
+    READ (NDSI,*,IOSTAT=IERR) INXOUT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3BOUNC','INPUT',61,FIELD='INXOUT')
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) INTERP
+    READ (NDSI,*,IOSTAT=IERR) INTERP
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3BOUNC','INPUT',61,FIELD='INTERP')
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) VERBOSE
+    READ (NDSI,*,IOSTAT=IERR) VERBOSE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3BOUNC','INPUT',61,FIELD='VERBOSE')
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     !
     NBO2 = 0
@@ -358,7 +377,10 @@ PROGRAM W3BOUNC
     OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
     READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
     NSPEC1  = NK1 * NTH1
-    IF ( IDTST .NE. IDSTRBC ) GOTO 803
+    IF ( IDTST .NE. IDSTRBC ) THEN
+      WRITE (NDSE,1003) IDTST, IDSTRBC
+      CALL EXTCDE ( 63 )
+    END IF
     WRITE(NDSO,940) VERTEST
     WRITE(NDSO,941) IDTST
     IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', &
@@ -386,7 +408,14 @@ PROGRAM W3BOUNC
       IF (IERR.EQ.0) THEN
         IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR
         DO IP=1, NBI2
-          READ (NDSB,END=803,ERR=804) ABPIN(:,IP)
+          READ (NDSB,IOSTAT=ICODE) ABPIN(:,IP)
+          IF (ICODE.LT.0) THEN
+            WRITE (NDSE,1003) IDTST, IDSTRBC
+            CALL EXTCDE ( 63 )
+          ELSE IF (ICODE.GT.0) THEN
+            WRITE (NDSE,1004)
+            CALL EXTCDE ( 64 )
+          END IF
         END DO
       END IF
     END DO
@@ -510,7 +539,10 @@ PROGRAM W3BOUNC
 
       ELSE
         IF (NKI.NE.NK1.OR.NTHI.NE.NTH1.OR.NT1.NE.NTI &
-             ) GOTO 805
+             ) THEN
+          WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
+          CALL EXTCDE ( 65 )
+        END IF
       END IF
 
       ! position variables : lon/lat or x/y
@@ -533,6 +565,9 @@ PROGRAM W3BOUNC
         IRET=NF90_GET_VAR(NCID(IP), VARID(3), LONS(IP))
         CALL CHECK_ERR(IRET)
       END IF
+
+      ! Display the location of the ingested NetCDF file
+      IF (VERBOSE.GE.2) WRITE(NDSO,*) 'FILEID:',IP,'LON:',LONS(IP),'LAT:',LATS(IP)
 
       ! freq and dir variables
       IRET=NF90_INQ_VARID(NCID(IP),"frequency",VARID(4))
@@ -649,7 +684,7 @@ PROGRAM W3BOUNC
       DO IP=1,NBO2
         !           Searches for the nearest 2 points where spectra are available
         IF (FLAGLL)  THEN
-          DIST=DIST_SPHERE ( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
+          DIST=DIST_HAVERSINE( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
         ELSE
           DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
         END IF
@@ -671,6 +706,12 @@ PROGRAM W3BOUNC
             END IF
           END IF
         END IF
+        ! Display iteration to find distance minima
+        IF (VERBOSE.GE.2) WRITE(NDSO,*) &
+            'BOUNDID:',IP1,'FILEID:',IP, &
+            'DX:',LONS(IP)-XBPO(IP1),'DY:',LATS(IP)-YBPO(IP1), &
+            'DIST:',DIST,'DMIN:',DMIN,'DMIN2:',DMIN2
+
       END DO ! IP1=1,NBO2
       IF (VERBOSE.GE.1) WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
            LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
@@ -751,40 +792,7 @@ PROGRAM W3BOUNC
 
   END IF ! INXOUT.EQ.'WRITE'
 
-  GOTO 888
-
-  !
-  ! Escape locations read errors :
-  !
-
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 61 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 62 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003) IDTST, IDSTRBC
-  CALL EXTCDE ( 63 )
-  !
-804 CONTINUE
-  WRITE (NDSE,1004)
-  CALL EXTCDE ( 64 )
-  !
-805 CONTINUE
-  WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
-  CALL EXTCDE ( 65 )
-  !
-809 CONTINUE
-  WRITE (NDSE,1009) FILE, IERR
-  CALL EXTCDE ( 69 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
-
-
   !
   ! Formats
   !
@@ -811,9 +819,6 @@ PROGRAM W3BOUNC
        ' ========================================='/          &
        '         WAVEWATCH III Boundary input '/)
   !
-1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUNC : '/              &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
        '     ERROR IN READING ',A,' FROM INPUT FILE'/         &
        '     IOSTAT =',I5/)
@@ -831,20 +836,12 @@ PROGRAM W3BOUNC
        '     OR NTHI =',I3,' DIFFERS FROM NTH1 =',I3/ &
        '     OR NTI =',I5,' DIFFERS FROM NT1 =',I5 /)
   !
-1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
-       '     ERROR IN OPENING SPEC FILE: ', A/                &
-       '     IOSTAT =',I5/)
-  !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
        '     SPEC FILE DOES NOT EXIST : ',A/)
   !
   !
-  !/
-  !/ End of W3BOUNC ---------------------------------------------------- /
-  !/
-END PROGRAM W3BOUNC
-!/ ------------------------------------------------------------------- /
 
+CONTAINS
 
 !==============================================================================
 !> @brief Check input return status for error value
@@ -873,3 +870,8 @@ SUBROUTINE CHECK_ERR(IRET)
 END SUBROUTINE CHECK_ERR
 
 !==============================================================================
+  !/
+  !/ End of W3BOUNC ---------------------------------------------------- /
+  !/
+END PROGRAM W3BOUNC
+!/ ------------------------------------------------------------------- /

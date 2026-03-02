@@ -7,7 +7,7 @@ $
 $
 $ Request flags identifying fields as in ww3_shel input and section 2.4 fo the manual.
 N 
-HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD
+HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD QP QKK
 $
 $ Output type ITYPE [0,1,2,3]
 $

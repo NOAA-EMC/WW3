@@ -68,6 +68,7 @@ PROGRAM W3OUTF
   !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
   !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -106,6 +107,8 @@ PROGRAM W3OUTF
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input file.
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -143,7 +146,7 @@ PROGRAM W3OUTF
   USE W3WDATMD, ONLY: W3NDAT, W3SETW
   USE W3ADATMD, ONLY: W3NAUX, W3SETA
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -159,7 +162,8 @@ PROGRAM W3OUTF
        ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
        PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
        PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
-       PTHP0, PQP, PSW, PPE, PGW, QP,              &
+       PTHP0, PQP, PSW, PPE, PGW, QP, QKK,         &
+       SKEW, EMBIA1, EMBIA2,                       &
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -167,9 +171,9 @@ PROGRAM W3OUTF
        CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
        CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
        HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
-       WNMEAN, TAUA, TAUADIR
+       WNMEAN, TAUA, TAUADIR, USSHX, USSHY
   USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
-       UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
+       UNDEF, FLOGRD, FNMPRE, FNMGRD, FNMPNT, FNMRST, NOSWLL, NOGE
   !
   IMPLICIT NONE
   !/
@@ -220,8 +224,10 @@ PROGRAM W3OUTF
   !
   J      = LEN_TRIM(FNMPRE)
   OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_outf.inp',STATUS='OLD',       &
-       ERR=800,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTF','INPUT',10)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -248,7 +254,8 @@ PROGRAM W3OUTF
   !     Output times
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+  READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0. ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
@@ -272,13 +279,13 @@ PROGRAM W3OUTF
   !
   CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
        FLREQ, 1, 1, IERR )
-  IF (IERR.NE.0) GOTO 800
-
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTF','INPUT',10)
   !
   ! ... Output type
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) ITYPE, IPART
+  READ (NDSI,*,IOSTAT=IERR) ITYPE, IPART
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
   !Li   IF ( ITYPE.LT.0 .OR. ITYPE.GT.3 ) THEN
   IF ( ITYPE.LT.0 .OR. ITYPE.GT.4 ) THEN
     !Li   Type 4 for text output at sea points.  JGLi12Dec2012
@@ -297,7 +304,8 @@ PROGRAM W3OUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,944)
-        GOTO 888
+        WRITE (NDSO,999)
+        STOP
       END IF
     END DO
     !
@@ -306,8 +314,9 @@ PROGRAM W3OUTF
   ELSE IF (ITYPE .EQ. 1) THEN
     WRITE (NDSO,942) ITYPE, 'Print plots'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802)                               &
+    READ (NDSI,*,IOSTAT=IERR)                               &
          IX1, IXN, IXS, IY1, IYN, IYS, SCALE, VECTOR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
     IX1    = MAX ( IX1 , 1 )
     IXN    = MIN ( IXN , NX )
     IXS    = MAX ( IXS , 1 )
@@ -323,7 +332,8 @@ PROGRAM W3OUTF
     WRITE (NDSO,942) ITYPE, 'Field statistics'
     NDSDT  = NDSDAT - 1
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
+    READ (NDSI,*,IOSTAT=IERR) IX1, IXN, IY1, IYN
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
     IX1    = MAX ( IX1 , 1 )
     IXN    = MIN ( IXN , NX )
     IY1    = MAX ( IY1 , 1 )
@@ -335,8 +345,9 @@ PROGRAM W3OUTF
   ELSE IF (ITYPE .EQ. 3) THEN
     WRITE (NDSO,942) ITYPE, 'Transfer files'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802)                               &
+    READ (NDSI,*,IOSTAT=IERR)                               &
          IX1, IXN, IY1, IYN, IDLA, IDFM
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
     IX1    = MAX ( IX1 , 1 )
     IXN    = MIN ( IXN , NX )
     IY1    = MAX ( IY1 , 1 )
@@ -353,8 +364,9 @@ PROGRAM W3OUTF
   ELSE IF (ITYPE .EQ. 4) THEN
     WRITE (NDSO,942) ITYPE, 'Full sea-point output.'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802)                               &
+    READ (NDSI,*,IOSTAT=IERR)                               &
          IX1, IXN, IY1, IYN, IDLA, IDFM
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTF','INPUT',11)
     !Li
     !
   END IF
@@ -409,7 +421,8 @@ PROGRAM W3OUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,944)
-        GOTO 888
+        WRITE (NDSO,999)
+        STOP
       END IF
       CYCLE
     END IF
@@ -434,23 +447,6 @@ PROGRAM W3OUTF
   !
   IF (ITYPE.EQ.3) WRITE (NDSO,972)
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 10 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 11 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 12 )
-  !
-888 CONTINUE
   WRITE (NDSO,999)
   !
   ! Formats
@@ -511,17 +507,6 @@ PROGRAM W3OUTF
        ' ========================================='/          &
        '         WAVEWATCH III Field output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTF : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTF : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTF : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTF : '/               &
        '     ILLEGAL TYPE, ITYPE =',I4/)
   !/
@@ -572,6 +557,7 @@ CONTAINS
     !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
     !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -1940,6 +1926,57 @@ CONTAINS
               CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOCY(1:NSEA)        &
                    , MAPSF, X2 )
             ENDIF
+
+            !
+          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+            IF ( VECTOR ) THEN
+              FLTWO  = .TRUE.
+            ELSE
+              FLDIR  = .TRUE.
+            END IF
+            FSC    = 0.001
+            UNITS  = 'm s-1'
+            ENAME  = '.ussh'
+            DO ISEA=1, NSEA
+              IF (USSHX(ISEA) .NE. UNDEF) THEN
+                USSHX(ISEA)=MAX(-0.9998,MIN(0.9998,USSHX(ISEA)))
+                USSHY(ISEA)=MAX(-0.9998,MIN(0.9998,USSHY(ISEA)))
+              END IF
+            END DO
+#ifdef W3_RTD
+            ! Rotate x,y vector back to standard pole
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSHX, USSHY, AnglD)
+#endif
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = USSHX(1:NSEA)
+              XS2    = USSHY(1:NSEA)
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSHX(1:NSEA)     &
+                   , MAPSF, XX )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSHY(1:NSEA)     &
+                   , MAPSF, XY )
+            ENDIF
+            DO ISEA=1, NSEA
+              CABS   = SQRT(USSHX(ISEA)**2+USSHY(ISEA)**2)
+              IF ( USSHX(ISEA)  .NE. UNDEF ) THEN
+                USSHY(ISEA) = MOD ( 630. -                      &
+                     RADE*ATAN2(USSHY(ISEA),USSHX(ISEA)) , 360. )
+              ELSE
+                USSHY(ISEA) = UNDEF
+                CABS        = UNDEF
+              END IF
+              USSHX(ISEA) = CABS
+            END DO
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS3    = USSHX(1:NSEA)
+              XS4    = USSHY(1:NSEA)
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSHX(1:NSEA),     &
+                   MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSHY(1:NSEA),     &
+                   MAPSF, X2 )
+            ENDIF
+
             !
           ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
             IF ( VECTOR ) THEN
@@ -2196,13 +2233,57 @@ CONTAINS
             !
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.001
             UNITS  = '1'
             ENAME  = '.qp'
             IF ( ITYPE .EQ. 4 ) THEN
               XS1    = QP
             ELSE
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QP, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.05
+            UNITS  = '1'
+            ENAME  = '.qkk'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.01
+            UNITS  = '1'
+            ENAME  = '.skw'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = SKEW
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SKEW, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.0001
+            UNITS  = '1'
+            ENAME  = '.emb'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = EMBIA1
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA1, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.0001
+            UNITS  = '1'
+            ENAME  = '.emc'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = EMBIA2
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA2, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
@@ -2365,8 +2446,7 @@ CONTAINS
             !
             DO IX=IX1, IXN
               DO IY=IY1, IYN
-                IF ( MAPSTA(IY,IX) .GT. 0 .AND.                   &
-                     X1(IX,IY) .NE. UNDEF ) THEN
+                IF ( X1(IX,IY) .NE. UNDEF ) THEN
                   NINGRD = NINGRD + 1
                   XMIN   = MIN ( XMIN , X1(IX,IY) )
                   XMAX   = MAX ( XMAX , X1(IX,IY) )
@@ -2402,7 +2482,8 @@ CONTAINS
               IF(GTYPE .NE. UNGTYPE) THEN
                 JJ     = LEN_TRIM(FNMPRE)
                 OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,             &
-                     form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+                     form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+                IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3EXGO','OUTPUT',2)
                 WRITE (NDSDAT) FILEID, TIME,                      &
                      MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
                      MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
@@ -2411,7 +2492,8 @@ CONTAINS
                      ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
               ELSE
                 OPEN (NDSDAT,FILE=FNAME,             &
-                     form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+                     form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+                IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3EXGO','OUTPUT',2)
                 WRITE (NDSDAT) FILEID, TIME,                      &
                      X0,MAXX,NX, &
                      Y0,MAXY,NY, &
@@ -2420,8 +2502,8 @@ CONTAINS
             ELSE
               IF(GTYPE .NE. UNGTYPE) THEN
                 JJ     = LEN_TRIM(FNMPRE)
-                OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
-                     IOSTAT=IERR)
+                OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,IOSTAT=IERR)
+                IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3EXGO','OUTPUT',2)
                 IF (FSC.LT.1E-4) THEN
                   WRITE(FSCS,'(G8.1)') FSC
                 ELSE
@@ -2443,8 +2525,8 @@ CONTAINS
                        ENAME, FSCS, UNITS, IDLA, IDFM, FORMF, MFILL
                 END IF
               ELSE
-                OPEN (NDSDAT,FILE=FNAME,                      &
-                     ERR=800,IOSTAT=IERR)
+                OPEN (NDSDAT,FILE=FNAME,IOSTAT=IERR)
+                IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3EXGO','OUTPUT',2)
                 WRITE (NDSDAT, 949) FILEID, TIME,              &
                      X0,MAXX,NX, &
                      Y0,MAXY,NY, &
@@ -2455,8 +2537,7 @@ CONTAINS
             IF ( FLTRI ) THEN
               DO IX=IX1, IXN
                 DO IY=IY1, IYN
-                  IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                       XX(IX,IY) .EQ. UNDEF ) THEN
+                  IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                     MXX(IX,IY) = MFILL
                     MYY(IX,IY) = MFILL
                     MXY(IX,IY) = MFILL
@@ -2495,8 +2576,7 @@ CONTAINS
               IF ( FLTWO .OR. FLDIR ) THEN
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                         XX(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                       MXX(IX,IY) = MFILL
                       MYY(IX,IY) = MFILL
                     ELSE
@@ -2535,8 +2615,7 @@ CONTAINS
               ELSE
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                         X1(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                       MX1(IX,IY) = MFILL
                     ELSE
                       MX1(IX,IY) = NINT(X1(IX,IY)/FSC)
@@ -2577,8 +2656,8 @@ CONTAINS
             !
             FNAME(13:) = ENAME
             JJ     = LEN_TRIM(FNMPRE)
-            OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
-                 IOSTAT=IERR)
+            OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,IOSTAT=IERR)
+            IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3EXGO','OUTPUT',2)
             WRITE (6,*)  FNAME(1:16)
             !
             IF ( FLTRI ) THEN
@@ -2612,12 +2691,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Error escape locations
-    !
-800 CONTINUE
-    WRITE (NDSE,1000) IERR
-    CALL EXTCDE (2)
-    !
     ! Formats
     !
 113 FORMAT ((10ES11.3))
@@ -2637,10 +2710,6 @@ CONTAINS
          '     GROUP',I2,' PARAMETER',I3,' NOT LISTED '    )
 999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/                &
          '     PLEASE UPDATE FIELDS !!! '/)
-    !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO : '/               &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3EXGO : FLAGS :',I3,2X,20L2)

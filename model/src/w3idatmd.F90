@@ -94,9 +94,8 @@ MODULE W3IDATMD
   !      FLCUR     Log.  Public   Flag for current input.
   !      FLWIND    Log.  Public   Flag for wind input.
   !      FLICE     Log.  Public   Flag for ice input.
-#ifdef W3_CESMCOUPLED
-  !      HML       R.A.  Public   Mixed layer depth
-#endif
+  !      HSL       R.A.  Public   Depth of a surface layer over which Stokes
+  !                               drift is averaged
   !      FLTAUA    Log.  Public   Flag for atmospheric momentum input
   !      FLRHOA    Log.  Public   Flag for air density input
   !      INFLAGS1  L.A.  Public   Array consolidating the above six
@@ -219,9 +218,7 @@ MODULE W3IDATMD
     REAL, POINTER         :: CYTIDE(:,:,:,:)
     REAL, POINTER         :: WLTIDE(:,:,:,:)
 #endif
-#ifdef W3_CESMCOUPLED
-    REAL, POINTER         :: HML(:,:)
-#endif
+    REAL, POINTER         :: HSL(:,:)
     LOGICAL               :: IINIT
 #ifdef W3_WRST
     LOGICAL               :: WRSTIINIT=.FALSE.
@@ -272,9 +269,7 @@ MODULE W3IDATMD
   LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
        FLLEVRESI, FLCURRESI
 #endif
-#ifdef W3_CESMCOUPLED
-  REAL   , POINTER        :: HML(:,:)
-#endif
+  REAL , POINTER :: HSL(:,:)
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -512,6 +507,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD,  ONLY: STRACE
 #endif
+    use w3odatmd, only : use_cmeps
     !
     IMPLICIT NONE
     !/
@@ -524,10 +520,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: JGRID
-    LOGICAL                 :: FLAGSTIDE(4)=.FALSE.
+    INTEGER       :: JGRID
+    LOGICAL       :: FLAGSTIDE(4)=.FALSE.
+    integer       :: allocsizex, allocsizey
 #ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
+    INTEGER, SAVE :: IENT = 0
     CALL STRACE (IENT, 'W3DIMI')
 #endif
     !
@@ -636,6 +633,13 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
+    if (use_cmeps) then
+       allocsizex = 1
+       allocsizey = 1
+    else
+       allocsizex = nx
+       allocsizey = ny
+    end if
     IF ( FLCUR  ) THEN
 #ifdef W3_SMC
       IF( FSWND ) THEN
@@ -645,10 +649,10 @@ CONTAINS
              INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
-             INPUTS(IMOD)%CY0(NX,NY) ,              &
-             INPUTS(IMOD)%CXN(NX,NY) ,              &
-             INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,           &
+             INPUTS(IMOD)%CY0(NX,NY) ,                 &
+             INPUTS(IMOD)%CXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%CYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -688,12 +692,12 @@ CONTAINS
              INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
-             INPUTS(IMOD)%WY0(NX,NY) ,              &
-             INPUTS(IMOD)%DT0(NX,NY) ,              &
-             INPUTS(IMOD)%WXN(NX,NY) ,              &
-             INPUTS(IMOD)%WYN(NX,NY) ,              &
-             INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,           &
+             INPUTS(IMOD)%WY0(NX,NY) ,                 &
+             INPUTS(IMOD)%DT0(NX,NY) ,                 &
+             INPUTS(IMOD)%WXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%WYN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%DTN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -718,10 +722,10 @@ CONTAINS
              INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
-             INPUTS(IMOD)%UY0(NX,NY) ,              &
-             INPUTS(IMOD)%UXN(NX,NY) ,              &
-             INPUTS(IMOD)%UYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,           &
+             INPUTS(IMOD)%UY0(NX,NY) ,                 &
+             INPUTS(IMOD)%UXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%UYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -736,17 +740,15 @@ CONTAINS
       ELSE
 #endif
         ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
-             INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
+             INPUTS(IMOD)%RHN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
-#ifdef W3_CESMCOUPLED
-    ALLOCATE ( INPUTS(IMOD)%HML(NX,NY), STAT=ISTAT )
+    ALLOCATE ( INPUTS(IMOD)%HSL(NX,NY), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
-#endif
     !
     INPUTS(IMOD)%IINIT  = .TRUE.
     !
@@ -1061,9 +1063,7 @@ CONTAINS
         ICEI   => INPUTS(IMOD)%ICEI
         BERGI  => INPUTS(IMOD)%BERGI
       END IF
-#ifdef W3_CESMCOUPLED
-      HML    => INPUTS(IMOD)%HML
-#endif
+      HSL => INPUTS(IMOD)%HSL
       !
       IF ( FLTAUA  ) THEN
         UX0    => INPUTS(IMOD)%UX0

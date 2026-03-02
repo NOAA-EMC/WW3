@@ -113,6 +113,10 @@ MODULE W3GRIDMD
   !/    27-May-2021 : Moved to a subroutine               ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+  !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
+  !/    11-Jan-2024 : New namelist parameters for IC4     ( version 7.15 )
+  !/    03-May-2024 : New CAPCHNK parameters for SIN4     ( version 7.15 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,6 +168,8 @@ MODULE W3GRIDMD
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input file
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      DISTAB    Subr. W3DISPMD Make tables for solution of the
   !                               dispersion relation.
@@ -439,7 +445,7 @@ MODULE W3GRIDMD
   !             (2006) input and Babanin et al. (2001,2010) dissipation.
   !
   !     !/NL0   No nonlinear interactions.
-  !     !/NL1   Discrete interaction approximation (DIA).
+  !     !/NL1   Discrete interaction approximation (DIA or GQM).
   !     !/NL2   Exact interactions (WRT).
   !     !/NL3   Generalized Multiple DIA (GMD).
   !     !/NL4   Two Scale Approximation
@@ -504,7 +510,7 @@ MODULE W3GRIDMD
   USE W3GSRUMD, ONLY: W3GRMP
   USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
   USE W3IOGRMD, ONLY: W3IOGR
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_RTD
   USE W3SERVMD, ONLY: W3EQTOLL, W3LLTOEQ
 #endif
@@ -586,6 +592,9 @@ MODULE W3GRIDMD
        IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
        IST, NKI, NTHI, NRIC, NRIS, I, IDFT, &
        NSTAT, NBT, NLAND, NOSW, NMAPB, IMAPB
+#ifdef W3_ASCII
+  INTEGER                  :: NDSMA
+#endif
 #ifdef W3_NL2
   INTEGER            :: IDEPTH
 #endif
@@ -673,6 +682,7 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_SMC
+  REAL                    :: DVSMC
   REAL                    :: TRNMX, TRNMY
   INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
   INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
@@ -760,9 +770,10 @@ MODULE W3GRIDMD
 
 #ifdef W3_IC4
   INTEGER                 :: IC4METHOD
-  REAL                    :: IC4KI(NIC4), IC4FC(NIC4)
+  REAL                    :: IC4KI(NIC4), IC4FC(NIC4),            &
+                             IC4CN(NIC42), IC4FMIN, IC4KIBK
 #endif
-  !
+
 #ifdef W3_IC5
   REAL                    :: IC5MINIG, IC5MINWT,                  &
        IC5MAXKRATIO, IC5MAXKI, IC5MINHW,    &
@@ -801,6 +812,7 @@ MODULE W3GRIDMD
   !
   REAL(8)                 :: GSHIFT ! see notes in WMGHGH
   LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
+  LOGICAL                 :: ICNUMERICS
   INTEGER                 :: PTM   ! Partitioning method
   REAL                    :: PTFC  ! Part. cut off freq (for method 5)
   REAL                    :: AIRCMIN, AIRGB
@@ -835,8 +847,9 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_ST4
-  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF
-  REAL 		   :: SDSBCHOICE
+  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF, SINTABLE,&
+                             TAUWBUG
+  REAL                    :: SDSBCHOICE
   REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
        ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
        SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
@@ -851,7 +864,9 @@ MODULE W3GRIDMD
        SDSBRF1,                             &
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
-       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
+       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
+       CUMSIGP, VISCSTRESS,                 &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
   !
 #ifdef W3_ST6
@@ -864,6 +879,8 @@ MODULE W3GRIDMD
 #ifdef W3_NL1
   REAL                    :: LAMBDA, KDCONV, KDMIN,               &
        SNLCS1, SNLCS2, SNLCS3
+  INTEGER                 :: IQTYPE, GQMNF1, GQMNT1, GQMNQ_OM2
+  REAL                    :: TAILNL, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   INTEGER                 :: IQTYPE, NDEPTH
@@ -925,6 +942,7 @@ MODULE W3GRIDMD
   REAL*8  :: JGS_PMIN
   REAL*8  :: JGS_DIFF_THR
   REAL*8  :: JGS_NORM_THR
+  INTEGER :: JGS_TRUNK_DIGITS
   REAL*8  :: SOLVERTHR_SETUP
   REAL*8  :: CRIT_DEP_SETUP
   !
@@ -962,7 +980,8 @@ MODULE W3GRIDMD
        IC3VISC, IC3ELAS, IC3DENS, IC3HICE
 #endif
 #ifdef W3_IC4
-  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
+  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC, IC4CN, IC4FMIN,  &
+                   IC4KIBK
 #endif
 #ifdef W3_IC5
   NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
@@ -991,11 +1010,14 @@ MODULE W3GRIDMD
   NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
        TAUWSHELTER, SWELLFPAR, SWELLF,                 &
        SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-       SWELLF7, Z0RAT, SINBR
+       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS, &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
-       SNLCS1, SNLCS2, SNLCS3
+       SNLCS1, SNLCS2, SNLCS3,                         &
+       IQTYPE, TAILNL, GQMNF1, GQMNT1,                 &
+       GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
@@ -1031,7 +1053,7 @@ MODULE W3GRIDMD
        SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
        SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
        SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,  SDSNUW,     &
-       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
+       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, CUMSIGP,&
        WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
 #endif
 
@@ -1088,6 +1110,7 @@ MODULE W3GRIDMD
        JGS_NORM_THR,                              &
        JGS_NLEVEL,                                &
        JGS_SOURCE_NONLINEAR,                      &
+       JGS_TRUNK_DIGITS,                          &
        SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
        CRIT_DEP_SETUP
   NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, &
@@ -1096,7 +1119,7 @@ MODULE W3GRIDMD
        STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
        ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
        ICEHDISP, ICEDDISP, ICEFDISP, CALTYPE,          &
-       TRCKCMPR, PTM, PTFC, BTBET
+       TRCKCMPR, PTM, PTFC, BTBET, ICNUMERICS
   NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
        US3D, I1US3D, I2US3D,                    &
        USSP, IUSSP, STK_WN,                     &
@@ -1105,6 +1128,7 @@ MODULE W3GRIDMD
        STH1MF, I1STH1M, I2STH1M,                &
        TH2MF, I1TH2M, I2TH2M,                   &
        STH2MF, I1STH2M, I2STH2M
+  NAMELIST /LMPN/ LMPENABLED, SDTAIL, HSLMODE
 #ifdef W3_IS1
   NAMELIST /SIS1/ ISC1, ISC2
 #endif
@@ -1170,8 +1194,8 @@ CONTAINS
            NML_EXCL_POINT, NML_EXCL_BODY,                 &
            NML_OUTBND_COUNT, NML_OUTBND_LINE, IERR)
     ELSE
-      OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD',        &
-           ERR=2000,IOSTAT=IERR)
+      OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD', IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
     END IF
     !
     NDSTRC =  6
@@ -1211,17 +1235,20 @@ CONTAINS
 
     ELSE
 
-      READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) COMSTR
+      READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       IF (COMSTR.EQ.' ') COMSTR = '$'
       WRITE (NDSO,901) COMSTR
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) GNAME
+      READ (NDSI,*,IOSTAT=IERR) GNAME
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       WRITE (NDSO,902) GNAME
       !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) RXFR, RFR1, NKI, NTHI, RTH0
+      READ (NDSI,*,IOSTAT=IERR) RXFR, RFR1, NKI, NTHI, RTH0
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
 
 
@@ -1320,8 +1347,8 @@ CONTAINS
       FLSOU=NML_RUN%FLSOU
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002)                                 &
-           FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      READ (NDSI,*,IOSTAT=IERR) FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
     !
     IYN = 2
@@ -1346,7 +1373,8 @@ CONTAINS
       DTMIN=NML_TIMESTEPS%DTMIN
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) DTMAX, DTCFL, DTCFLI, DTMIN
+      READ (NDSI,*,IOSTAT=IERR) DTMAX, DTCFL, DTCFLI, DTMIN
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
 #ifdef W3_SEC1
     IF (DTMAX.LT.1.) THEN
@@ -1588,7 +1616,8 @@ CONTAINS
       OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
       DO
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,'(A)',END=2001,ERR=2002) LINE
+        READ (NDSI,'(A)',IOSTAT=IERR) LINE
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         IF ( LINE(1:16) .EQ. 'END OF NAMELISTS' ) THEN
           EXIT
         ELSE
@@ -1710,6 +1739,17 @@ CONTAINS
     TAUWSHELTER = 0.3
     ZALP   = 0.006
     SINBR   = 0.
+    SINTABLE = 1
+    SINTAIL1 = 0. !  TAUWSHELTER FOR TAIL (no table)
+    SINTAIL2 = 0. !  additional peak in capillary range
+    TAUWBUG  = 1  !  TAUWBUG is 1 is the bug is kept:
+    !  initializes TAUWX/Y to zero in W3SRCE
+    VISCSTRESS =0
+    CAPCHA   = 0.     ! =1 indicates capping of drag is active
+    CHAMIN   = 0.0001 !
+    CHA0     = ALPHA0 ! initial value for charnock
+    UCAP     = 30.    ! U10 threshold from which drag capping is applied
+    SIGMAUCAP = 10.   ! Width for reduction of drag beyond UCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1793,6 +1833,16 @@ CONTAINS
     SSWELLF(6) = SWELLF6
     SSWELLF(7) = SWELLF7
     SSWELLFPAR = SWELLFPAR
+    SINTAILPAR(1) = FLOAT(SINTABLE)
+    SINTAILPAR(2) = SINTAIL1
+    SINTAILPAR(3) = SINTAIL2
+    SINTAILPAR(4) = FLOAT(TAUWBUG)
+    SINTAILPAR(5) = VISCSTRESS
+    CAPCHNK(1) = CAPCHA
+    CAPCHNK(2) = CHAMIN
+    CAPCHNK(3) = CHA0
+    CAPCHNK(4) = UCAP
+    CAPCHNK(5) = SIGMAUCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1828,6 +1878,18 @@ CONTAINS
     SNLCS1 =  5.5
     SNLCS2 =  0.833
     SNLCS3 = -1.25
+    ! Additional parameters for GQM
+    IQTYPE =  1
+    TAILNL = -FACHF
+    GQMNF1 = 14
+    GQMNT1 = 8
+    GQMNQ_OM2=8
+    GQMTHRSAT=0.
+    GQMTHRCOU=0.015
+    GQAMP1=1.
+    GQAMP2=0.002
+    GQAMP3=1.
+    GQAMP4=1.
     CALL READNL ( NDSS, 'SNL1', STATUS )
     WRITE (NDSO,922) STATUS
     WRITE (NDSO,923) LAMBDA, NLPROP, KDCONV, KDMIN,            &
@@ -1839,6 +1901,18 @@ CONTAINS
     SNLS1  = SNLCS1
     SNLS2  = SNLCS2
     SNLS3  = SNLCS3
+    ! Additional parameters for GQM
+    IQTPE  = IQTYPE
+    GQNF1  = GQMNF1
+    GQNT1  = GQMNT1
+    GQNQ_OM2  = GQMNQ_OM2
+    GQTHRSAT  = GQMTHRSAT
+    GQTHRCOU  = GQMTHRCOU
+    GQAMP(1)  = GQAMP1
+    GQAMP(2)  = GQAMP2
+    GQAMP(3)  = GQAMP3
+    GQAMP(4)  = GQAMP4
+    NLTAIL = TAILNL
 #endif
     !
 #ifdef W3_ST0
@@ -2074,8 +2148,8 @@ CONTAINS
     SDSDTH    = 80.
     SDSCOS    = 2.
     SDSISO    = 2
-    SDSBM0    = 1.
-    SDSBM1    = 0.
+    SDSBM0    = 1.          ! All these parameters are related to finite depth
+    SDSBM1    = 0.          ! scaling of breaking
     SDSBM2    = 0.
     SDSBM3    = 0.
     SDSBM4    = 0.
@@ -2085,8 +2159,9 @@ CONTAINS
     SDSBINT   = 0.3
     SDSHCK    = 1.5
     WHITECAPWIDTH = 0.3
-    SDSSTRAIN = 0.
     SDSFACMTF =  400    ! MTF factor for Lambda , Romero (2019)
+    CUMSIGP   = 0.
+    SDSSTRAIN = 0.
     SDSSTRAINA = 15.
     SDSSTRAIN2 = 0.
     WHITECAPDUR   = 0.56 ! breaking duration factor
@@ -2097,7 +2172,7 @@ CONTAINS
     ! MTF
     SPMSS     = 0.5    ! cmss^SPMSS
     SDSNMTF   = 1.5    ! MTF power
-    SDSCUMP   = 2.
+    SDSCUMP   = 2.     ! 2 for cumulative mss, 1 for cumulative orb. vel.
     ! MW
     SDSMWD    = .9  ! new AFo
     SDSMWPOW  = 1.  ! (k )^pow
@@ -2179,9 +2254,9 @@ CONTAINS
     SSDSC(7)   = WHITECAPWIDTH
     SSDSC(8)   = SDSSTRAIN   ! Straining constant ...
     SSDSC(9)   = SDSL
-    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle Aor enhanced straining
+    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle for enhanced straining
     SSDSC(11)  = SDSSTRAIN2  ! straining constant for directional part
-    SSDSC(12)  = SDSBT
+    SSDSC(12)  = CUMSIGP
     SSDSC(13)  = SDSMWD
     SSDSC(14)  = SPMSS
     SSDSC(15)  = SDSMWPOW
@@ -2408,6 +2483,7 @@ CONTAINS
     JGS_NORM_THR = 1.E-20
     JGS_NLEVEL = 0
     JGS_SOURCE_NONLINEAR = .FALSE.
+    JGS_TRUNK_DIGITS = 5
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
 
@@ -2424,6 +2500,7 @@ CONTAINS
     B_JGS_NORM_THR = JGS_NORM_THR
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
+    B_JGS_TRUNK_DIGITS = JGS_TRUNK_DIGITS
 
     nbSel=0
 
@@ -2702,6 +2779,7 @@ CONTAINS
     STDY = -1.
     STDT = -1.
     ICEDISP = .FALSE.
+    ICNUMERICS=.FALSE.
     CALTYPE = 'standard'
     ! Variables for 3D array output
     E3D=0
@@ -2731,6 +2809,11 @@ CONTAINS
     I2STH2M=NK
     !
     FACBERG=1.
+    !
+    LMPENABLED = .false.
+    SDTAIL = .false.
+    HSLMODE = 0   ! 0 for test (HSL=10m everywhere, 1 for coupler-based HSL)
+    !
 #ifdef W3_IS0
     WRITE (NDSO,944)
 #endif
@@ -2845,6 +2928,9 @@ CONTAINS
     IC4METHOD = 1 !switch for methods within IC4
     IC4KI=0.0
     IC4FC=0.0
+    IC4CN=0.0
+    IC4FMIN=0.0
+    IC4KIBK=0.0
 #endif
     !
 #ifdef W3_IC5
@@ -2882,6 +2968,10 @@ CONTAINS
          IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK, &
          IC5KFILTER, IC5MSTR(NINT(IC5VEMOD))
 #endif
+    !
+    CALL READNL ( NDSS, 'LMPN', STATUS )
+    WRITE (NDSO,4960) STATUS
+    WRITE (NDSO,4961) LMPENABLED, SDTAIL, HSLMODE
     !
     CALL READNL ( NDSS, 'OUTS', STATUS )
     WRITE (NDSO,4970) STATUS
@@ -2930,6 +3020,7 @@ CONTAINS
       CALL EXTCDE( 31)
     ENDIF
 
+    USSP_WN = 0.0 ! initialize to 0s
     DO J=1,USSPF(2)
       USSP_WN(j) = STK_WN(J)
     ENDDO
@@ -2968,6 +3059,7 @@ CONTAINS
     IICEHDISP  = ICEHDISP
     IICEDDISP  = ICEDDISP
     IICEFDISP  = ICEFDISP
+    IC_NUMERICS=ICNUMERICS
     PMOVE  = MAX ( 0. , PMOVE )
     PFMOVE = PMOVE
     !
@@ -3089,7 +3181,10 @@ CONTAINS
     !
     IF (TRIM(CALTYPE) .NE. 'standard' .AND.                           &
          TRIM(CALTYPE) .NE. '360_day'  .AND.                           &
-         TRIM(CALTYPE) .NE. '365_day' ) GOTO 2003
+         TRIM(CALTYPE) .NE. '365_day' ) THEN
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 64 )
+    END IF
     WRITE (NDST,1973) CALTYPE
     WRITE (NDSO,*)
     !
@@ -3165,14 +3260,18 @@ CONTAINS
 #ifdef W3_ST4
       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2, &
+           CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2920) SINA0, SINWS, SINFC
 #endif
 #ifdef W3_NL1
       WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
-           SNLCS1, SNLCS2, SNLCS3
+           SNLCS1, SNLCS2, SNLCS3,              &
+           IQTYPE, TAILNL, GQMNF1,              &
+           GQMNT1, GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU,&
+           GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
       WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -3227,7 +3326,7 @@ CONTAINS
            SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
            SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
            SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-           SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
+           SDSCUMP, CUMSIGP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
@@ -3270,7 +3369,7 @@ CONTAINS
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
            JGS_LIMITER,                                &
-           JGS_LIMITER_FUNC,                           & 
+           JGS_LIMITER_FUNC,                           &
            JGS_USE_JACOBI,                             &
            JGS_BLOCK_GAUSS_SEIDEL,                     &
            JGS_MAXITER,                                &
@@ -3278,6 +3377,9 @@ CONTAINS
            JGS_DIFF_THR,                               &
            JGS_NORM_THR,                               &
            JGS_NLEVEL,                                 &
+#ifdef W3_TRNK
+           JGS_TRUNK_DIGITS,                           &
+#endif
            JGS_SOURCE_NONLINEAR
       !
       WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
@@ -3353,7 +3455,7 @@ CONTAINS
              ICEHINIT, ICEDISP, ICEHDISP,          &
              ICESLN, ICEWIND, ICESNL, ICESDS,      &
              ICEDDISP,ICEFDISP, CALTYPE, TRCKCMPR, &
-             BTBETA
+             BTBETA,ICNUMERICS
       ELSE
         WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
              XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
@@ -3363,7 +3465,7 @@ CONTAINS
              ICEHINIT, ICEDISP, ICEHDISP,          &
              ICESLN, ICEWIND, ICESNL, ICESDS,      &
              ICEDDISP, ICEFDISP, CALTYPE, TRCKCMPR,&
-             BTBETA
+             BTBETA,ICNUMERICS
       END IF
       !
 #ifdef W3_FLD1
@@ -3451,7 +3553,8 @@ CONTAINS
       CSTRG=TRIM(NML_GRID%CLOS)
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, CSTRG
+      READ (NDSI,*,IOSTAT=IERR) GSTRG, FLAGLL, CSTRG
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
     END IF
 
@@ -3547,7 +3650,8 @@ CONTAINS
     ELSE
       IF ( GTYPE.NE.UNGTYPE) THEN
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NX, NY
+        READ (NDSI,*,IOSTAT=IERR) NX, NY
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         NX     = MAX ( 3 , NX )
         NY     = MAX ( 3 , NY )
         WRITE (NDSO,3003) NX, NY
@@ -3607,7 +3711,7 @@ CONTAINS
       END SELECT
 
       IF (FSTOTALIMP .or. FSTOTALEXP) THEN
-        LPDLIB = .TRUE. 
+        LPDLIB = .TRUE.
       ENDIF
       !
       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
@@ -3664,9 +3768,11 @@ CONTAINS
         VSC0 = NML_RECT%SF0
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) SX, SY, VSC
+        READ (NDSI,*,IOSTAT=IERR) SX, SY, VSC
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC0
+        READ (NDSI,*,IOSTAT=IERR) X0, Y0, VSC0
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       !
       VSC    = MAX ( 1.E-7 , VSC )
@@ -3714,8 +3820,9 @@ CONTAINS
         FNAME = TRIM(NML_CURV%XCOORD%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+        READ (NDSI,*,IOSTAT=IERR) NDSG, VSC, VOF, &
              IDLA, IDFM, RFORM, FROM, FNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       !
       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
@@ -3740,21 +3847,22 @@ CONTAINS
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
                  form='UNFORMATTED', convert=file_endian,                 &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSG,                               &
                  form='UNFORMATTED', convert=file_endian,                 &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         ELSE
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSG,                               &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         END IF !IDFM
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       END IF !NDSG
       !
       CALL INA2R ( XGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
@@ -3773,8 +3881,9 @@ CONTAINS
         FNAME = TRIM(NML_CURV%YCOORD%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+        READ (NDSI,*,IOSTAT=IERR) NDSG, VSC, VOF, &
              IDLA, IDFM, RFORM, FROM, FNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       !
       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
@@ -3799,21 +3908,22 @@ CONTAINS
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
                  form='UNFORMATTED', convert=file_endian,                 &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSG,                               &
                  form='UNFORMATTED', convert=file_endian,                 &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         ELSE
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSG,                               &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         END IF !IDFM
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       END IF !NDSG
       !
       CALL INA2R ( YGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
@@ -3875,8 +3985,9 @@ CONTAINS
       END IF
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) ZLIM, DMIN, NDSG, VSC, IDLA,    &
+      READ (NDSI,*,IOSTAT=IERR) ZLIM, DMIN, NDSG, VSC, IDLA,    &
            IDFM, RFORM, FROM, FNAME
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
     !
     DMIN    = MAX ( 1.E-3 , DMIN )
@@ -3888,6 +3999,12 @@ CONTAINS
     IF (IDFM.EQ.2) WRITE (NDSO,973) TRIM(RFORM)
     IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
          WRITE (NDSO,974) TRIM(FNAME)
+
+#ifdef W3_SMC
+    !Li  Save the depth conversion factor for SMC grid use.  JGLi03Nov2023
+    DVSMC = VSC
+#endif
+
     !
     ! 7.e Read bottom depths
     !
@@ -3918,20 +4035,21 @@ CONTAINS
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME), &
                    form='UNFORMATTED', convert=file_endian,&
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSG, form='UNFORMATTED', convert=file_endian,                &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           ELSE
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),  &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSG,                                     &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           END IF
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         END IF  !( NDSG .EQ. NDSI )
         !
         CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
@@ -4000,8 +4118,9 @@ CONTAINS
           TNAME = TRIM(NML_OBST%FILENAME)
         ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+          READ (NDSI,*,IOSTAT=IERR) NDSTR, VSC, IDLA, IDFT, RFORM, &
                FROM, TNAME
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         !
         IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
@@ -4031,21 +4150,22 @@ CONTAINS
           IF ( IDFT .EQ. 3 ) THEN
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD', &
                    IOSTAT=IERR)
             ELSE
               OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           ELSE
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSTR,                                    &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           END IF
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         END IF
         !
         ! 7.g.3 Read the data
@@ -4123,10 +4243,12 @@ CONTAINS
         TNAME = TRIM(NML_SMC%MCELS%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+           FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       ALLOCATE (  NLvCelsk( 0:NRLv ) )
       READ (NDSTR,*) NLvCelsk
       NCel=NLvCelsk(0)
@@ -4155,10 +4277,12 @@ CONTAINS
         TNAME = TRIM(NML_SMC%ISIDE%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+           FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       ALLOCATE (  NLvUFcsk( 0:NRLv ) )
       READ (NDSTR,*)  NLvUFcsk
       NUFc = NLvUFcsk(0)
@@ -4186,10 +4310,12 @@ CONTAINS
         TNAME = TRIM(NML_SMC%JSIDE%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+           FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       ALLOCATE (  NLvVFcsk( 0:NRLv ) )
       READ (NDSTR,*) NLvVFcsk
       NVFc= NLvVFcsk(0)
@@ -4218,10 +4344,12 @@ CONTAINS
         TNAME = TRIM(NML_SMC%SUBTR%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+           FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       READ (NDSTR,*) NCObst, JObs
       WRITE (NDSO,4110)   NCObst, JObs
 
@@ -4245,10 +4373,12 @@ CONTAINS
           TNAME = TRIM(NML_SMC%BUNDY%FILENAME)
         ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+          READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+             FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         ALLOCATE (  NBICelin( NBISMC )  )
         CALL INA2I ( NBICelin, 1, NBISMC, 1, 1, 1, NBISMC, NDSTR, NDST, &
              NDSE, IDFM, RFORM, IDLA, 1, 0)
@@ -4271,10 +4401,12 @@ CONTAINS
           TNAME = TRIM(NML_SMC%MBARC%FILENAME)
         ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+          READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+             FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         READ (NDSTR,*) NARC, NBGL, NBAC
         WRITE (NDSO,4015)  NARC, NBGL, NBAC
 
@@ -4299,10 +4431,12 @@ CONTAINS
           TNAME = TRIM(NML_SMC%AISID%FILENAME)
         ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+          READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+             FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         READ (NDSTR,*)  NAUI
         WRITE (NDSO,4017)   NAUI
 
@@ -4333,10 +4467,12 @@ CONTAINS
           TNAME = TRIM(NML_SMC%AJSID%FILENAME)
         ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+          READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFM, RFORM, TNAME
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+             FORM='FORMATTED',STATUS='OLD',IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         READ (NDSTR,*) NAVJ
         WRITE (NDSO,4019)   NAVJ
 
@@ -4397,8 +4533,9 @@ CONTAINS
       IF (TNAME.EQ.'unset' .OR. TNAME.EQ.'UNSET') FROM='PART'
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFT, RFORM,     &
+      READ (NDSI,*,IOSTAT=IERR) NDSTR, IDLA, IDFT, RFORM,     &
            FROM, TNAME
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
     !
     ! ... Data to be read in parts
@@ -4451,7 +4588,8 @@ CONTAINS
             END IF
           ELSE
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-            READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
+            READ (NDSI,*,IOSTAT=IERR) IX, IY, CONNCT
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
           END IF
           !
           ! ... Check if last point reached.
@@ -4531,7 +4669,8 @@ CONTAINS
               END IF
             ELSE
               CALL NEXTLN ( COMSTR , NDSI , NDSE )
-              READ (NDSI,*,END=2001,ERR=2002) IX, IY
+              READ (NDSI,*,IOSTAT=IERR) IX, IY
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
             END IF
             !
             ! ... Check if last point reached.
@@ -4658,21 +4797,22 @@ CONTAINS
           IF ( IDFT .EQ. 3 ) THEN
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD', &
                    IOSTAT=IERR)
             ELSE
               OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           ELSE
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSTR,                                    &
-                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           END IF
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
         END IF
         !
         ALLOCATE ( READMP(NX,NY) )
@@ -5009,14 +5149,17 @@ CONTAINS
           CALL EXTCDE(65)
         END IF
 
-        !Li  Minimum DMIN depth is used as well for SMC.
-        ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
-        MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
-        MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
-        MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-        MAPSF(ISEA,1)  = IX
-        MAPSF(ISEA,2)  = IY
-        MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+        !Li Allow land cell to be defined by ZLIM value and only reset
+        !Li MAPST* land values for sea points.   JGLi03Nov2023
+        ZB(ISEA) = DVSMC * FLOAT(IJKDep(ISEA))
+        IF( ZB(ISEA) .LT. ZLIM ) THEN
+          MAPSTA(IY:IY+JS-1,IX:IX+IK-1) = 1
+          MAPST2(IY:IY+JS-1,IX:IX+IK-1) = 0
+        ENDIF
+        MAPFS(IY:IY+JS-1,IX:IX+IK-1) = ISEA
+        MAPSF(ISEA,1) = IX
+        MAPSF(ISEA,2) = IY
+        MAPSF(ISEA,3) = IY + (IX-1) * NY
 
         !Li   New variable CLATS to hold cosine latitude at cell centre.
         !Li   Also added CLATIS and CTHG0S for version 4.08.
@@ -5263,6 +5406,9 @@ CONTAINS
     IC4PARS(1)=IC4METHOD
     IC4_KI=IC4KI
     IC4_FC=IC4FC
+    IC4_CN=IC4CN
+    IC4_FMIN=IC4FMIN
+    IC4_KIBK=IC4KIBK
 #endif
     !
 #ifdef W3_IC5
@@ -5344,8 +5490,9 @@ CONTAINS
         TNAME = TRIM(NML_SLOPE%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, VSC, IDLA, IDFT, RFORM, &
              FROM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       !
       IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
@@ -5375,21 +5522,22 @@ CONTAINS
         IF ( IDFT .EQ. 3 ) THEN
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,                 &
-                 form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                 form='UNFORMATTED', convert=file_endian,STATUS='OLD', &
                  IOSTAT=IERR)
           ELSE
             OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         ELSE
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSTR,                                    &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF   !end  of (FROM.EQ.'NAME')
         END IF     !end of ( IDFT .EQ. 3 )
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       END IF       !end of ( NDSTR .EQ. NDSG )
       !
       ! 9.d Read the data
@@ -5459,8 +5607,9 @@ CONTAINS
         TNAME = TRIM(NML_SED%FILENAME)
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+        READ (NDSI,*,IOSTAT=IERR) NDSTR, VSC, IDLA, IDFT, RFORM, &
              FROM, TNAME
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
       END IF
       !
       IF (   ABS(VSC) .LT. 1.E-7  ) THEN
@@ -5494,21 +5643,22 @@ CONTAINS
         IF ( IDFT .EQ. 3 ) THEN
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                 form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                 form='UNFORMATTED', convert=file_endian,STATUS='OLD', &
                  IOSTAT=IERR)
           ELSE
             OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         ELSE
           IF (FROM.EQ.'NAME') THEN
             OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           ELSE
             OPEN (NDSTR,                                    &
-                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                 STATUS='OLD',IOSTAT=IERR)
           END IF
         END IF
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
       END IF
       !
       ! 9.e.3 Read the data
@@ -5534,7 +5684,7 @@ CONTAINS
         ! Threshold of sed. motion in coastal environments, Proc. Pacific Coasts and
         ! ports, 1997 conference, Christchurch, p149-154, University of Cantebury, NZ
         SED_DSTAR=(GRAV*(SED_SG-1)/nu_water**2)**(0.333333)*SED_D50(ISEA)
-        SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.55*(1-exp(-0.02*SED_DSTAR))
+        SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.055*(1-exp(-0.02*SED_DSTAR))
 #endif
 
 
@@ -5586,7 +5736,8 @@ CONTAINS
           END IF
         ELSE
           CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-          READ (NDSI2,*,END=2001,ERR=2002) XO0, YO0, DXO, DYO, NPO
+          READ (NDSI2,*,IOSTAT=IERR) XO0, YO0, DXO, DYO, NPO
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
         END IF
         !
         IF ( .NOT. FLGNML .AND. ILOOP .EQ. 1 ) THEN
@@ -5907,31 +6058,17 @@ CONTAINS
     !10.  Write model definition file.
     !
     WRITE (NDSO,999)
-    CALL W3IOGR ( 'WRITE', NDSM )
+    CALL W3IOGR ( 'WRITE', NDSM &
+#ifdef W3_ASCII
+                  ,NDSA=NDSMA        &
+#endif
+            )
     !
     CLOSE (NDSM)
+#ifdef W3_ASCII
+    CLOSE (NDSMA)
+#endif
     !
-    GOTO 2222
-    !
-    ! Escape locations read errors :
-    !
-2000 CONTINUE
-    WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 60 )
-    !
-2001 CONTINUE
-    WRITE (NDSE,1001)
-    CALL EXTCDE ( 61 )
-    !
-2002 CONTINUE
-    WRITE (NDSE,1002) IERR
-    CALL EXTCDE ( 62 )
-    !
-2003 CONTINUE
-    WRITE (NDSE,1003)
-    CALL EXTCDE ( 64 )
-    !
-2222 CONTINUE
     IF ( GTYPE .NE. UNGTYPE) THEN
       IF ( NX*NY .NE. NSEA ) THEN
         WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                       &
@@ -6035,8 +6172,6 @@ CONTAINS
     IERR = NF90_PUT_VAR(NCID,grid_dims_varid,GRID1_DIMS)
     IERR = NF90_CLOSE(NCID)
 #endif
-
-
     !
     ! Formats
     !
@@ -6192,7 +6327,11 @@ CONTAINS
          '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
          ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
          '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,'  /')
+         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,','/              &
+         '        SINTABLE =',I2,', TAUWBUG =',I2,               &
+         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,',' / &
+         ', CAPCHA =',F8.5,', CHAMIN =',F8.5,', CHA0 =',F8.5,', UCAP =',F5.1,', SIGMAUCAP =', &
+         F5.1,'  /')
 #endif
     !
 #ifdef W3_ST6
@@ -6220,7 +6359,11 @@ CONTAINS
 2922 FORMAT ( '  &SNL1 LAMBDA =',F7.3,', NLPROP =',E10.3,       &
          ', KDCONV =',F7.3,', KDMIN =',F7.3,','/           &
          '        SNLCS1 =',F7.3,', SNLCS2 =',F7.3,        &
-         ', SNLCS3 = ',F7.3,' /')
+         ', SNLCS3 = ',F7.3,','/                           &
+         '        IQTYPE =',I2,', TAILNL =',F5.1,','/      &
+         '        GQMNF1 =',I2,', GQMNT1 =',I2,',',        &
+         ' GQMNQ_OM2 =',I2,', GQMTHRSAT =',E11.4,', GQMTHRCOU =',F4.3,','/ &
+         '        GQAMP1 =',F5.3,', GQAMP2 =',F5.3,', GQAMP3 =',F5.3,', GQAMP4 =',F5.3,' /')
 #endif
     !
 #ifdef W3_NL2
@@ -6248,14 +6391,14 @@ CONTAINS
 2923 FORMAT ( '             ',2F8.3,F6.1,2E12.4)
 2922 FORMAT ( '  &SNL3 NQDEF =',I3,', MSC =',F6.2,',  NSC =',   &
          F6.2,',  KDFD =',F6.2,',  KDFS =',F6.2,' /')
-3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
-4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
+3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
+4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
 #endif
     !
 #ifdef W3_NL4
@@ -6361,7 +6504,7 @@ CONTAINS
          '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
          ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
          '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
-         ', SDSCUMP =', F3.1,', SDSNUW =', E8.3,', '/,     &
+         ', SDSCUMP =', F3.1,', CUMSIGP =', F3.1,', SDSNUW =', E10.3,', '/,     &
          '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 #endif
     !
@@ -6371,18 +6514,18 @@ CONTAINS
 925 FORMAT ( '  normalise by threshold spectral density    :  ',A/&
          '  normalise by spectral density              :  ',A/&
          '  coefficient and exponent  for                 '/  &
-         '   inherent breaking term a1, L as in (21)   : ',E9.3,I3/ &
-         '   cumulative breaking term a2, M as in (22) : ',E9.3,I3/ &
+         '   inherent breaking term a1, L as in (21)   : ',E10.3,I3/ &
+         '   cumulative breaking term a2, M as in (22) : ',E10.3,I3/ &
          ' ')
-2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E9.3,              &
-         ', SDSA2 = ',E9.3,', SDSP1 = ',I2,', SDSP1 = ',      &
+2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E10.3,              &
+         ', SDSA2 = ',E10.3,', SDSP1 = ',I2,', SDSP1 = ',      &
          I2,' /'                                              )
 
 937 FORMAT (/'  Swell dissipation ',A/                            &
          ' --------------------------------------------------')
 940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-         '   coefficient b1 ',A,                ' : ',E9.3/   )
-2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
+         '   coefficient b1 ',A,                ' : ',E10.3/   )
+2937 FORMAT ( '  &SWL6 SWLB1 = ',E10.3,', CSTB1 = ',L,' /')
 #endif
     !
 #ifdef W3_BT0
@@ -6467,18 +6610,18 @@ CONTAINS
 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
          '        slope                      : ',E10.3/ &
          '        offset                     : ',E10.3)
-2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+2946 FORMAT ( '  &SIS1 ISC1 =',E10.3,', ISC2 =',E10.3)
 #endif
 #ifdef W3_IS2
 947 FORMAT  (/'  Ice scattering ',A,/ &
          ' --------------------------------------------------')
 948 FORMAT  ('  IS2 Scattering ... '/&
-         '        scattering coefficient       : ',E9.3/ &
-         '        0: no back-scattering        : ',E9.3/ &
+         '        scattering coefficient       : ',E10.3/ &
+         '        0: no back-scattering        : ',E10.3/ &
          '     TRUE: istropic back-scattering  : ',L3/   &
          '     TRUE: update of ICEDMAX         : ',L3/   &
          '     TRUE: keeps updated ICEDMAX     : ',L3/   &
-         '        flexural strength            : ',E9.3/ &
+         '        flexural strength            : ',E10.3/ &
          '     TRUE: uses Robinson-Palmer disp.: ',L3/   &
          '        attenuation                  : ',F5.2/ &
          '        fragility                    : ',F5.2/ &
@@ -6486,7 +6629,7 @@ CONTAINS
          '        pack scattering coef 1       : ',F5.2/ &
          '        pack scattering coef 2       : ',F5.2/ &
          '        scaling by concentration     : ',F5.2/ &
-         '        creep B coefficient          : ',E9.3/ &
+         '        creep B coefficient          : ',E10.3/ &
          '        creep C coefficient          : ',F5.2/ &
          '        creep D coefficient          : ',F5.2/ &
          '        creep N power                : ',F5.2/ &
@@ -6497,7 +6640,7 @@ CONTAINS
          '        energy of activation         : ',F5.2/ &
          '        anelastic coefficient        : ',E11.3/ &
          '        anelastic exponent           : ',F5.2)
-2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', IS2BACKSCAT =',E9.3,   &
+2948 FORMAT ( '  &SIS2 ISC1 =',E10.3,', IS2BACKSCAT =',E10.3,   &
          ', IS2ISOSCAT =',L3,', IS2BREAK =',L3,          &
          ', IS2DUPDATE =',L3,','/                        &
          '       IS2FLEXSTR =',E11.3,', IS2DISP =',L3,   &
@@ -6588,7 +6731,12 @@ CONTAINS
          ',  JGS_DIFF_THR=', F8.3,                              &
          ',  JGS_NORM_THR=', F8.3,                              &
          ',  JGS_NLEVEL=', I3,                                  &
+#ifdef W3_TRNK
+         ',  JGS_TRUNK_DIGITS=', I3,                            &
+#endif
          ',  JGS_SOURCE_NONLINEAR=', L3 / )
+
+
     !
 960 FORMAT (/'  Miscellaneous ',A/                                   &
          ' --------------------------------------------------')
@@ -6673,7 +6821,11 @@ CONTAINS
          /'         (0.0==> no reduction and 1.0==> no wind', &
          /'         input with 100% ice cover)')
     !
-    !
+!
+4960 FORMAT (/'  Langmuir Mixing Parameterization ',A/                   &
+              ' --------------------------------------------------')
+4961 FORMAT ('  &LMPN LMPENABLED = ',L, 'SDTAIL = ', L, ' HSLMODE = ', I2 '/' )
+!
 4970 FORMAT (/'  Spectral output on full grid ',A/                   &
          ' --------------------------------------------------')
 4971 FORMAT ( '       Second order pressure at K=0:',3I4)
@@ -6735,7 +6887,7 @@ CONTAINS
          ', ICESNL = ',F6.2,', ICESDS = ',F5.2,','/       &
          '        ICEDDISP = ',F5.2,', ICEFDISP = ',F5.2,       &
          ', CALTYPE = ',A8,' , TRCKCMPR = ', L3,','/      &
-         '        BTBET  = ', F6.2, ' /')
+         '        BTBET  = ', F6.2, ', ICNUMERICS =',L3,' /')
     !
 2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&
          '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&
@@ -6921,17 +7073,6 @@ CONTAINS
 #endif
     !
 999 FORMAT (/'  Writing model definition file ...'/)
-    !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
-         '     ERROR IN OPENING INPUT FILE'/                    &
-         '     IOSTAT =',I5/)
-    !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
-         '     PREMATURE END OF INPUT FILE'/)
-    !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
     !
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
          '     INVALID CALENDAR TYPE: SELECT ONE OF:',          &
@@ -7169,7 +7310,8 @@ CONTAINS
     STATUS  = '(default values) :  '
     !
     DO
-      READ (NDS,'(A)',END=800,ERR=800,IOSTAT=IERR) LINE
+      READ (NDS,'(A)',IOSTAT=IERR) LINE
+      IF (IERR.NE.0) RETURN
       DO I=1, 70
         IF ( LINE(I:I) .NE. ' ' ) THEN
           IF ( LINE(I:I) .EQ. '&' ) THEN
@@ -7178,177 +7320,189 @@ CONTAINS
               SELECT CASE(NAME)
 #ifdef W3_FLD1
               CASE('FLD1')
-                READ (NDS,NML=FLD1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=FLD1,IOSTAT=J)
 #endif
 #ifdef W3_FLD2
               CASE('FLD2')
-                READ (NDS,NML=FLD2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=FLD2,IOSTAT=J)
 #endif
 #ifdef W3_FLX3
               CASE('FLX3')
-                READ (NDS,NML=FLX3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=FLX3,IOSTAT=J)
 #endif
 #ifdef W3_FLX4
               CASE('FLX4')
-                READ (NDS,NML=FLX4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=FLX4,IOSTAT=J)
 #endif
 #ifdef W3_LN1
               CASE('SLN1')
-                READ (NDS,NML=SLN1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SLN1,IOSTAT=J)
 #endif
 #ifdef W3_ST1
               CASE('SIN1')
-                READ (NDS,NML=SIN1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIN1,IOSTAT=J)
 #endif
 #ifdef W3_ST2
               CASE('SIN2')
-                READ (NDS,NML=SIN2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIN2,IOSTAT=J)
 #endif
 #ifdef W3_ST3
               CASE('SIN3')
-                READ (NDS,NML=SIN3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIN3,IOSTAT=J)
 #endif
 #ifdef W3_ST4
               CASE('SIN4')
-                READ (NDS,NML=SIN4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIN4,IOSTAT=J)
 #endif
 #ifdef W3_ST6
               CASE('SIN6')
-                READ (NDS,NML=SIN6,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIN6,IOSTAT=J)
 #endif
 #ifdef W3_NL1
               CASE('SNL1')
-                READ (NDS,NML=SNL1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNL1,IOSTAT=J)
 #endif
 #ifdef W3_NL2
               CASE('SNL2')
-                READ (NDS,NML=SNL2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNL2,IOSTAT=J)
               CASE('ANL2')
-                IF ( NDEPTH .GT. 100 ) GOTO 804
+                IF ( NDEPTH .GT. 100 ) THEN
+                  WRITE (NDSE,1004) NDEPTH
+                  CALL EXTCDE(4)
+                END IF
                 DEPTHS(1:NDEPTH) = DPTHNL
-                READ (NDS,NML=ANL2,END=801,ERR=802,IOSTAT=J)
-                DPTHNL = DEPTHS(1:NDEPTH)
+                READ (NDS,NML=ANL2,IOSTAT=J)
+                IF (J.NE.0) DPTHNL = DEPTHS(1:NDEPTH)
 #endif
 #ifdef W3_NL3
               CASE('SNL3')
-                READ (NDS,NML=SNL3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNL3,IOSTAT=J)
               CASE('ANL3')
-                IF ( NQDEF .GT. 100 ) GOTO 804
-                READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
+                IF ( NQDEF .GT. 100 ) THEN
+                  WRITE (NDSE,1004) NQDEF
+                  CALL EXTCDE(4)
+                END IF
+                READ (NDS,NML=ANL3,IOSTAT=J)
 #endif
 #ifdef W3_NL4
               CASE('SNL4')
-                READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNL4,IOSTAT=J)
 #endif
 #ifdef W3_NL5
               CASE('SNL5')
-                READ (NDS,NML=SNL5,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNL5,IOSTAT=J)
 #endif
 #ifdef W3_NLS
               CASE('SNLS')
-                READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SNLS,IOSTAT=J)
 #endif
 #ifdef W3_ST1
               CASE('SDS1')
-                READ (NDS,NML=SDS1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDS1,IOSTAT=J)
 #endif
 #ifdef W3_ST2
               CASE('SDS2')
-                READ (NDS,NML=SDS2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDS2,IOSTAT=J)
 #endif
 #ifdef W3_ST3
               CASE('SDS3')
-                READ (NDS,NML=SDS3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDS3,IOSTAT=J)
 #endif
 #ifdef W3_ST4
               CASE('SDS4')
-                READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDS4,IOSTAT=J)
 #endif
 #ifdef W3_ST6
               CASE('SDS6')
-                READ (NDS,NML=SDS6,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDS6,IOSTAT=J)
               CASE('SWL6')
-                READ (NDS,NML=SWL6,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SWL6,IOSTAT=J)
 #endif
 #ifdef W3_BT1
               CASE('SBT1')
-                READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SBT1,IOSTAT=J)
 #endif
 #ifdef W3_BT4
               CASE('SBT4')
-                READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SBT4,IOSTAT=J)
 #endif
 #ifdef W3_IS1
               CASE('SIS1')
-                READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIS1,IOSTAT=J)
 #endif
 #ifdef W3_IS2
               CASE('SIS2')
-                READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIS2,IOSTAT=J)
 #endif
 #ifdef W3_DB1
               CASE('SDB1')
-                READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SDB1,IOSTAT=J)
 #endif
 #ifdef W3_UOST
               CASE('UOST')
-                READ (NDS,NML=UOST,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=UOST,IOSTAT=J)
 #endif
 #ifdef W3_PR1
               CASE('PRO1')
-                READ (NDS,NML=PRO1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=PRO1,IOSTAT=J)
 #endif
 #ifdef W3_PR2
               CASE('PRO2')
-                READ (NDS,NML=PRO2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=PRO2,IOSTAT=J)
 #endif
 #ifdef W3_SMC
               CASE('PSMC')
-                READ (NDS,NML=PSMC,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=PSMC,IOSTAT=J)
 #endif
 #ifdef W3_PR3
               CASE('PRO3')
-                READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=PRO3,IOSTAT=J)
 #endif
 #ifdef W3_RTD
               CASE('ROTD')
-                READ (NDS,NML=ROTD,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=ROTD,IOSTAT=J)
               CASE('ROTB')
-                READ (NDS,NML=ROTB,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=ROTB,IOSTAT=J)
 #endif
 #ifdef W3_REF1
               CASE('REF1')
-                READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=REF1,IOSTAT=J)
 #endif
 #ifdef W3_IG1
               CASE('SIG1')
-                READ (NDS,NML=SIG1,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIG1,IOSTAT=J)
 #endif
 #ifdef W3_IC2
               CASE('SIC2')
-                READ (NDS,NML=SIC2,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIC2,IOSTAT=J)
 #endif
 #ifdef W3_IC3
               CASE('SIC3')
-                READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIC3,IOSTAT=J)
 #endif
 #ifdef W3_IC4
               CASE('SIC4 ')
-                READ (NDS,NML=SIC4,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIC4,IOSTAT=J)
 #endif
 #ifdef W3_IC5
               CASE('SIC5 ')
-                READ (NDS,NML=SIC5,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=SIC5,IOSTAT=J)
 #endif
               CASE('UNST')
-                READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=UNST,IOSTAT=J)
               CASE('OUTS')
-                READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=OUTS,IOSTAT=J)
+              CASE('LMPN')
+                READ (NDS,NML=LMPN,IOSTAT=J)
               CASE('MISC')
-                READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
+                READ (NDS,NML=MISC,IOSTAT=J)
               CASE DEFAULT
-                GOTO 803
+                WRITE (NDSE,1003) NAME
+                CALL EXTCDE(3)
               END SELECT
+              !
+              IF (J.NE.0) CALL EXTIOF(NDSE,J,'READNL','',1,FIELD=NAME)
+              !
               STATUS  = '(user def. values) :'
               RETURN
             END IF
@@ -7359,44 +7513,8 @@ CONTAINS
       END DO
     END DO
     !
-800 CONTINUE
-    RETURN
-    !
-801 CONTINUE
-    WRITE (NDSE,1001) NAME
-    CALL EXTCDE(1)
-    RETURN
-    !
-802 CONTINUE
-    WRITE (NDSE,1002) NAME, J
-    CALL EXTCDE(2)
-    RETURN
-    !
-803 CONTINUE
-    WRITE (NDSE,1003) NAME
-    CALL EXTCDE(3)
-    RETURN
-    !
-#ifdef W3_NL2
-804 CONTINUE
-    WRITE (NDSE,1004) NDEPTH
-    CALL EXTCDE(4)
-    RETURN
-#endif
-    !
-#ifdef W3_NL3
-804 CONTINUE
-    WRITE (NDSE,1004) NQDEF
-    CALL EXTCDE(4)
-    RETURN
-#endif
-    !
     ! Formats
     !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
-         '     PREMATURE END OF FILE IN READING ',A/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
-         '     ERROR IN READING ',A,'  IOSTAT =',I8/)
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
          '     NAMELIST NAME ',A,' NOT RECOGNIZED'/)
 #ifdef W3_NL2

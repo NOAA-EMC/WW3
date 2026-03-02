@@ -145,11 +145,14 @@ MODULE W3UPDTMD
   !
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS
-  USE W3ODATMD, ONLY: NDSE, NDST, NAPROC, IAPROC, NAPERR
+  USE W3ODATMD, ONLY : NDSE, NDST, NAPROC, IAPROC, NAPERR
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
-  USE W3TIMEMD, ONLY: DSEC21
+  USE W3TIMEMD, ONLY : DSEC21
+  use w3odatmd, only : use_cmeps
+  ! used/reused in module
+  real :: mag, dir
   !/
   !/ ------------------------------------------------------------------- /
   !/
@@ -289,175 +292,190 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3UCUR')
 #endif
-    !
-    ! 1.  Prepare auxiliary arrays
-    !
-    IF ( FLFRST ) THEN
-      DO ISEA=1, NSEA
+    if (use_cmeps) then
+      do isea = 1,nsea
+        ix = mapsf(isea,1)
+        iy = mapsf(isea,2)
+        mag = sqrt ( cx0(ix,iy)**2 + cy0(ix,iy)**2 )
+        if ( mag .gt. 1.e-7) then
+          dir = mod ( tpi+atan2(cy0(ix,iy),cx0(ix,iy)) , tpi )
+        else
+          dir = 0.0
+        end if
+        cx(isea) = mag*cos(dir)
+        cy(isea) = mag*sin(dir)
+      end do
+    else
+      !
+      ! 1.  Prepare auxiliary arrays
+      !
+      IF ( FLFRST ) THEN
+        DO ISEA=1, NSEA
 #ifdef W3_SMC
-        !!Li  For sea-point SMC grid current, the 1-D current is stored on
-        !!Li  2-D CX0(NSEA, 1) variable.
-        IF( FSWND ) THEN
-          IX = ISEA
-          IY = 1
-        ELSE
+          !!Li  For sea-point SMC grid current, the 1-D current is stored on
+          !!Li  2-D CX0(NSEA, 1) variable.
+          IF( FSWND ) THEN
+            IX = ISEA
+            IY = 1
+          ELSE
 #endif
-          IX        = MAPSF(ISEA,1)
-          IY        = MAPSF(ISEA,2)
+            IX        = MAPSF(ISEA,1)
+            IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-        ENDIF
+          ENDIF
 #endif
 
-        CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
-        CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
-        IF ( CA0(ISEA) .GT. 1.E-7) THEN
-          D0     = MOD ( TPI+ATAN2(CY0(IX,IY),CX0(IX,IY)) , TPI )
-        ELSE
-          D0     = 0
-        END IF
-        IF ( CAI(ISEA) .GT. 1.E-7) THEN
-          DN     = MOD ( TPI+ATAN2(CYN(IX,IY),CXN(IX,IY)) , TPI )
-        ELSE
-          DN     = D0
-        END IF
-        IF ( CA0(ISEA) .GT. 1.E-7) THEN
-          CD0(ISEA) = D0
-        ELSE
-          CD0(ISEA) = DN
-        END IF
-        DD     = DN - CD0(ISEA)
-        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-        CDI(ISEA) = DD
-        CAI(ISEA) = CAI(ISEA) - CA0(ISEA)
-      END DO
-    END IF
-    !
-    ! 2.  Calculate interpolation factor
-    !
-    DT0N    = DSEC21 ( TC0, TCN )
-    DT0T    = DSEC21 ( TC0, TIME )
-    !
+          CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
+          CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
+          IF ( CA0(ISEA) .GT. 1.E-7) THEN
+            D0     = MOD ( TPI+ATAN2(CY0(IX,IY),CX0(IX,IY)) , TPI )
+          ELSE
+            D0     = 0
+          END IF
+          IF ( CAI(ISEA) .GT. 1.E-7) THEN
+            DN     = MOD ( TPI+ATAN2(CYN(IX,IY),CXN(IX,IY)) , TPI )
+          ELSE
+            DN     = D0
+          END IF
+          IF ( CA0(ISEA) .GT. 1.E-7) THEN
+            CD0(ISEA) = D0
+          ELSE
+            CD0(ISEA) = DN
+          END IF
+          DD     = DN - CD0(ISEA)
+          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+          CDI(ISEA) = DD
+          CAI(ISEA) = CAI(ISEA) - CA0(ISEA)
+        END DO
+      END IF
+      !
+      ! 2.  Calculate interpolation factor
+      !
+      DT0N    = DSEC21 ( TC0, TCN )
+      DT0T    = DSEC21 ( TC0, TIME )
+      !
 #ifdef W3_CRT0
-    RD     = 0.
+      RD     = 0.
 #endif
 #ifdef W3_CRT1
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 #endif
 #ifdef W3_CRT2
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
-    RD2    = 1. - RD
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD2    = 1. - RD
 #endif
 #ifdef W3_OASOCM
-    RD     = 1.
+      RD     = 1.
 #endif
-    !
-#ifdef W3_T
-    WRITE (NDST,9000) DT0N, DT0T, RD
-#endif
-
-#ifdef W3_TIDE
-    IF (FLCURTIDE) THEN
-      !          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
-      TIDE_HOUR = TIME2HOURS(TIME)
       !
-      !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
-      !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
-      d1=TIDE_HOUR/24.d0
-      TIDE_KD0= 2415020
-      d1=d1-dfloat(TIDE_kd0)-0.5d0
-      call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
-      INT24=24
-      INTDYS=int((TIDE_HOUR+0.00001)/INT24)
-      HH=TIDE_HOUR-dfloat(INTDYS*INT24)
-      TAU=HH/24.D0+H-S
-    END IF
-    !
-    !  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
-    !  TING THE LUNAR TIME TAU.
-    !
+#ifdef W3_T
+      WRITE (NDST,9000) DT0N, DT0T, RD
 #endif
 
-    !
-    ! 3.  Actual currents for all grid points
-    !
-    DO ISEA=1, NSEA
 #ifdef W3_TIDE
-      IF (FLCURTIDE) THEN  ! could move IF test outside of ISEA loop ...
-        ! VUF should only be updated in latitude changes significantly ...
-        IX        = MAPSF(ISEA,1)
-        IY        = MAPSF(ISEA,2)
-        CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
-        WCURTIDEX = CXTIDE(IX,IY,1,1)
-        WCURTIDEY = CYTIDE(IX,IY,1,1)
+      IF (FLCURTIDE) THEN
+        !          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
+        TIDE_HOUR = TIME2HOURS(TIME)
+        !
+        !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
+        !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
+        d1=TIDE_HOUR/24.d0
+        TIDE_KD0= 2415020
+        d1=d1-dfloat(TIDE_kd0)-0.5d0
+        call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+        INT24=24
+        INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+        HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+        TAU=HH/24.D0+H-S
+      END IF
+      !
+      !  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
+      !  TING THE LUNAR TIME TAU.
+      !
+#endif
 
-        DO J=2,TIDE_MF
-          TIDE_ARGX=(VX(J)+UX(J))*twpi-CXTIDE(IX,IY,J,2)*DERA
-          TIDE_ARGY=(VX(J)+UX(J))*twpi-CYTIDE(IX,IY,J,2)*DERA
-          WCURTIDEX = WCURTIDEX+FX(J)*CXTIDE(IX,IY,J,1)*COS(TIDE_ARGX)
-          WCURTIDEY = WCURTIDEY+FX(J)*CYTIDE(IX,IY,J,1)*COS(TIDE_ARGY)
-        END DO
+      !
+      ! 3.  Actual currents for all grid points
+      !
+      DO ISEA=1, NSEA
+#ifdef W3_TIDE
+        IF (FLCURTIDE) THEN  ! could move IF test outside of ISEA loop ...
+          ! VUF should only be updated in latitude changes significantly ...
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
+          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
+          WCURTIDEX = CXTIDE(IX,IY,1,1)
+          WCURTIDEY = CYTIDE(IX,IY,1,1)
+
+          DO J=2,TIDE_MF
+            TIDE_ARGX=(VX(J)+UX(J))*twpi-CXTIDE(IX,IY,J,2)*DERA
+            TIDE_ARGY=(VX(J)+UX(J))*twpi-CYTIDE(IX,IY,J,2)*DERA
+            WCURTIDEX = WCURTIDEX+FX(J)*CXTIDE(IX,IY,J,1)*COS(TIDE_ARGX)
+            WCURTIDEY = WCURTIDEY+FX(J)*CYTIDE(IX,IY,J,1)*COS(TIDE_ARGY)
+          END DO
 
 #endif
 
 #ifdef W3_TIDET
-        !Verification
-        IF (ISEA.EQ.1) THEN
+          !Verification
+          IF (ISEA.EQ.1) THEN
 
-          TIDE_AMPC(1:NTIDE,1)=CXTIDE(IX,IY,1:NTIDE,1)
-          TIDE_PHG(1:NTIDE,1 )=CXTIDE(IX,IY,1:NTIDE,2)
-          TIDE_AMPC(1:NTIDE,2)=CYTIDE(IX,IY,1:NTIDE,1)
-          TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
+            TIDE_AMPC(1:NTIDE,1)=CXTIDE(IX,IY,1:NTIDE,1)
+            TIDE_PHG(1:NTIDE,1 )=CXTIDE(IX,IY,1:NTIDE,2)
+            TIDE_AMPC(1:NTIDE,2)=CYTIDE(IX,IY,1:NTIDE,1)
+            TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
 
-          WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-               d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
+            WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+                 d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
 
-          DO J=1,TIDE_MF
-            WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
-                 FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
-          END DO
-          DO K=1,2
             DO J=1,TIDE_MF
-              WRITE(993,'(A,5I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,K,J,TIME,TIDE_HOUR,    &
-                   FX(J),UX(J),VX(J),TIDE_AMPC(J,K),TIDE_PHG(J,K)
+              WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+                   FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
             END DO
-          END DO
+            DO K=1,2
+              DO J=1,TIDE_MF
+                WRITE(993,'(A,5I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,K,J,TIME,TIDE_HOUR,    &
+                     FX(J),UX(J),VX(J),TIDE_AMPC(J,K),TIDE_PHG(J,K)
+              END DO
+            END DO
 
-          WRITE(993,'(A,2F8.4,A,2F8.4)') '#:',CX0(IX,IY),CY0(IX,IY),'##',WCURTIDEX,WCURTIDEY
-          CLOSE(993)
-        END IF
-        ! End of verification
+            WRITE(993,'(A,2F8.4,A,2F8.4)') '#:',CX0(IX,IY),CY0(IX,IY),'##',WCURTIDEX,WCURTIDEY
+            CLOSE(993)
+          END IF
+          ! End of verification
 #endif
 #ifdef W3_TIDE
-        CX(ISEA) = WCURTIDEX
-        CY(ISEA) = WCURTIDEY
-      ELSE
+          CX(ISEA) = WCURTIDEX
+          CY(ISEA) = WCURTIDEY
+        ELSE
 #endif
 
-        CABS    = CA0(ISEA) + RD * CAI(ISEA)
+          CABS    = CA0(ISEA) + RD * CAI(ISEA)
 #ifdef W3_CRT2
-        CI2      = SQRT ( RD2 *      CA0(ISEA)**2 +             &
-             RD  *(CA0(ISEA)+CAI(ISEA))**2 )
-        CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
+          CI2      = SQRT ( RD2 *      CA0(ISEA)**2 +             &
+               RD  *(CA0(ISEA)+CAI(ISEA))**2 )
+          CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
 #endif
-        CDIR    = CD0(ISEA) + RD * CDI(ISEA)
+          CDIR    = CD0(ISEA) + RD * CDI(ISEA)
 
 #ifdef W3_SMC
-        !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
-        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-          DN = CDIR + ANGARC( ISEA - NGLO )*DERA
-          CDIR = MOD ( TPI + DN, TPI )
-        ENDIF
+          !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
+          IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+            DN = CDIR + ANGARC( ISEA - NGLO )*DERA
+            CDIR = MOD ( TPI + DN, TPI )
+          ENDIF
 #endif
 
-        CX(ISEA) = CABS * COS(CDIR)
-        CY(ISEA) = CABS * SIN(CDIR)
+          CX(ISEA) = CABS * COS(CDIR)
+          CY(ISEA) = CABS * SIN(CDIR)
 #ifdef W3_TIDE
-        !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
-        !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY
-      END IF
+          !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
+          !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY
+        END IF
 #endif
-      !
-    END DO
+        !
+      END DO
+    end if ! use_cmeps
     !
     RETURN
     !
@@ -620,112 +638,128 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3UWND')
 #endif
-    !
-    ! 1.  Prepare auxiliary arrays
-    !
-    IF ( FLFRST ) THEN
-      DO ISEA=1, NSEA
+    if (use_cmeps) then
+      do isea = 1,nsea
+        ix = mapsf(isea,1)
+        iy = mapsf(isea,2)
+        mag = sqrt ( wx0(ix,iy)**2 + wy0(ix,iy)**2 )
+        if ( mag .gt. 1.e-7) then
+          dir = mod ( tpi+atan2(wy0(ix,iy),wx0(ix,iy)) , tpi )
+        else
+          dir = 0.0
+        end if
+        ua(isea) = mag
+        ud(isea) = dir
+        as(isea) = dt0(ix,iy)
+      end do
+    else
+      !
+      ! 1.  Prepare auxiliary arrays
+      !
+      IF ( FLFRST ) THEN
+        DO ISEA=1, NSEA
 #ifdef W3_SMC
-        !!Li  For sea-point only SMC grid wind 1-D wind is stored on
-        !!Li  2-D WX0(NSEA, 1) variable.
-        IF( FSWND ) THEN
-          IX = ISEA
-          IY = 1
-        ELSE
+          !!Li  For sea-point only SMC grid wind 1-D wind is stored on
+          !!Li  2-D WX0(NSEA, 1) variable.
+          IF( FSWND ) THEN
+            IX = ISEA
+            IY = 1
+          ELSE
 #endif
-          IX        = MAPSF(ISEA,1)
-          IY        = MAPSF(ISEA,2)
+            IX        = MAPSF(ISEA,1)
+            IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-        ENDIF
+          ENDIF
 #endif
 
-        UA0(ISEA) = SQRT ( WX0(IX,IY)**2 + WY0(IX,IY)**2 )
-        UAI(ISEA) = SQRT ( WXN(IX,IY)**2 + WYN(IX,IY)**2 )
-        IF ( UA0(ISEA) .GT. 1.E-7) THEN
-          D0     = MOD ( TPI+ATAN2(WY0(IX,IY),WX0(IX,IY)) , TPI )
-        ELSE
-          D0     = 0
-        END IF
-        IF ( UAI(ISEA) .GT. 1.E-7) THEN
-          DN     = MOD ( TPI+ATAN2(WYN(IX,IY),WXN(IX,IY)) , TPI )
-        ELSE
-          DN     = D0
-        END IF
-        IF ( UA0(ISEA) .GT. 1.E-7) THEN
-          UD0(ISEA) = D0
-        ELSE
-          UD0(ISEA) = DN
-        END IF
-        DD     = DN - UD0(ISEA)
-        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-        UDI(ISEA) = DD
-        UAI(ISEA) = UAI(ISEA) - UA0(ISEA)
-        AS0(ISEA) = DT0(IX,IY)
-        ASI(ISEA) = DTN(IX,IY) - DT0(IX,IY)
-      END DO
-    END IF
-    !
-    ! 2.  Calculate interpolation factor
-    !
-    DT0N    = DSEC21 ( TW0, TWN )
-    DT0T   = DSEC21 ( TW0, TIME )
-    !
+          UA0(ISEA) = SQRT ( WX0(IX,IY)**2 + WY0(IX,IY)**2 )
+          UAI(ISEA) = SQRT ( WXN(IX,IY)**2 + WYN(IX,IY)**2 )
+          IF ( UA0(ISEA) .GT. 1.E-7) THEN
+            D0     = MOD ( TPI+ATAN2(WY0(IX,IY),WX0(IX,IY)) , TPI )
+          ELSE
+            D0     = 0
+          END IF
+          IF ( UAI(ISEA) .GT. 1.E-7) THEN
+            DN     = MOD ( TPI+ATAN2(WYN(IX,IY),WXN(IX,IY)) , TPI )
+          ELSE
+            DN     = D0
+          END IF
+          IF ( UA0(ISEA) .GT. 1.E-7) THEN
+            UD0(ISEA) = D0
+          ELSE
+            UD0(ISEA) = DN
+          END IF
+          DD     = DN - UD0(ISEA)
+          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+          UDI(ISEA) = DD
+          UAI(ISEA) = UAI(ISEA) - UA0(ISEA)
+          AS0(ISEA) = DT0(IX,IY)
+          ASI(ISEA) = DTN(IX,IY) - DT0(IX,IY)
+        END DO
+      END IF
+      !
+      ! 2.  Calculate interpolation factor
+      !
+      DT0N    = DSEC21 ( TW0, TWN )
+      DT0T   = DSEC21 ( TW0, TIME )
+      !
 #ifdef W3_WNT0
-    RD     = 0.
+      RD     = 0.
 #endif
 #ifdef W3_WNT1
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 #endif
 #ifdef W3_WNT2
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
-    RD2    =  1. - RD
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD2    =  1. - RD
 #endif
 #ifdef W3_OASACM
-    RD     = 1.
+      RD     = 1.
 #endif
-    !
-#ifdef W3_T
-    WRITE (NDST,9000) DT0N, DT0T, RD
-#endif
-    !
-    ! 3.  Actual wind for all grid points
-    !
-#ifdef W3_OMPG
-    !$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
-#endif
-    !
-    DO ISEA=1, NSEA
       !
-      UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
-#ifdef W3_WNT2
-      UI2      = SQRT ( RD2 *      UA0(ISEA)**2 +             &
-           RD  *(UA0(ISEA)+UAI(ISEA))**2 )
-      UA(ISEA) = UA(ISEA) * MIN(1.25,UI2/MAX(1.E-7,UA(ISEA)))
+#ifdef W3_T
+      WRITE (NDST,9000) DT0N, DT0T, RD
 #endif
-      UD(ISEA) = UD0(ISEA) + RD * UDI(ISEA)
+      !
+      ! 3.  Actual wind for all grid points
+      !
+#ifdef W3_OMPG
+      !$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
+#endif
+      !
+      DO ISEA=1, NSEA
+        !
+        UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
+#ifdef W3_WNT2
+        UI2      = SQRT ( RD2 *      UA0(ISEA)**2 +             &
+             RD  *(UA0(ISEA)+UAI(ISEA))**2 )
+        UA(ISEA) = UA(ISEA) * MIN(1.25,UI2/MAX(1.E-7,UA(ISEA)))
+#endif
+        UD(ISEA) = UD0(ISEA) + RD * UDI(ISEA)
 #ifdef W3_MGW
-      UXR        = UA(ISEA)*COS(UD(ISEA)) + VGX
-      UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
-      UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
-      UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
+        UXR        = UA(ISEA)*COS(UD(ISEA)) + VGX
+        UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
+        UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
+        UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
 #endif
 #ifdef W3_SMC
-      !Li   Rotate wind direction by ANGARC for Arctic part cells.
-      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-        UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
-        UD(ISEA) = MOD ( TPI + UDARC, TPI )
-      ENDIF
+        !Li   Rotate wind direction by ANGARC for Arctic part cells.
+        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+          UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
+          UD(ISEA) = MOD ( TPI + UDARC, TPI )
+        ENDIF
 #endif
+        !
+        AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
+        !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
+        !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
+        !
+      END DO
       !
-      AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
-      !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
-      !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
-      !
-    END DO
-    !
 #ifdef W3_OMPG
-    !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 #endif
+    end if
     !
     ! 3.b  Bias correction ( !/WCOR )
 #ifdef W3_WCOR
@@ -931,93 +965,108 @@ CONTAINS
     !
     ! 1.  Prepare auxiliary arrays
     !
-    IF ( FLFRST ) THEN
-      DO ISEA=1, NSEA
+    if (use_cmeps) then
+      do isea = 1,nsea
+        ix = mapsf(isea,1)
+        iy = mapsf(isea,2)
+        mag = sqrt ( ux0(ix,iy)**2 + uy0(ix,iy)**2 )
+        if ( mag .gt. 1.e-7) then
+          dir = mod ( tpi+atan2(uy0(ix,iy),ux0(ix,iy)) , tpi )
+        else
+          dir = 0.0
+        end if
+        taua(isea) = mag*cos(dir)
+        tauadir(isea) = mag*sin(dir)
+      end do
+    else
+      IF ( FLFRST ) THEN
+        DO ISEA=1, NSEA
 #ifdef W3_SMC
-        !!Li  For sea-point only SMC grid momentum 1-D momentum is stored on
-        !!Li  2-D UX0(NSEA, 1) variable.
-        IF( FSWND ) THEN
-          IX = ISEA
-          IY = 1
-        ELSE
+          !!Li  For sea-point only SMC grid momentum 1-D momentum is stored on
+          !!Li  2-D UX0(NSEA, 1) variable.
+          IF( FSWND ) THEN
+            IX = ISEA
+            IY = 1
+          ELSE
 #endif
-          IX        = MAPSF(ISEA,1)
-          IY        = MAPSF(ISEA,2)
+            IX        = MAPSF(ISEA,1)
+            IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-        ENDIF
+          ENDIF
 #endif
 
-        MA0(ISEA) = SQRT ( UX0(IX,IY)**2 + UY0(IX,IY)**2 )
-        MAI(ISEA) = SQRT ( UXN(IX,IY)**2 + UYN(IX,IY)**2 )
-        IF ( MA0(ISEA) .GT. 1.E-7) THEN
-          D0     = MOD ( TPI+ATAN2(UY0(IX,IY),UX0(IX,IY)) , TPI )
-        ELSE
-          D0     = 0
-        END IF
-        IF ( MAI(ISEA) .GT. 1.E-7) THEN
-          DN     = MOD ( TPI+ATAN2(UYN(IX,IY),UXN(IX,IY)) , TPI )
-        ELSE
-          DN     = D0
-        END IF
-        IF ( MA0(ISEA) .GT. 1.E-7) THEN
-          MD0(ISEA) = D0
-        ELSE
-          MD0(ISEA) = DN
-        END IF
-        DD     = DN - MD0(ISEA)
-        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-        MDI(ISEA) = DD
-        MAI(ISEA) = MAI(ISEA) - MA0(ISEA)
-      END DO
-    END IF
-    !
-    ! 2.  Calculate interpolation factor
-    !
-    DT0N    = DSEC21 ( TU0, TUN )
-    DT0T   = DSEC21 ( TU0, TIME )
-    !
+          MA0(ISEA) = SQRT ( UX0(IX,IY)**2 + UY0(IX,IY)**2 )
+          MAI(ISEA) = SQRT ( UXN(IX,IY)**2 + UYN(IX,IY)**2 )
+          IF ( MA0(ISEA) .GT. 1.E-7) THEN
+            D0     = MOD ( TPI+ATAN2(UY0(IX,IY),UX0(IX,IY)) , TPI )
+          ELSE
+            D0     = 0
+          END IF
+          IF ( MAI(ISEA) .GT. 1.E-7) THEN
+            DN     = MOD ( TPI+ATAN2(UYN(IX,IY),UXN(IX,IY)) , TPI )
+          ELSE
+            DN     = D0
+          END IF
+          IF ( MA0(ISEA) .GT. 1.E-7) THEN
+            MD0(ISEA) = D0
+          ELSE
+            MD0(ISEA) = DN
+          END IF
+          DD     = DN - MD0(ISEA)
+          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+          MDI(ISEA) = DD
+          MAI(ISEA) = MAI(ISEA) - MA0(ISEA)
+        END DO
+      END IF
+      !
+      ! 2.  Calculate interpolation factor
+      !
+      DT0N    = DSEC21 ( TU0, TUN )
+      DT0T   = DSEC21 ( TU0, TIME )
+      !
 #ifdef W3_WNT0
-    RD     = 0.
+      RD     = 0.
 #endif
 #ifdef W3_WNT1
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 #endif
 #ifdef W3_WNT2
-    RD     = DT0T / MAX ( 1.E-7 , DT0N )
-    RD2    =  1. - RD
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+      RD2    =  1. - RD
 #endif
 #ifdef W3_OASACM
-    RD     = 1.
+      RD     = 1.
 #endif
-    !
+      !
 #ifdef W3_T
-    WRITE (NDST,9000) DT0N, DT0T, RD
+      WRITE (NDST,9000) DT0N, DT0T, RD
 #endif
-    !
-    ! 3.  Actual momentum for all grid points
-    !
+      !
+      ! 3.  Actual momentum for all grid points
+      !
 #ifdef W3_OMPG
-    !$OMP PARALLEL DO PRIVATE (ISEA,MI2,MXR,MYR,MDARC)
+      !$OMP PARALLEL DO PRIVATE (ISEA,MI2,MXR,MYR,MDARC)
 #endif
-    !
-    DO ISEA=1, NSEA
       !
-      TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
+      DO ISEA=1, NSEA
+        !
+        TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
 #ifdef W3_WNT2
-      MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
-           RD  *(MA0(ISEA)+MAI(ISEA))**2 )
-      TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
+        MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
+             RD  *(MA0(ISEA)+MAI(ISEA))**2 )
+        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
 #endif
-      TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
+        TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
 #ifdef W3_SMC
-      !Li   Rotate momentum direction by ANGARC for Arctic part cells.
-      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-        MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
-        TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
-      ENDIF
+        !Li   Rotate momentum direction by ANGARC for Arctic part cells.
+        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+          MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
+          TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
+        ENDIF
 #endif
-      !
-    END DO
+        !
+      END DO
+    end if !use_cmeps
     !
     RETURN
     !
@@ -1123,7 +1172,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF,                 &
          NK, NTH, TH, SIG, DTH, DSIP, UNGTYPE,       &
          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
-         HPFAC, HQFAC
+         HPFAC, HQFAC, FETCH
     USE W3ADATMD, ONLY: U10, U10D, CG
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
     USE W3PARALL, only : GET_JSEA_IBELONG
@@ -1177,16 +1226,19 @@ CONTAINS
     A(:,:,:)=0
     DO JSEA=1, NSEAL
       CALL INIT_GET_ISEA(ISEA, JSEA)
-      IF (GTYPE.EQ.UNGTYPE) THEN
+      IF (FETCH>0.0) THEN
+        XGR = FETCH
+      ELSEIF (GTYPE.EQ.UNGTYPE) THEN
         XGR=1.  ! to be fixed later
       ELSE
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
       END IF
-      IF ( FLAGLL ) THEN
+      IF ( FLAGLL .AND. FETCH==0.0 ) THEN
         XGR    = XGR * RADIUS * DERA
       END IF
+      
       !
       U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
       !
@@ -2029,6 +2081,7 @@ CONTAINS
     !/                  activation of grid point.
     !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
     !/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -2149,7 +2202,7 @@ CONTAINS
 #ifdef W3_T3
     REAL                    :: OUT(NK,NTH)
 #endif
-    LOGICAL                 :: LOCAL
+    LOGICAL                 :: LOCAL, COND
     INTEGER                 :: IBELONG
     !
 #ifdef W3_TIDE
@@ -2404,58 +2457,61 @@ CONTAINS
         !
         ! 2.e Redistribute discrete action density
         !
+        COND = .TRUE.
         IF ( WNO(1) .LT. WN(1,ISEA) ) THEN
           IK0    = 1
           I1     = 0
           I2     = 1
-220       CONTINUE
-          IK0    = IK0 + 1
-          IF ( IK0 .GT. NK+1 ) GOTO 251
-          IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
-            IK0    = IK0 - 1
-          ELSE
-            GOTO 220
-          END IF
+          DO
+            IK0    = IK0 + 1
+            IF ( IK0 .GT. NK+1 ) THEN
+              COND = .FALSE.
+              EXIT
+            END IF
+            IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
+              IK0    = IK0 - 1
+              EXIT
+            END IF
+          END DO
         ELSE
           IK0    = 1
           I1     = 1
           I2     = 2
         END IF
         !
-        DO IK=IK0, NK
-          !
-230       CONTINUE
-          IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
-            I1     = I1 + 1
-            IF ( I1 .GT. NK ) GOTO 250
-            I2     = I1 + 1
-            GOTO 230
-          END IF
-          !
-          IF ( I1 .EQ. 0 ) THEN
-            RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
-            RD2    = 1. - RD1
-          ELSE
-            RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
-                 ( WN(I2,ISEA) - WN(I1,ISEA) )
-            RD2    = 1. - RD1
-          END IF
-          !
-          IF ( I1 .GE. 1 ) THEN
-            DO ITH=1, NTH
-              A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
+        IF (COND) THEN
+          DO IK=IK0, NK
+            !
+            DO WHILE ( WNO(IK) .GT. WN(I2,ISEA) )
+              I1     = I1 + 1
+              IF ( I1 .GT. NK ) EXIT
+              I2     = I1 + 1
             END DO
-          END IF
-          !
-          IF ( I2 .LE. NK ) THEN
-            DO ITH=1, NTH
-              A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
-            END DO
-          END IF
-          !
-250       CONTINUE
-        END DO
-251     CONTINUE
+            IF ( I1 .GT. NK ) CYCLE
+            !
+            IF ( I1 .EQ. 0 ) THEN
+              RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
+              RD2    = 1. - RD1
+            ELSE
+              RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
+                   ( WN(I2,ISEA) - WN(I1,ISEA) )
+              RD2    = 1. - RD1
+            END IF
+            !
+            IF ( I1 .GE. 1 ) THEN
+              DO ITH=1, NTH
+                A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
+              END DO
+            END IF
+            !
+            IF ( I2 .LE. NK ) THEN
+              DO ITH=1, NTH
+                A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
+              END DO
+            END IF
+            !
+          END DO
+        END IF
         !
         ! 2.f Convert discrete action densities to spectrum
         !

@@ -6,7 +6,7 @@ MODULE W3TIMEMD
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |           H. L. Tolman            |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         12-Jan-2021 |
+  !/                  | Last update :         23-Feb-2024 |
   !/                  +-----------------------------------+
   !/
   !/    Copyright 2009 National Weather Service (NWS),
@@ -95,6 +95,7 @@ CONTAINS
     !/
     !/    23-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
     !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -170,19 +171,15 @@ CONTAINS
     !
     ! Check change of date :
     !
-100 CONTINUE
-    IF (NSEC.GE.86400)  THEN
+    DO WHILE (NSEC.GE.86400)
       NSEC = NSEC - 86400
       NYMD = IYMD21 (NYMD,1)
-      GOTO 100
-    END IF
+    END DO
     !
-200 CONTINUE
-    IF (NSEC.LT.00000)  THEN
+    DO WHILE (NSEC.LT.00000)
       NSEC = 86400 + NSEC
       NYMD = IYMD21 (NYMD,-1)
-      GOTO 200
-    END IF
+    END DO
     !
     NHMS = NSEC/3600*10000 + MOD(NSEC,3600)/60*100 + MOD(NSEC,60)
     !
@@ -209,6 +206,7 @@ CONTAINS
       !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
       !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.00 )
       !/    18-Jun-2020 : Add 360-day calendar option         ( version 7.08 )
+      !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
       !/
       !  1. Purpose :
       !
@@ -303,20 +301,20 @@ CONTAINS
       !
       ! M = 1, leap year
       !
-      IF (ND.EQ.29 .AND. NM.EQ.2 .AND. LEAP)  GO TO 20
-      !
-      !        next month
-      !
-      IF (ND.GT.NDPM(NM)) THEN
-        ND = 1
-        NM = NM + 1
-        IF (NM.GT.12) THEN
-          NM = 1
-          NY = NY + 1
-        ENDIF
+      IF (.NOT. (ND.EQ.29 .AND. NM.EQ.2 .AND. LEAP) ) THEN
+        !
+        !        next month
+        !
+        IF (ND.GT.NDPM(NM)) THEN
+          ND = 1
+          NM = NM + 1
+          IF (NM.GT.12) THEN
+            NM = 1
+            NY = NY + 1
+          ENDIF
+        END IF
+        !
       END IF
-      !
-20    CONTINUE
       IYMD21 = NY*10000 + NM*100 + ND
       !
       RETURN
@@ -342,6 +340,7 @@ CONTAINS
     !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
     !/    05-Jan-2001 : Y2K leap year error correction.     ( version 2.05 )
     !/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/
     !  1. Purpose :
@@ -422,25 +421,23 @@ CONTAINS
     !
     IF ( NY1 .NE. NY2 ) THEN
       NST    = SIGN ( 1 , NY2-NY1 )
-100   CONTINUE
-      IF (NY1.EQ.NY2) GOTO 200
-      IF (NST.GT.0) THEN
-        NY2    = NY2 - 1
-        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-          ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+      DO WHILE (NY1.NE.NY2)
+        IF (NST.GT.0) THEN
+          NY2    = NY2 - 1
+          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+            ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+          ELSE
+            ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
+          END IF
         ELSE
-          ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
-        END IF
-      ELSE
-        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-          ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
-        ELSE
-          ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
-        END IF
-        NY2    = NY2 + 1
-      ENDIF
-      GOTO 100
-200   CONTINUE
+          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+            ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
+          ELSE
+            ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
+          END IF
+          NY2    = NY2 + 1
+        ENDIF
+      END DO
     END IF
     !
     NS     = NS2 - NS1
@@ -469,6 +466,7 @@ CONTAINS
       !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
       !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.01 )
       !/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
+      !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
       !/
       !  1. Purpose :
       !
@@ -551,13 +549,10 @@ CONTAINS
       !
       IF (NM.GT.2 .AND. LEAP)  ND = ND + 1
       !
-40    CONTINUE
-      IF (NM.LE.1)  GO TO 60
-      NM = NM - 1
-      ND = ND + NDPM(NM)
-      GO TO 40
-      !
-60    CONTINUE
+      DO WHILE (NM.GT.1)
+        NM = NM - 1
+        ND = ND + NDPM(NM)
+      END DO
       MYMD21 = ND
       !
       RETURN
@@ -1228,6 +1223,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    04-Jan-2018 : Origination from m_time library     ( version 6.04 )
+    !/    23-Feb-2024 : Updated to handle 360_day calendar  ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -1246,6 +1242,8 @@ CONTAINS
     ! * There is no year zero
     ! * Julian Day must be non-negative
     ! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+    ! * If CALTYPE is "360_day" a simpler calculation is used (30 days in every
+    !   month) with a reference date of 1800-01-01.
     !
     !  3. Parameters :
     !
@@ -1308,6 +1306,21 @@ CONTAINS
 
     JULIAN = -HUGE(99999)                  ! this is the date if an error occurs and IERR is < 0
 
+    ! Special case for 360 day climate calendar; return a pseudo-Julian day
+    ! Assumes a reference date of 1800-01-01 00:00:00
+    IF( CALTYPE .EQ. "360_day" ) THEN
+      JULIAN = (YEAR - 1800) * 360.0 +     &  ! Years since 1800
+            (MONTH - 1) * 30.0  +          &  
+            (DAY - 1) +                    & 
+            HOUR / 24.0_8 +                &
+            MINUTE / 1440.0_8 +            &
+            SECOND / 86400.0_8
+
+      IERR = 0
+      RETURN
+    ENDIF
+
+    ! Standard/Gregorian calendar - return standard Julian day calculation:
     IF(YEAR==0 .or. YEAR .lt. -4713) THEN
       IERR=-1
       RETURN
@@ -1351,6 +1364,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    04-Jan-2018 : Origination from m_time library     ( version 6.04 )
+    !/    23-Feb-2024 : Upated to handle 360_day calendar   ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -1359,6 +1373,8 @@ CONTAINS
     ! * There is no year zero
     ! * Julian Day must be non-negative
     ! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+    ! * If CALTYPE is "360_day" a simpler calculation is used (30 days in every
+    !   month) with a reference date of 1800-01-01.
     !
     !  3. Parameters :
     !
@@ -1392,7 +1408,7 @@ CONTAINS
     DOUBLE PRECISION,INTENT(IN)   :: JULIAN   ! Julian Day (non-negative, but may be non-integer)
     INTEGER,INTENT(OUT)           :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
     INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
-    ! Otherwise returnb 1
+    !                                         ! otherwise return 1
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -1412,27 +1428,31 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'J2D')
 #endif
+
     !
-    IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
+    IF(CALTYPE .EQ. 'standard' .AND. JULIAN .LT. 0.d0) THEN 
+      ! Negative Julian Day not allowed
       IERR=1
       RETURN
-    ELSE
-      IERR=0
     END IF
 
     !CALL DATE_AND_TIME(values=TIMEZONE)         ! Get the timezone
     !TZ=TIMEZONE(4)
     TZ=0                                         ! Force to UTC timezone
 
+    ! Calculation for time (hour,min,sec) same for Julian
+    ! and 360_day calendars:
     IJUL=IDINT(JULIAN)                           ! Integral Julian Day
     SECOND=SNGL((JULIAN-DBLE(IJUL))*SECDAY)      ! Seconds from beginning of Jul. Day
     SECOND=SECOND+(tz*60)
 
-    IF(SECOND.GE.(SECDAY/2.0d0)) THEN            ! In next calendar day
-      IJUL=IJUL+1
-      SECOND=SECOND-(SECDAY/2.0d0)              ! Adjust from noon to midnight
-    ELSE                                         ! In same calendar day
-      SECOND=SECOND+(SECDAY/2.0d0)              ! Adjust from noon to midnight
+    IF(CALTYPE .EQ. "standard") THEN
+      IF(SECOND.GE.(SECDAY/2.0d0)) THEN          ! In next calendar day
+        IJUL=IJUL+1
+        SECOND=SECOND-(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      ELSE                                       ! In same calendar day
+        SECOND=SECOND+(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      END IF
     END IF
 
     IF(SECOND.GE.SECDAY) THEN                    ! Final check to prevent time 24:00:00
@@ -1445,31 +1465,38 @@ CONTAINS
     HOUR=MINUTE/60                               ! Integral hours from beginning of day
     MINUTE=MINUTE-HOUR*60                        ! Integral minutes from beginning of hour
 
-    !---------------------------------------------
-    JALPHA=IDINT((DBLE(IJUL-1867216)-0.25d0)/36524.25d0) ! Correction for Gregorian Calendar
-    JA=IJUL+1+JALPHA-IDINT(0.25d0*DBLE(JALPHA))
-    !---------------------------------------------
+    IF(CALTYPE .EQ. '360_day') THEN
+      ! Calculate date parts for 360 day climate calendar
+      YEAR = INT(JULIAN / 360) + 1800 ! (base year is 1800)
+      MONTH = MOD(INT(JULIAN / 30), 12) + 1
+      DAY = MOD(INT(JULIAN), 30) + 1
+    ELSE ! Stardard Julian day calculation
+      !---------------------------------------------
+      JALPHA=IDINT((DBLE(IJUL-1867216)-0.25d0)/36524.25d0) ! Correction for Gregorian Calendar
+      JA=IJUL+1+JALPHA-IDINT(0.25d0*DBLE(JALPHA))
+      !---------------------------------------------
 
-    JB=JA+1524
-    JC=IDINT(6680.d0+(DBLE(JB-2439870)-122.1d0)/365.25d0)
-    JD=365*JC+IDINT(0.25d0*DBLE(JC))
-    JE=IDINT(DBLE(JB-JD)/30.6001d0)
-    DAY=JB-JD-IDINT(30.6001d0*DBLE(JE))
-    MONTH=JE-1
+      JB=JA+1524
+      JC=IDINT(6680.d0+(DBLE(JB-2439870)-122.1d0)/365.25d0)
+      JD=365*JC+IDINT(0.25d0*DBLE(JC))
+      JE=IDINT(DBLE(JB-JD)/30.6001d0)
+      DAY=JB-JD-IDINT(30.6001d0*DBLE(JE))
+      MONTH=JE-1
 
-    IF(MONTH.GT.12) THEN
-      MONTH=MONTH-12
-    END IF
+      IF(MONTH.GT.12) THEN
+        MONTH=MONTH-12
+      END IF
 
-    YEAR=jc-4715
-    IF(MONTH.GT.2) THEN
-      YEAR=YEAR-1
-    END IF
-
-    IF(YEAR.LE.0) THEN
-      YEAR=YEAR-1
-    END IF
-
+      YEAR=jc-4715
+      IF(MONTH.GT.2) THEN
+        YEAR=YEAR-1
+      END IF
+  
+      IF(YEAR.LE.0) THEN
+        YEAR=YEAR-1
+      END IF
+    ENDIF
+  
     DAT(1)=YEAR
     DAT(2)=MONTH
     DAT(3)=DAY
@@ -1482,7 +1509,6 @@ CONTAINS
     !
     RETURN
     !/
-    !/ End of J2D ----------------------------------------------------- /
     !/
   END SUBROUTINE J2D
 
@@ -1698,6 +1724,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    15-May-2018 : Origination                         ( version 6.05 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -1729,7 +1756,7 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     USE W3ODATMD, ONLY: NDSE
     !
     IMPLICIT NONE
@@ -1764,168 +1791,194 @@ CONTAINS
     IF (INDEX(UNITS, "seconds").NE.0) THEN
       ! seconds since YYYY-MM-DD hh:mm:ss
       IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
-        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-        READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        READ(UNITS(15:18),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:21),'(I2.2)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(23:24),'(I2.2)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(26:27),'(I2.2)',IOSTAT=IERR) DAT(5)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(29:30),'(I2.2)',IOSTAT=IERR) DAT(6)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(32:33),'(I2.2)',IOSTAT=IERR) DAT(7)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! seconds since YYYY-M-D ...
       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
-        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(15:18),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:20),'(I1.1)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(22:22),'(I1.1)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! seconds since YYYY-M-D h:m:s
         IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
-          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(24:24),'(I1.1)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(26:26),'(I1.1)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(28:28),'(I1.1)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
           ! seconds since YYYY-M-D hh:mm:ss
         ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
-          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(24:25),'(I2.2)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(27:28),'(I2.2)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(30:31),'(I2.2)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ELSE
-          GOTO 804
+          CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
         END IF
       ELSE
-        GOTO 804
+        CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
       END IF
 
       ! days
     ELSE IF (INDEX(UNITS, "days").NE.0) THEN
       ! days since YYYY-MM-DD hh:mm:ss
       IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
-        READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        READ(UNITS(12:15),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(17:18),'(I2.2)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:21),'(I2.2)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(23:24),'(I2.2)',IOSTAT=IERR) DAT(5)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(26:27),'(I2.2)',IOSTAT=IERR) DAT(6)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(29:30),'(I2.2)',IOSTAT=IERR) DAT(7)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! days since YYYY-M-D ...
       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.18) THEN
-        READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(17:17),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(19:19),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(12:15),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(17:17),'(I1.1)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(19:19),'(I1.1)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! days since YYYY-M-D h:m:s
         IF (INDEX(UNITS, ":", .FALSE.).EQ.22) THEN
-          READ(UNITS(21:21),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(23:23),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(25:25),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(21:21),'(I1.1)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(23:23),'(I1.1)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(25:25),'(I1.1)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
           ! days since YYYY-M-D hh:mm:ss
         ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
-          READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(21:22),'(I2.2)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(24:25),'(I2.2)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(27:28),'(I2.2)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ELSE
-          GOTO 804
+          CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
         END IF
       ELSE
-        GOTO 804
+        CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
       END IF
 
       ! hours
     ELSE IF (INDEX(UNITS, "hours").NE.0) THEN
       ! hours since YYYY-MM-DD hh:mm:ss
       IF (INDEX(UNITS, "-", .TRUE.).EQ.20) THEN
-        READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-        READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-        READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-        READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        READ(UNITS(13:16),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(18:19),'(I2.2)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(21:22),'(I2.2)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(24:25),'(I2.2)',IOSTAT=IERR) DAT(5)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(27:28),'(I2.2)',IOSTAT=IERR) DAT(6)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(30:31),'(I2.2)',IOSTAT=IERR) DAT(7)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! hours since YYYY-M-D ...
       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
-        READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(18:18),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(13:16),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(18:18),'(I1.1)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:20),'(I1.1)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! hours since YYYY-M-D h:m:s
         IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
-          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(22:22),'(I1.1)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(24:24),'(I1.1)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(26:26),'(I1.1)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
           ! hours since YYYY-M-D hh:mm:ss
         ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.24) THEN
-          READ(UNITS(22:23),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(25:26),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(28:29),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(22:23),'(I2.2)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(25:26),'(I2.2)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(28:29),'(I2.2)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ELSE
-          GOTO 804
+          CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
         END IF
       ELSE
-        GOTO 804
+        CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
       END IF
 
       ! minutes
     ELSE IF (INDEX(UNITS, "minutes").NE.0) THEN
       ! minutes since YYYY-MM-DD hh:mm:ss
       IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
-        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-        READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        READ(UNITS(15:18),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:21),'(I2.2)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(23:24),'(I2.2)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(26:27),'(I2.2)',IOSTAT=IERR) DAT(5)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(29:30),'(I2.2)',IOSTAT=IERR) DAT(6)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(32:33),'(I2.2)',IOSTAT=IERR) DAT(7)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! minutes since YYYY-M-D ...
       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
-        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-        READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(15:18),'(I4.4)',IOSTAT=IERR) DAT(1)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(20:20),'(I1.1)',IOSTAT=IERR) DAT(2)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+        READ(UNITS(22:22),'(I1.1)',IOSTAT=IERR) DAT(3)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ! minutes since YYYY-M-D h:m:s
         IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
-          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(24:24),'(I1.1)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(26:26),'(I1.1)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(28:28),'(I1.1)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
           ! minutes since YYYY-M-D hh:mm:ss
         ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
-          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          READ(UNITS(24:25),'(I2.2)',IOSTAT=IERR) DAT(5)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(27:28),'(I2.2)',IOSTAT=IERR) DAT(6)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
+          READ(UNITS(30:31),'(I2.2)',IOSTAT=IERR) DAT(7)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TIMEMD','UNITS',44)
         ELSE
-          GOTO 804
+          CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
         END IF
       ELSE
-        GOTO 804
+        CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
       END IF
 
       ! nothing
     ELSE
-      GOTO 804
+      CALL EXTIOF(NDSE,-1,'W3TIMEMD','UNITS',44)
     END IF
-    !
-    GOTO 888
-    !
-    ! Error escape locations
-    !
-804 CONTINUE
-    WRITE (NDSE,1004) TRIM(UNITS)
-    CALL EXTCDE ( 44 )
-    !
-805 CONTINUE
-    WRITE (NDSE,1005) IERR
-    CALL EXTCDE ( 45 )
-    !
-888 CONTINUE
-
-    !
-    ! Formats
-    !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TIMEMD : '/               &
-         '     PREMATURE END OF TIME ATTRIBUTE '/                 &
-         '     ',A/                                               &
-         '     DIFFERS FROM CONVENTIONS ISO8601 '/                &
-         '     XXX since YYYY-MM-DD hh:mm:ss'/                    &
-         '     XXX since YYYY-M-D h:m:s'/                         &
-         '     XXX since YYYY-M-D hh:mm:ss'/)
-    !
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3TIMEMD : '/               &
-         '     ERROR IN READING OF TIME ATTRIBUTE '/              &
-         '     ',A/                                               &
-         '     DIFFERS FROM CONVENTIONS ISO8601 '/                &
-         '     XXX since YYYY-MM-DD hh:mm:ss'/                    &
-         '     XXX since YYYY-M-D h:m:s'/                         &
-         '     XXX since YYYY-M-D hh:mm:ss'/                      &
-         '     IOSTAT =',I5/)
     !
     RETURN
     !/
@@ -1976,7 +2029,7 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     USE W3ODATMD, ONLY: NDSE
     !
     IMPLICIT NONE

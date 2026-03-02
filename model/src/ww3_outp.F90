@@ -95,6 +95,7 @@ PROGRAM W3OUTP
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -154,6 +155,8 @@ PROGRAM W3OUTP
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -208,13 +211,16 @@ PROGRAM W3OUTP
 #endif
   USE W3ODATMD, ONLY: W3SETO, W3NOUT
   USE W3IOGRMD, ONLY: W3IOGR
+#ifdef W3_BIN2NC
+  USE W3IOPOMD, ONLY: W3IOPON, W3IOPON_READ, W3IOPON_WRITE
+#else 
   USE W3IOPOMD, ONLY: W3IOPO
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+#endif
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
   USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
-  !/
   USE W3GDATMD
   USE W3WDATMD, ONLY: TIME
   USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
@@ -263,9 +269,15 @@ PROGRAM W3OUTP
   LOGICAL                 :: FLFORM, FLSRCE(7)
   LOGICAL, ALLOCATABLE    :: FLREQ(:)
   CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
-       TABNME*9, TFNAME*16
+       TABNME*9, TFNAME*64
   CHARACTER(LEN=25)       :: IDSRCE(7)
   CHARACTER               :: HSTR*6, HTYPE*3
+  CHARACTER(LEN=256)      :: LINEIN
+  CHARACTER(LEN=32)       :: WORDS(6)
+  CHARACTER(LEN=32)       :: prefix
+  INTEGER                 :: dynpnt
+  LOGICAL                 :: PROCESS_POINT_ONLY          
+  INTEGER                 :: ACTIVE_POINT, J_START, J_END
   !/
   !/ ------------------------------------------------------------------- /
   !/
@@ -277,6 +289,10 @@ PROGRAM W3OUTP
        'Wave-ice interactions    ' ,                     &
        'Sum of selected sources  ' /
   FLSRCE = .FALSE.
+  
+  ! Default values
+  prefix = ""   ! Default to empty for point output prefix
+  dynpnt = 0    ! Default value for point output nameing
   !
 #ifdef W3_NCO
   !     CALL W3TAGB('WAVESPEC',1998,0007,0050,'NP21   ')
@@ -335,8 +351,10 @@ PROGRAM W3OUTP
   !
   J      = LEN_TRIM(FNMPRE)
   OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_outp.inp',STATUS='OLD',        &
-       ERR=800,IOSTAT=IERR)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+        IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','INPUT',40)
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -358,27 +376,67 @@ PROGRAM W3OUTP
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
-  !
-  CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-  !
-  WRITE (NDSO,930)
-  DO I=1, NOPTS
-    IF ( FLAGLL ) THEN
-      WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
-    ELSE
-      WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
-    END IF
-  END DO
-  !
-  !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! 4.  Read requests from input file.
-  !     Output times
+  !     Output time, time step, number of steps, optional dynpnt and prefix
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+  WORDS = ''
+  READ (NDSI, '(A)', IOSTAT=IERR) LINEIN
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
+  READ(LINEIN,*,IOSTAT=IERR) WORDS
+  READ(WORDS(1), *, IOSTAT=IERR) TOUT(1)  ! Date (yyyymmdd)
+  READ(WORDS(2), *, IOSTAT=IERR) TOUT(2)  ! Time (hhmmss)
+  READ(WORDS(3), *, IOSTAT=IERR) DTREQ
+  READ(WORDS(4), *, IOSTAT=IERR) NOUT
+  IF (WORDS(5) /= '') READ(WORDS(5), *, IOSTAT=IERR) dynpnt
+  IF (WORDS(6) /= '') prefix = TRIM(WORDS(6))
+  
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0 ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
+    
+  prefix = TRIM(ADJUSTL(prefix))
+  ! Ensure prefix ends with a dot
+  IF (LEN_TRIM(prefix) > 0) THEN
+    prefix = TRIM(prefix) // '.'
+  END IF
+  !
+
+  IF (dynpnt == 0) THEN
+#if W3_BIN2NC
+    CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
+    CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
+  !
+    WRITE (NDSO,930)
+    DO I=1, NOPTS
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+      ELSE
+        WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+      END IF
+    END DO
+  END IF 
+  !
+  !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! 4.  Read requests from input file.
+  !
+  IF (dynpnt == 1) THEN
+#if W3_BIN2NC
+    CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT )
+    WRITE (NDSO,930)
+    DO I=1, NOPTS
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+      ELSE
+        WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+      END IF
+    END DO
+#else
+    WRITE (NDSE,1013) dynpnt
+    CALL EXTCDE ( 45 )
+#endif
+  END IF
   !
   CALL STME21 ( TOUT , IDTIME )
   WRITE (NDSO,940) IDTIME
@@ -404,7 +462,8 @@ PROGRAM W3OUTP
   DO I=1, NOPTS
     ! reads point index
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) IPOINT
+    READ (NDSI,*,IOSTAT=IERR) IPOINT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
     ! last index
     IF (IPOINT .LT. 0) THEN
       IF (I.EQ.1) THEN
@@ -423,7 +482,8 @@ PROGRAM W3OUTP
     ! read the 'end of list' if nopts reached before it
     IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) IPOINT
+      READ (NDSI,*,IOSTAT=IERR) IPOINT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
     END IF
   END DO
   ! check if last point index is -1
@@ -436,7 +496,8 @@ PROGRAM W3OUTP
   ! ... Output type
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-  READ (NDSI,*,END=801,ERR=802) ITYPE
+  READ (NDSI,*,IOSTAT=IERR) ITYPE
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
   !
   ! ... ITYPE = 0
   !
@@ -445,7 +506,8 @@ PROGRAM W3OUTP
 #ifdef W3_O14
     WRITE (NDSO,942) ITYPE, 'Generating buoy log file'
     OPEN (NDBO,FILE=FNMPRE(:J)//'buoy_log.ww3',            &
-         STATUS='NEW',ERR=805,IOSTAT=IERR)
+         STATUS='NEW',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','BUOY LOG',45)
     DO I = 1,NOPTS
       WRITE(NDBO,945) I, PTNME(I), PTLOC(1,I),             &
            PTLOC(2,I), GRDID(I)
@@ -453,24 +515,33 @@ PROGRAM W3OUTP
     CLOSE(NDBO)
 #endif
     !
-    WRITE (NDSO,942) ITYPE, 'Checking contents of file'
-    DO
-      CALL STME21 ( TIME , IDTIME )
-      WRITE (NDSO,948) IDTIME
-      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-      IF ( IOTEST .EQ. -1 ) THEN
-        WRITE (NDSO,949)
-        GOTO 888
-      END IF
-    END DO
+    IF (dynpnt == 0) THEN
+      WRITE (NDSO,942) ITYPE, 'Checking contents of file'
+      DO
+        CALL STME21 ( TIME , IDTIME )
+        WRITE (NDSO,948) IDTIME
+#ifdef W3_BIN2NC
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
+        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
+        IF ( IOTEST .EQ. -1 ) THEN
+          WRITE (NDSO,949)
+          WRITE (NDSO,999)
+          STOP
+        END IF
+      END DO
+    END IF
+
     !
     ! ... ITYPE = 1
     !
   ELSE IF (ITYPE .EQ. 1) THEN
     WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
+    READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2,        &
          NDSTAB, FLFORM
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
 #ifdef W3_NCO
     NDSTAB = 51
 #endif
@@ -496,36 +567,68 @@ PROGRAM W3OUTP
       IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
       WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
       J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
       WRITE (NDSO,1947) TABNME
     ELSE IF ( OTYPE .EQ. 3 ) THEN
-      TFNAME = 'ww3.--------.spc'
-      WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
-           MOD(TOUT(1),1000000), TOUT(2)/10000
-      WRITE (NDSO,943) 'Transfer file'
-      IF ( FLFORM ) THEN
-        WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
-        J      = LEN_TRIM(FNMPRE)
-        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-             IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
-        WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
-             NK, NTH, NREQ, GNAME
-        WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
-        !
-        ! conversion of directions from trignonmetric to nautical (still uses directions TO )
-        !
-        WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
-
+      IF (dynpnt .EQ. 1) THEN
+        WRITE (NDSO,943) 'Transfer file for each point'
+        DO IJ = 1, NOPTS
+          IF (FLREQ(IJ)) THEN
+            TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
+            WRITE (NDSO,1943) TRIM(TFNAME), 'Transfer File'
+            J = LEN_TRIM(FNMPRE)
+            IF (FLFORM) THEN
+              OPEN (NDSTAB, FILE=TRIM(TFNAME),  &
+                   IOSTAT=IERR, FORM='UNFORMATTED')
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
+              WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',     &
+                   NK, NTH, 1, GNAME
+              WRITE (NDSTAB) (SIG(IK)*TPIINV, IK = 1, NK)
+              WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH), TPI), ITH = 1, NTH)
+            ELSE
+              OPEN (NDSTAB, FILE=TRIM(TFNAME),  &
+                   IOSTAT=IERR, FORM='FORMATTED')
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
+              WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA', &
+                   NK, NTH, 1, GNAME
+              WRITE (NDSTAB,1945) (SIG(IK)*TPIINV, IK = 1, NK)
+              WRITE (NDSTAB,1946) (MOD(2.5*PI-TH(ITH), TPI), ITH= 1, NTH)
+            END IF
+            CLOSE(NDSTAB)
+          END IF
+        END DO
       ELSE
-        WRITE (NDSO,1943) TFNAME, 'FORMATTED'
-        J      = LEN_TRIM(FNMPRE)
-        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-             IOSTAT=IERR,FORM='FORMATTED')
-        WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA',        &
-             NK, NTH, NREQ, GNAME
-        WRITE (NDSTAB,1945) (SIG(IK)*TPIINV,IK=1,NK)
-        WRITE (NDSTAB,1946)                                 &
-             (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+        ! Default behavior when dynpnt = 0
+        TFNAME = 'ww3.--------.spc'
+        WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
+             MOD(TOUT(1),1000000), TOUT(2)/10000
+        WRITE (NDSO,943) 'Transfer file'
+        IF ( FLFORM ) THEN
+          WRITE (NDSO,1943) TRIM(TFNAME), 'UNFORMATTED'
+          J      = LEN_TRIM(FNMPRE)
+          OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,      &
+               IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
+          WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
+               NK, NTH, NREQ, GNAME
+          WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
+          !
+          ! conversion of directions from trignonmetric to nautical (still uses directions TO )
+          !
+          WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+        ELSE
+          WRITE (NDSO,1943) TRIM(TFNAME), 'FORMATTED'
+          J      = LEN_TRIM(FNMPRE)
+          OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,      &
+               IOSTAT=IERR,FORM='FORMATTED')
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
+          WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA',        &
+               NK, NTH, NREQ, GNAME
+          WRITE (NDSTAB,1945) (SIG(IK)*TPIINV,IK=1,NK)
+          WRITE (NDSTAB,1946)                                 &
+               (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+        END IF
       END IF
     ELSE
       WRITE (NDSE,1011) OTYPE
@@ -537,7 +640,8 @@ PROGRAM W3OUTP
   ELSE IF (ITYPE .EQ. 2) THEN
     WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB
+    READ (NDSI,*,IOSTAT=IERR) OTYPE, NDSTAB
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
 #ifdef W3_NCO
     NDSTAB = 51
 #endif
@@ -545,7 +649,8 @@ PROGRAM W3OUTP
     IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
     WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
     J      = LEN_TRIM(FNMPRE)
-    OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+    OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
     IF ( OTYPE .EQ. 1 ) THEN
       WRITE (NDSO,2940) 'Depth, current and wind', TABNME
     ELSE IF ( OTYPE .EQ. 2 ) THEN
@@ -570,8 +675,9 @@ PROGRAM W3OUTP
   ELSE IF (ITYPE .EQ. 3) THEN
     WRITE (NDSO,942) ITYPE, 'Source terms'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
+    READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2,        &
          NDSTAB, FLSRCE, ISCALE, FLFORM
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
 #ifdef W3_NCO
     NDSTAB = 51
 #endif
@@ -608,8 +714,9 @@ PROGRAM W3OUTP
       IF ( FLFORM ) THEN
         WRITE (NDSO,3943) TFNAME, 'UNFORMATTED'
         J      = LEN_TRIM(FNMPRE)
-        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,      &
              IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
         WRITE (NDSTAB) 'WAVEWATCH III SOURCES',             &
              NK, NTH, NREQ, FLSRCE
         WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
@@ -618,8 +725,9 @@ PROGRAM W3OUTP
       ELSE
         WRITE (NDSO,3943) TFNAME, 'FORMATTED'
         J      = LEN_TRIM(FNMPRE)
-        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,      &
              IOSTAT=IERR,FORM='FORMATTED')
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
         WRITE (NDSTAB,3944) 'WAVEWATCH III SOURCES',        &
              NK, NTH, NREQ, FLSRCE
         WRITE (NDSTAB,3945) (SIG(IK)*TPIINV,IK=1,NK)
@@ -658,7 +766,8 @@ PROGRAM W3OUTP
       IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
       WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
       J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
       WRITE (NDSO,3941) TABNME
     END IF
     !
@@ -667,7 +776,8 @@ PROGRAM W3OUTP
   ELSE IF (ITYPE .EQ. 4) THEN
     WRITE (NDSO,942) ITYPE, 'Spectral partitions or bulletins'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB, TIMEV, HTYPE
+    READ (NDSI,*,IOSTAT=IERR) OTYPE, NDSTAB, TIMEV, HTYPE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUTP','INPUT',41)
 #ifdef W3_NCO
     NDSTAB = 51
 #endif
@@ -677,46 +787,88 @@ PROGRAM W3OUTP
       IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
       WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
       J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
       WRITE (NDSO,1947) TABNME
 
-    ELSEIF ( OTYPE .GE. 2 ) THEN
+    ELSE IF ( OTYPE .GE. 2 ) THEN
       IF (OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
-        WRITE (NDSO,943) 'Bulletins, ASCII format'
-        J      = LEN_TRIM(FNMPRE)
-        DO IJ = 1,NOPTS
-          IF ( COUNT(FLREQ)  .GT. 1 ) THEN
-            ! ... This version only allows single point output for bulletins
-            WRITE (NDSE,1012) OTYPE
-            CALL EXTCDE ( 45 )
-          ENDIF
-          IF (FLREQ(IJ)) THEN
-            NDSBUL = NDSTAB + (IJ - 1)
-            OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
-            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
+        IF (dynpnt .EQ. 1) THEN  
+          WRITE (NDSO,943) 'Bulletins, ASCII format'
+          J      = LEN_TRIM(FNMPRE)
+          DO IJ = 1,NOPTS
+            IF (FLREQ(IJ)) THEN
+              NDSBUL = NDSTAB + (IJ - 1)
+              OPEN(NDSBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.bull',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
 #ifdef W3_NCO
-            NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
-            OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
-            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
+              NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+              OPEN(NDSCBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.cbull',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
 #endif
-          ENDIF
-        ENDDO
+            ENDIF
+          ENDDO
+        ELSE
+          WRITE (NDSO,943) 'Bulletins, ASCII format'
+          J      = LEN_TRIM(FNMPRE)
+          DO IJ = 1,NOPTS
+            IF ( COUNT(FLREQ)  .GT. 1 ) THEN
+              ! ... This version only allows single point output for bulletins
+              WRITE (NDSE,1012) OTYPE
+              CALL EXTCDE ( 45 )
+            END IF
+            IF (FLREQ(IJ)) THEN
+              NDSBUL = NDSTAB + (IJ - 1)
+              OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
+#ifdef W3_NCO
+              NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+              OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
+#endif
+            END IF
+          END DO
+        END IF
       ENDIF
       IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
-        WRITE (NDSO,943) 'Bulletins, CSV format'
-        J      = LEN_TRIM(FNMPRE)
-        DO IJ = 1,NOPTS
-          IF (FLREQ(IJ)) THEN
-            ICSV = 0
-            IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+        IF (dynpnt .EQ. 1) THEN
+          WRITE (NDSO,943) 'Bulletins, CSV format'
+          J      = LEN_TRIM(FNMPRE)
+          DO IJ = 1,NOPTS
+            IF (FLREQ(IJ)) THEN
+              ICSV = 0
+              NDSBUL = NDSTAB + (IJ - 1)
 #ifdef W3_NCO
-            IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+              NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 #endif
-            NDSCSV = NDSTAB + (IJ - 1) + ICSV
-            OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',ERR=803,IOSTAT=IERR)
-            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
-          ENDIF
-        ENDDO
+              NDSCSV = NDSTAB + (IJ - 1) + 2*NOPTS
+              OPEN(NDSCSV,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//&
+                             '.csv',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
+            ENDIF
+          ENDDO
+        ELSE
+          WRITE (NDSO,943) 'Bulletins, CSV format'
+          J      = LEN_TRIM(FNMPRE)
+          DO IJ = 1,NOPTS
+            IF (FLREQ(IJ)) THEN
+              ICSV = 0
+              IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+#ifdef W3_NCO
+              IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+#endif
+              NDSCSV = NDSTAB + (IJ - 1) + ICSV
+              OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',IOSTAT=IERR)
+              IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','TABLE',43)
+              WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
+            END IF
+          END DO
+        END IF
       ENDIF
     ELSE
       WRITE (NDSE,1011) OTYPE
@@ -751,6 +903,11 @@ PROGRAM W3OUTP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 5.  Time management.
   !
+  IF (dynpnt .EQ. 1) THEN
+    PROCESS_POINT_ONLY = .FALSE.
+    ACTIVE_POINT = -1
+  END IF
+
   IOUT   = 0
   !
   ! remark: it would be better to write these warnings only if source term
@@ -777,7 +934,15 @@ PROGRAM W3OUTP
   DO
     DTEST  = DSEC21 ( TIME , TOUT )
     IF ( DTEST .GT. 0. ) THEN
+#ifdef W3_BIN2NC
+      IF (dynpnt .EQ. 1) THEN
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT )
+      ELSE
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+      END IF
+#else 
       CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,949)
         EXIT
@@ -794,10 +959,35 @@ PROGRAM W3OUTP
     IF ( ( ITYPE.EQ.1 .AND. OTYPE.EQ.1 ) .OR.                     &
          ( ITYPE.EQ.3 .AND. OTYPE.EQ.1 )                          &
          ) WRITE (NDSO,960) IDTIME
-    CALL W3EXPO
+
+    IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
+      DO IJ = 1, NOPTS
+        IF (FLREQ(IJ)) THEN
+          TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
+          J = LEN_TRIM(FNMPRE)
+          IF (FLFORM) THEN
+            OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
+                IOSTAT=IERR, FORM='UNFORMATTED', ACCESS='APPEND')
+          ELSE
+            OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
+                IOSTAT=IERR, FORM='FORMATTED', ACCESS='APPEND')
+          END IF
+
+          PROCESS_POINT_ONLY = .TRUE.
+          ACTIVE_POINT = IJ
+          CALL W3EXPO
+          PROCESS_POINT_ONLY = .FALSE.
+          CLOSE(NDSTAB)
+        END IF
+      END DO
+    ELSE
+      CALL W3EXPO
+    END IF
+
     CALL TICK21 ( TOUT , DTREQ )
     IF ( IOUT .GE. NOUT ) EXIT
   END DO
+
   !
   ! ... ITYPE=4 & OTYPES=[2,4] requires adding lines at bottom of
   !     bulletin output for compatibility with version 2.22
@@ -813,47 +1003,17 @@ PROGRAM W3OUTP
         WRITE(NDSCBUL,961)
         WRITE(NDSCBUL,962)
 #endif
+        CLOSE(NDSBUL)
+#ifdef W3_NCO
+        CLOSE(NDSCBUL)
+#endif
+        NDSCSV = NDSTAB + (IJ - 1) + 2*NOPTS
+        CLOSE(NDSCSV)
       ENDIF
     ENDDO
   ENDIF
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003) IERR
-  CALL EXTCDE ( 43 )
-  !
-804 CONTINUE
-  WRITE (NDSE,1004) IERR
-  CALL EXTCDE ( 44 )
-  !
-#ifdef W3_O14
-805 CONTINUE
-  WRITE (NDSE,1005) IERR
-  CALL EXTCDE ( 45 )
-#endif
-  !
-888 CONTINUE
-  !
   WRITE (NDSO,999)
-  !
-#ifdef W3_NCO
-  !     CALL W3TAGE('WAVESPEC')
-#endif
   !
   ! Formats
   !
@@ -884,7 +1044,7 @@ PROGRAM W3OUTP
 948 FORMAT ( '      Data for ',A)
 949 FORMAT (/'      End of file reached '/)
   !
-950 FORMAT (/'  Requested output for',I3,' points : '/              &
+950 FORMAT (/'  Requested output for',I9,' points : '/              &
        ' --------------------------------------------------')
 951 FORMAT ( '      ',A,2F10.2)
 953 FORMAT ( '      ',A,2(F8.1,'E3'))
@@ -941,30 +1101,12 @@ PROGRAM W3OUTP
        ' ========================================='/          &
        '         WAVEWATCH III Point output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
        '     PREMATURE END OF INPUT FILE'/)
   !
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
        '     ERROR IN READING FROM INPUT FILE'/               &
        '     IOSTAT =',I5/)
-  !
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
-       '     ERROR IN OPENING TABLE FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
-       '     ERROR IN OPENING IDL FILE'/                      &
-       '     IOSTAT =',I5/)
-  !
-#ifdef W3_O14
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/          &
-       '     ERROR IN OPENING BUOY LOG FILE'/            &
-       '     IOSTAT =',I5/)
-#endif
   !
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/              &
        '     ERROR IN READING FROM INPUT FILE'/               &
@@ -980,6 +1122,10 @@ PROGRAM W3OUTP
 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
        '     MULTIPLE OUTPUT POINTS DEFINED, ITYPE =',I4,/    &
        '     ONLY SINGLE POINT ALLOWED IN THIS VERSION'/)
+  !
+1013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
+       '     PER TIME STEP OUTPUT IS DEFINED, dynpnt =',I4,/    &
+       '     ONLY SINGLE OUTPUT ALLOWED IN THIS VERSION'/)
 #ifdef W3_IC1
 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
        '     Ice source terms !/IC1 skipped'/            &
@@ -1463,7 +1609,15 @@ CONTAINS
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !     Loop over output points.
     !
-    DO J=1, NOPTS
+    IF (dynpnt .EQ. 1 .AND. PROCESS_POINT_ONLY) THEN
+      J_START = ACTIVE_POINT
+      J_END = ACTIVE_POINT
+    ELSE
+      J_START = 1
+      J_END = NOPTS
+    END IF
+
+    DO J=J_START, J_END
       IF ( FLREQ(J) ) THEN
         !
 #ifdef W3_T
@@ -1983,7 +2137,11 @@ CONTAINS
           END IF
           IF ( FLSRCE(3) ) THEN
 #ifdef W3_NL1
-            CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+            IF (IQTPE.GT.0) THEN
+              CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+            ELSE
+              CALL W3SNLGQM ( A, CG, WN, DEPTH,  XNL, DIA )
+            END IF
 #endif
 #ifdef W3_NL2
             CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
@@ -2565,12 +2723,20 @@ CONTAINS
             ENDIF
             IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
               ICSV = 0
-              IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+              IF (dynpnt .EQ. 1) THEN
+                NDSCSV = NDSTAB + (J - 1) + 2*NOPTS
+                WRITE (NDSCSV,'(A664)') CSVBLINE
 #ifdef W3_NCO
-              IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+                IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
 #endif
-              NDSCSV = NDSTAB + (J - 1) + ICSV
-              WRITE (NDSCSV,'(A664)') CSVBLINE
+              ELSE
+                IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+#ifdef W3_NCO
+                IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+#endif
+                NDSCSV = NDSTAB + (J - 1) + ICSV
+                WRITE (NDSCSV,'(A664)') CSVBLINE
+              END IF
             ENDIF
           END IF
           !
@@ -2830,7 +2996,7 @@ CONTAINS
 9000 FORMAT (' TEST W3EXPO : FLAGS :',40L2)
 9001 FORMAT (' TEST W3EXPO : ITPYE  :',I4/                        &
          '               OTPYE  :',I4/                        &
-         '               NREQ   :',I4/                        &
+         '               NREQ   :',I9/                        &
          '               SCALE1 :',E10.3/                     &
          '               SCALE2 :',E10.3/                     &
          '               FLSRCE :',7L2)
@@ -2846,3 +3012,4 @@ CONTAINS
   !/ End of W3OUTP ----------------------------------------------------- /
   !/
 END PROGRAM W3OUTP
+

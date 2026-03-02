@@ -10,7 +10,9 @@
   SPECTRUM%FREQ1     =  0.035
   SPECTRUM%NK        =  33
   SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  0.5
 /
+
 
 ! -------------------------------------------------------------------- !
 ! Define the run parameterization via RUN_NML namelist
@@ -28,7 +30,7 @@
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
   TIMESTEPS%DTMAX        =  720.
-  TIMESTEPS%DTXY         =  360.
+  TIMESTEPS%DTXY         =  180.
   TIMESTEPS%DTKTH        =  360.
   TIMESTEPS%DTMIN        =  30.
 /

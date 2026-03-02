@@ -42,6 +42,7 @@ PROGRAM W3GRID_INTERP
   !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
   !/    02-Jun-2021 : Bug fix (*SUMGRD; Q. Liu)           ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !   1. Purpose :
   !
@@ -69,6 +70,8 @@ PROGRAM W3GRID_INTERP
   !      W3SETG    Subr.   Id.    Point to selected model.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
   !      NEXTLN    Subr. W3SERVMD Get next line from input file
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      ITRACE    Subr.   Id.    Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
@@ -119,7 +122,7 @@ PROGRAM W3GRID_INTERP
   USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
   USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
        UST, USTDIR, ASF, RHOAIR
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -197,8 +200,8 @@ PROGRAM W3GRID_INTERP
   !
   !
   J      = LEN_TRIM(FNMPRE)
-  OPEN(NDSI,FILE=FNMPRE(:J)//'ww3_gint.inp',STATUS='OLD', ERR=2000, &
-       IOSTAT=IERR)
+  OPEN(NDSI,FILE=FNMPRE(:J)//'ww3_gint.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'INTERP','INPUT',1)
   WRITE (NDSO,900)
   !
   CALL ITRACE ( NDSTRC, NTRACE )
@@ -210,7 +213,8 @@ PROGRAM W3GRID_INTERP
   ! 3.a Get comment character
   !
   REWIND (NDSI)
-  READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   IF ( COMSTR .EQ. ' ' ) COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -244,7 +248,8 @@ PROGRAM W3GRID_INTERP
   ! 3.c Read number of grids and allocate memory
   !
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
-  READ (NDSI,*,END=2001,ERR=2002) NG
+  READ (NDSI,*,IOSTAT=IERR) NG
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   WRITE (NDSO,903) NG
   !
   CALL W3NMOD (NG, 6, 6)
@@ -260,7 +265,8 @@ PROGRAM W3GRID_INTERP
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
   !
   DO IG = 1,NG
-    READ (NDSI,*,END=2001,ERR=2002) GRIDS(IG)%FILEXT
+    READ (NDSI,*,IOSTAT=IERR) GRIDS(IG)%FILEXT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
     WRITE (NDSO,904) IG,GRIDS(IG)%FILEXT
     !
     CALL W3SETO( IG, 6, 6)
@@ -289,7 +295,8 @@ PROGRAM W3GRID_INTERP
     NOSWLL_MIN = MIN (NOSWLL_MIN,OUTPTS(NG)%NOSWLL)
   END IF
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
-  READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
+  READ (NDSI,'(I1)',IOSTAT=IERR) INTMETHOD
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   WRITE (NDSO,917) INTMETHOD
   CLOSE(NDSI)
  
@@ -820,8 +827,10 @@ PROGRAM W3GRID_INTERP
       CALL W3SETO( IG, 6, 6)
       CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
       IF ( IOTST .NE. 0 ) THEN
-        GO TO 2111
-       ENDIF
+        WRITE(NDSO,950)
+        WRITE(NDSO,999)
+        STOP
+      END IF
     END DO
     !
     ! 5.c Setup the output flag options for the target grid
@@ -870,7 +879,9 @@ PROGRAM W3GRID_INTERP
         DO IG = 1,NG-1
           CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
           IF ( IOTST .NE. 0 ) THEN
-            GO TO 2111
+            WRITE(NDSO,950)
+            WRITE(NDSO,999)
+            STOP
           ENDIF
         END DO
         CYCLE
@@ -895,7 +906,7 @@ PROGRAM W3GRID_INTERP
       CALL TICK21 ( TOUT , DTREQ )
       IF ( IOUT .GE. NOUT ) EXIT
     END DO
-    GOTO 2222
+    WRITE(NDSO,999)
   ! --- if Restart file --------
   ELSE !OUTorREST=.FALSE. 
    !
@@ -930,26 +941,9 @@ PROGRAM W3GRID_INTERP
 
     CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD, OUTorREST,MAPSTA_NG,MAPST2_NG )
 
-    GOTO 2222
+    WRITE(NDSO,999)
 
   END IF !OUTorREST
-  !
-  !---------------------------------------------------------------------------
-  ! Escape locations read errors :
-  !
-2000 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 1 )
-2001 CONTINUE
-  WRITE(NDSE,1001)
-  CALL EXTCDE ( 2 )
-2002 CONTINUE
-  WRITE(NDSE,1002) IERR
-  CALL EXTCDE ( 3 )
-2111 CONTINUE
-  WRITE(NDSO,950)
-2222 CONTINUE
-  WRITE(NDSO,999)
   !
   !---------------------------------------------------------------------------
   ! Formats
@@ -991,15 +985,6 @@ PROGRAM W3GRID_INTERP
 950 FORMAT (/'  End of file reached'/)
 999 FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
        15X,'==============================================='/)
-  !
-1000 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     ERROR IN OPENING INPUT FILE'/                           &
-       '     IOSTAT =',I5/)
-1001 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     PREMATURE END IN INPUT FILE'/)
-1002 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     ERROR IN READING FROM INPUT FILE'/                      &
-       '     IOSTAT =',I5/)
   !
   !/
   !/ Internal Subroutine
@@ -1303,19 +1288,11 @@ CONTAINS
       !
       IX = MAPSF(ISEA,1)
       IY = MAPSF(ISEA,2)
-      MAPICE = MOD(MAPST2(IY,IX),2)
-      MAPDRY = MOD(MAPST2(IY,IX)/2,2)
-      MAPLND = MOD(MAPST2(IY,IX)/4,2)
-      MAPMSK = MOD(MAPST2(IY,IX)/8,2)
       MAPINT = MOD(MAPST2(IY,IX)/16,2)
-      MAPST2(IY,IX) = MAPST2(IY,IX) - MAPICE - 2*MAPDRY - 4*MAPLND         &
-           - 8*MAPMSK
-      ACTIVE =  (MAPICE .NE. 1 .AND. MAPDRY .NE. 1)
       !
       IF ( MAPINT .EQ. 0 ) THEN
         !
         ! Initial loop to determine status map
-        ! Initialize by setting it to be ice free and wet
         !
         MAPICE = 0
         MAPDRY = 0
@@ -1323,6 +1300,10 @@ CONTAINS
         MAPLND = 0
         ACTIVE = .TRUE.
         MAPSTA(IY,IX) = ABS ( MAPSTA(IY,IX) )
+        MAPICET = 0
+        MAPDRYT = 0
+        MAPLNDT = 0
+        MAPMSKT = 0
         SUMGRD = 0
         DO IG = 1,GR_INTS(ISEA)%NGRDS
           IGRID = GR_INTS(ISEA)%GDID(IG)
@@ -1362,8 +1343,8 @@ CONTAINS
           IF ( NMAPDRY .GT. 50 ) MAPDRYT = 1
           IF ( NMAPLND .GT. 50 ) MAPLNDT = 1
           IF ( NMAPMSK .GT. 50 ) MAPMSKT = 1
-          ACTIVE =  (MAPICET .NE. 1 .AND. MAPDRYT .NE. 1 .AND.             &
-               MAPLNDT .NE. 1 .AND. MAPMSKT .NE. 1)
+          ! Allow use of grid with ice or dry point. Allow merge of group 1 output
+          ACTIVE =  (MAPLNDT .NE. 1 .AND. MAPMSKT .NE. 1)
           IF ( ACTIVE ) THEN
             USEGRID(IG) = .TRUE.
             SUMGRD = SUMGRD+1
@@ -1573,7 +1554,7 @@ CONTAINS
               !
               ! Group 1 variables
               !
-              IF ( FLOGRD(1,1) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,1) ) THEN
                 IF ( WADATS(IGRID)%DW(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(1) = SUMWT1(1) + WT
                   IF ( DWAUX .EQ. UNDEF ) THEN
@@ -1584,7 +1565,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,2) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,2) ) THEN
                 IF ( WADATS(IGRID)%CX(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(2) = SUMWT1(2) + WT
                   IF ( CXAUX .EQ. UNDEF ) THEN
@@ -1610,7 +1591,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,4) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,4) ) THEN
                 IF ( WADATS(IGRID)%AS(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(4) = SUMWT1(4) + WT
                   IF ( ASAUX .EQ. UNDEF ) THEN
@@ -1621,7 +1602,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,5) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,5) ) THEN
                 IF ( WDATAS(IGRID)%WLV(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(5) = SUMWT1(5) + WT
                   IF ( WLVAUX .EQ. UNDEF ) THEN
@@ -1643,7 +1624,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,7) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,7) ) THEN
                 IF ( WDATAS(IGRID)%BERG(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(7) = SUMWT1(7) + WT
                   IF ( BERGAUX .EQ. UNDEF ) THEN
@@ -1667,7 +1648,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,9) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,9) ) THEN
                 IF ( WDATAS(IGRID)%RHOAIR(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(9) = SUMWT1(9) + WT
                   IF ( RHOAIRAUX .EQ. UNDEF ) THEN

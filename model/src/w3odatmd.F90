@@ -310,6 +310,9 @@ MODULE W3ODATMD
   !
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS, ONLY : UNDEF
+#ifdef W3_MPI
+  use mpi_f08, ONLY   : MPI_Request
+#endif
 
   ! module default
   IMPLICIT NONE
@@ -332,6 +335,12 @@ MODULE W3ODATMD
   INTEGER, PARAMETER      :: NOEXTR=  2
   CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
   CHARACTER(LEN=80)       :: FNMPRE = './'
+
+  ! SET GLOBAL PATH FOR USER DEFINED OUTPUT, DEFAULT CURRENT PATH
+  CHARACTER(LEN=256)       :: FNMGRD = './'
+  CHARACTER(LEN=256)       :: FNMPNT = './'
+  CHARACTER(LEN=256)       :: FNMRST = './'
+
   !Moved UNDEF to constants and included above
   !REAL                    :: UNDEF = -999.9
   LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
@@ -344,7 +353,7 @@ MODULE W3ODATMD
     INTEGER               :: IPASS1
 #ifdef W3_MPI
     INTEGER               :: NRQGO, NRQGO2
-    INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
+    type(MPI_Request), POINTER :: IRQGO(:), IRQGO2(:)
 #endif
     LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
          FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
@@ -359,7 +368,7 @@ MODULE W3ODATMD
 #endif
     INTEGER, POINTER      :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 #ifdef W3_MPI
-    INTEGER, POINTER      :: IRQPO1(:), IRQPO2(:)
+    type(MPI_Request), POINTER :: IRQPO1(:), IRQPO2(:)
 #endif
     REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),             &
          DPO(:), WAO(:), WDO(:), ASO(:),      &
@@ -382,7 +391,7 @@ MODULE W3ODATMD
     INTEGER               :: IPASS3
 #ifdef W3_MPI
     INTEGER               :: IT0PNT, IT0TRK, IT0PRT, NRQTR
-    INTEGER, POINTER      :: IRQTR(:)
+    type(MPI_Request), POINTER :: IRQTR(:)
 #endif
     LOGICAL               :: O3INIT, STOP
     LOGICAL, POINTER      :: MASK1(:,:), MASK2(:,:)
@@ -393,7 +402,7 @@ MODULE W3ODATMD
     INTEGER               :: IFILE4
 #ifdef W3_MPI
     INTEGER               :: NRQRS, NBLKRS, RSBLKS
-    INTEGER, POINTER      :: IRQRS(:), IRQRSS(:)
+    type(MPI_Request), POINTER :: IRQRS(:), IRQRSS(:)
     REAL, POINTER         :: VAAUX(:,:,:)
 #endif
   END TYPE OTYPE4
@@ -407,7 +416,7 @@ MODULE W3ODATMD
     INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
          IPBPO(:,:), ISBPO(:)
 #ifdef W3_MPI
-    INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)
+    type(MPI_Request), POINTER :: IRQBP1(:), IRQBP2(:)
 #endif
     REAL                  :: XFRI, FR1I, TH1I
     REAL, POINTER         :: XBPI(:), YBPI(:), RDBPI(:,:),        &
@@ -440,7 +449,7 @@ MODULE W3ODATMD
     INTEGER               :: TOSNL5(2)
 #endif
     INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
-         TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
+         TBPI0(2), TBPIN(2), NDS(15), OFILES(8)
     REAL                  :: DTOUT(8)
     LOGICAL               :: FLOUT(8)
     TYPE(OTYPE1)          :: OUT1
@@ -477,7 +486,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPASS1
 #ifdef W3_MPI
   INTEGER, POINTER        :: NRQGO, NRQGO2
-  INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
+  type(MPI_Request), POINTER :: IRQGO(:), IRQGO2(:)
 #endif
   LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:),            &
        FLOGRR(:,:),FLOGD(:), FLOG2(:),      &
@@ -491,7 +500,7 @@ MODULE W3ODATMD
 #endif
   INTEGER, POINTER        :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 #ifdef W3_MPI
-  INTEGER, POINTER        :: IRQPO1(:), IRQPO2(:)
+  type(MPI_Request), POINTER :: IRQPO1(:), IRQPO2(:)
 #endif
   REAL, POINTER           :: PTLOC(:,:), PTIFAC(:,:),             &
        DPO(:), WAO(:), WDO(:), ASO(:),      &
@@ -514,7 +523,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPASS3
 #ifdef W3_MPI
   INTEGER, POINTER        :: IT0PNT, IT0TRK, IT0PRT, NRQTR
-  INTEGER, POINTER        :: IRQTR(:)
+  type(MPI_Request), POINTER :: IRQTR(:)
 #endif
   LOGICAL, POINTER        :: O3INIT, STOP
   LOGICAL, POINTER        :: MASK1(:,:), MASK2(:,:)
@@ -525,7 +534,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IFILE4
 #ifdef W3_MPI
   INTEGER, POINTER        :: NRQRS, NBLKRS, RSBLKS
-  INTEGER, POINTER        :: IRQRS(:), IRQRSS(:)
+  type(MPI_Request), POINTER :: IRQRS(:), IRQRSS(:)
   REAL, POINTER           :: VAAUX(:,:,:)
 #endif
   !/
@@ -539,7 +548,7 @@ MODULE W3ODATMD
   INTEGER, POINTER        :: IPBPI(:,:), ISBPI(:),                &
        IPBPO(:,:), ISBPO(:)
 #ifdef W3_MPI
-  INTEGER, POINTER        :: IRQBP1(:), IRQBP2(:)
+  type(MPI_Request), POINTER :: IRQBP1(:), IRQBP2(:)
 #endif
   REAL, POINTER           :: XFRI, FR1I, TH1I
   REAL, POINTER           :: XBPI(:), YBPI(:), RDBPI(:,:),        &
@@ -558,24 +567,37 @@ MODULE W3ODATMD
   LOGICAL, POINTER        :: FLFORM, FLCOMB, O6INIT
   INTEGER, POINTER        :: PTMETH   ! C. Bunney; Partitioning method
   REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
-  character(len=8)   :: runtype = ''                 !< @public the run type (startup,branch,continue)
-  character(len=256) :: initfile = ''                !< @public name of wave initial condition file
-                                                     !! if runtype is startup or branch run, then initfile is used
-  logical            :: use_user_histname = .false.  !<@public logical flag for user set history filenames
-  logical            :: use_user_restname = .false.  !<@public logical flag for user set restart filenames
-  character(len=512) :: user_histfname = ''          !<@public user history filename prefix, timestring
-                                                     !! YYYY-MM-DD-SSSSS will be appended
-  character(len=512) :: user_restfname = ''          !<@public user restart filename prefix, timestring
-                                                     !! YYYY-MM-DD-SSSSS will be appended
-  logical            :: histwr = .false.             !<@public logical to trigger history write
-                                                     !! if true => write history file (snapshot)
-  logical            :: rstwr = .false.              !<@public logical to trigger restart write
-                                                     !! if true => write restart
-  logical            :: user_netcdf_grdout = .false. !<@public logical flag to use netCDF for gridded
-                                                     !! field output
-  character(len= 36) :: time_origin = ''             !< @public the time_origin used for netCDF output
-  character(len= 36) :: calendar_name = ''           !< @public the calendar used for netCDF output
-  integer(kind=8)    :: elapsed_secs = 0             !< @public the time in seconds from the time_origin
+
+  character(len=8)   :: runtype = ''                   !< @public the run type (startup,branch,continue)
+  character(len=256) :: initfile = ''                  !< @public name of wave initial condition file
+                                                       !! if runtype is startup or branch run, then initfile is used
+  character(len=512) :: user_histfname = ''            !< @public user history filename prefix, timestring
+                                                       !! YYYY-MM-DD-SSSSS will be appended
+  character(len=512) :: user_restfname = ''            !< @public user restart filename prefix, timestring
+                                                       !! YYYY-MM-DD-SSSSS will be appended
+  logical            :: histwr = .false.               !< @public logical to trigger history write
+                                                       !! if true => write history file (snapshot)
+  logical            :: rstwr = .false.                !< @public logical to trigger restart write
+                                                       !! if true => write restart
+  logical            :: use_historync = .false.        !< @public logical flag to use netCDF for gridded
+                                                       !! field output
+  logical            :: use_restartnc = .false.        !< @public logical flag to read and write netCDF restarts
+  logical            :: restart_from_binary = .false.  !< @public logical flag for restarting from binary restart
+                                                       ! when use_restartnc is true
+  logical            :: logfile_is_assigned = .false.  !< @public logical flag for assignment of nds(1) to specified
+                                                       !! log file in mesh cap
+  logical            :: verboselog = .true.            !< @public logical flag to enable verbose WW3 native logging
+  logical            :: addrstflds = .false.           !< @public logical flag for additional restart fields
+  integer            :: rstfldcnt = 0                  !< @public the actual number of additional restart fields
+  character(len=10), dimension(10) :: rstfldlist = ''  !< @public a list of additional fields for the restart file,
+                                                       !! currently set to a maximum of 10. Additional restart fields
+                                                       !! are required only when waves are in the slow loop and ice
+                                                       !! is present. Note that waves should not be in the slow loop
+                                                       !! if coupling to CICE is set
+  character(len=36)  :: time_origin = ''               !< @public the time_origin used for netCDF output
+  character(len=36)  :: calendar_name = ''             !< @public the calendar used for netCDF output
+  integer(kind=8)    :: elapsed_secs = 0               !< @public the time in seconds from the time_origin
+  logical            :: use_cmeps = .false.            !< @public a logical flag to indicate cmeps is providing the forcing
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -710,6 +732,7 @@ CONTAINS
       OUTPTS(I)%TBPIN = (-1,0)
       !
       OUTPTS(I)%OUT1%IPASS1 = 0
+      OUTPTS(I)%OUT1%FLOGRR = .FALSE.
 #ifdef W3_MPI
       OUTPTS(I)%OUT1%NRQGO  = 0
       OUTPTS(I)%OUT1%NRQGO2 = 0
@@ -876,7 +899,7 @@ CONTAINS
     !
     ! 6) Wave-ocean layer
     !
-    NOGE(6) = 13
+    NOGE(6) = 14
     !
     IDOUT( 6, 1)  = 'Radiation stresses  '
     IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -891,9 +914,7 @@ CONTAINS
     IDOUT( 6,11)  = 'Wave-ice energy flux'
     IDOUT( 6,12)  = 'Split Surface Stokes'
     IDOUT( 6,13)  = 'Tot wav-ocn mom flux'
-#ifdef W3_CESMCOUPLED
-    IDOUT( 6,14)  = 'Turbulent Langmuir number'
-#endif
+    IDOUT( 6,14)  = 'Stokes drift sfc ave'
     !
     ! 7) Wave-bottom layer
     !
@@ -911,13 +932,17 @@ CONTAINS
     !
     ! 8) Spectrum parameters
     !
-    NOGE(8) = 5
+    NOGE(8) = 9
     !
     IDOUT( 8, 1)  = 'Mean square slopes  '
     IDOUT( 8, 2)  = 'Phillips tail const'
     IDOUT( 8, 3)  = 'Slope direction     '
     IDOUT( 8, 4)  = 'Tail slope direction'
     IDOUT( 8, 5)  = 'Goda peakedness parm'
+    IDOUT( 8, 6)  = 'kxky-peakdness      '
+    IDOUT( 8, 7)  = 'Skewness            '
+    IDOUT( 8, 8)  = 'EM bias(l120+l102)/8'
+    IDOUT( 8, 9)  = 'Tracker bias:-l300/8'
     !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
     !      IDOUT( 8, 4)  = 'Surf grad correl XT'
     !      IDOUT( 8, 5)  = 'Surf grad correl YT'
@@ -1115,6 +1140,11 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     OUTPTS(IMOD)%OUT2%O2INIT = .TRUE.
+    !Initialize:
+    OUTPTS(IMOD)%OUT2%IPTINT=0
+    OUTPTS(IMOD)%OUT2%PTNME=''
+    OUTPTS(IMOD)%OUT2%PTLOC=0.
+    OUTPTS(IMOD)%OUT2%PTIFAC=0.
     !
 #ifdef W3_T
     WRITE (NDST,9001)

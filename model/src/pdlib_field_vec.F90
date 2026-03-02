@@ -450,13 +450,12 @@ CONTAINS
     USE W3WDATMD, ONLY : VA
     USE W3GDATMD, ONLY: NSEAL
     USE W3ADATMD, ONLY: NSEALM
-    USE W3SERVMD, ONLY : EXTCDE
 #ifdef W3_TIMINGS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
     use yowNodepool, only: ListNP, ListNPA, ListIPLG
+    use mpi_f08
     IMPLICIT NONE
-    INCLUDE "mpif.h"
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -663,8 +662,8 @@ CONTAINS
     USE W3PARALL, only : GET_JSEA_IBELONG
     USE W3WDATMD, ONLY : VA
     USE W3GDATMD, ONLY: NSEAL, NX, NY
+    use mpi_f08
     IMPLICIT NONE
-    INCLUDE "mpif.h"
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -809,7 +808,6 @@ CONTAINS
     !  4. Subroutines used :
     !
     USE W3ADATMD, ONLY: W3XDMA, W3SETA, W3XETA, WADATS
-    USE W3SERVMD, ONLY: EXTCDE
     USE W3GDATMD, ONLY: NSEA
     USE W3GDATMD, ONLY: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF
     USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
@@ -847,10 +845,10 @@ CONTAINS
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
     USE W3PARALL, ONLY: INIT_GET_ISEA
     use yowDatapool, only: istatus
+    use mpi_f08
     !/
     IMPLICIT NONE
     !
-    INCLUDE "mpif.h"
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
