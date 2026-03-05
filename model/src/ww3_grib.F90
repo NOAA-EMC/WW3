@@ -789,7 +789,7 @@ PROGRAM W3GRIB
   ! ... Set GRIB2 Data Representation Template Number (Code Table 5.0)
   !
 #ifdef W3_NCEP2
-  IDRSNUM = 2 !Complex Packing
+  IDRSNUM = 40 !Complex Packing
 #endif
   !                            clusters with Intel compiler ***
 #ifdef W3_NCEP2
