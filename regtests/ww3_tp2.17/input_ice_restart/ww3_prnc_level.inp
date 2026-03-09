@@ -43,7 +43,7 @@ $
 $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
-   '../input/levelNoNaN.nc'
+   '../input_ice/levelNoNaN.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
