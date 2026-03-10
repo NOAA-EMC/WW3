@@ -3,7 +3,8 @@ $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
 $ Time, time increment and number of outputs (set to 4 days)
 $
- 20151214 000000  3600.  9999
+$ 20151214 000000  3600.  9999
+ 20151214 120000  3600.  9999
 $
 $ Fields requested --------------------------------------------------- $
 $

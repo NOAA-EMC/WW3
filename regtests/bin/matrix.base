@@ -2019,6 +2019,8 @@
  if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
+ 
+
    echo "$rtst -s MPI -s NO_PDLIB -w work_a     -g a        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s NO_PDLIB -w work_ma    -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_b     -g b        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
@@ -2026,11 +2028,11 @@
    echo "$rtst -s MPI -s PDLIB    -w work_pdlib -g pdlib    -f -p $mpi -n $np $ww3 ww3_tp2.6"      >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_mb    -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_mc    -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
-
    echo "$rtst -s MPI -s PDLIB -i input_ice -w work_ice  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
-   echo "export npm1=$(( $np -1 ))     #number of mpi tasks - 1 to test B4B across processes"
+ # Assign a lower number of MPI processes to test B4B across different number of MPI processes (np vs npm1)
+   echo "export npm1=$(( $np -1 )) "                                                               >> matrix.body
    echo "$rtst -s MPI -s PDLIB -i input_ice -w work_iceB -g d -f -p $mpi -n $npm1 $ww3 ww3_tp2.17" >> matrix.body
-
+   echo "./bin/test.comp ww3_tp2.17 work_ice work_iceB"                                            >> matrix.body
      if [ "$rstrt_b4b" = 'y' ]
      then
         echo "mkdir -p ww3_tp2.17/work_ma1"                                                        >> matrix.body
@@ -2045,6 +2047,7 @@
         echo "mkdir -p ww3_tp2.17/work_ice_restart"                                                >> matrix.body
         echo "cp ww3_tp2.17/work_ice/20151214.120000.restart.ww3 ww3_tp2.17/work_ice_restart/restart.ww3" >> matrix.body
         echo "$rtst -s MPI -s PDLIB -i input_ice_restart -w work_ice_restart  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_ice work_ice_restart"                                >> matrix.body
      fi
  fi
 
