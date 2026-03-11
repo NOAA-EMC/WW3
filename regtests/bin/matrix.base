@@ -2029,9 +2029,7 @@
    echo "$rtst -s MPI -s PDLIB    -w work_mb    -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_mc    -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB -i input_ice -w work_ice  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
- # Assign a lower number of MPI processes to test B4B across different number of MPI processes (np vs npm1)
-   echo "export npm1=$(( $np -1 )) "                                                               >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -i input_ice -w work_iceB -g d -f -p $mpi -n $npm1 $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -i input_ice -w work_iceB -g d -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
    echo "./bin/test.comp ww3_tp2.17 work_ice work_iceB"                                            >> matrix.body
      if [ "$rstrt_b4b" = 'y' ]
      then
