@@ -706,8 +706,7 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
-          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
         END DO
 
       ENDIF
@@ -957,8 +956,7 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
-          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
         END DO
 
       ENDIF
@@ -1261,7 +1259,7 @@ CONTAINS
       DO IBI=1, NBI
         IP    = MAPSF(ISBPI(IBI),1)
         AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-             *IOBPA(IP)*IOBPD(ITH,IP) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+             * IOBPA(IP) * IOBPD(ITH,IP) * CLATS(ISBPI(IBI))
       END DO
     END IF
 
@@ -1564,8 +1562,7 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
-          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
         END DO
 
       ENDIF

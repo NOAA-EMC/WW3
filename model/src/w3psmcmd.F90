@@ -881,8 +881,7 @@ CONTAINS
         END IF
         DO IBI=1, NBI
           ISEA     = ISBPI(IBI)
-          CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))   &
-               /CG(IK,ISEA)
+          CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))
         END DO
       ENDIF
       !

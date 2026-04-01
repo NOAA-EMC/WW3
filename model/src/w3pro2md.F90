@@ -1084,8 +1084,7 @@ CONTAINS
         DO IBI=1, NBI
           ISEA    = ISBPI(IBI)
           IXY     = MAPSF(ISBPI(IBI),3)
-          VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-               / CG(IK,ISEA) * CLATS(ISEA)
+          VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISEA)
         END DO
       END IF
       !
