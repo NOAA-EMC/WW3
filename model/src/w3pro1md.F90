@@ -817,7 +817,8 @@ CONTAINS
         DO IBI=1, NBI
           IX    = MAPSF(ISBPI(IBI),1)
           IY    = MAPSF(ISBPI(IBI),2)
-          FLD2D(IY,IX) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
+          ISEA   = ISBPI(IBI)
+          FLD2D(IY,IX) = CG(IK,ISEA) * ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )
         END DO
       END IF
       !
