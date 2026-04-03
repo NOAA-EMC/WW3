@@ -1317,8 +1317,10 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 7')
 
 #ifdef W3_PDLIB
-        CALL APPLY_BOUNDARY_CONDITION_VA
-        CALL PDLIB_exchange2DREAL_zero(VA)
+        IF ( FLBPI ) THEN
+          CALL APPLY_BOUNDARY_CONDITION_VA
+          CALL PDLIB_exchange2DREAL_zero(VA)
+        END IF
 #ifdef W3_DEBUGCOH
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLBPI and LOCAL", 1)
 #endif
