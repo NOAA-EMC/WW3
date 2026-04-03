@@ -567,6 +567,9 @@ CONTAINS
 #if defined(W3_T) || defined(W3_SBS)
     USE W3GDATMD,  ONLY : FILEXT
 #endif
+#ifdef W3_PDLIB
+    USE yowExchangeModule, only : PDLIB_exchange2Dreal_zero
+#endif
     !
 #ifdef W3_MPI 
     use mpi_f08
@@ -1315,6 +1318,7 @@ CONTAINS
 
 #ifdef W3_PDLIB
         CALL APPLY_BOUNDARY_CONDITION_VA
+        CALL PDLIB_exchange2DREAL_zero(VA)
 #ifdef W3_DEBUGCOH
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLBPI and LOCAL", 1)
 #endif
