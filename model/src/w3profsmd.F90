@@ -706,7 +706,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB 
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF
@@ -956,7 +961,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF
@@ -1562,7 +1572,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF

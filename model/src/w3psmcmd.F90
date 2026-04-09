@@ -881,7 +881,12 @@ CONTAINS
         END IF
         DO IBI=1, NBI
           ISEA     = ISBPI(IBI)
+#ifdef W3_PDLIB
           CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))
+#else
+          CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))   &
+               /CG(IK,ISEA)
+#endif
         END DO
       ENDIF
       !
