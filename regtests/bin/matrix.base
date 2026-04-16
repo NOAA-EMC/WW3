@@ -2033,9 +2033,11 @@
    echo "$rtst -s MPI -s PDLIB -i input_ice -w work_iceB -g d -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
    echo "./bin/test.comp ww3_tp2.17 work_ice work_iceB"                                            >> matrix.body
 
-   echo "$rtst -s MPI -s RWPS -i input_ice -w work_ice_deep  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
-   echo "$rtst -s MPI -s RWPS -i input_ice -w work_ice_deepB -g e -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
-   echo "./bin/test.comp ww3_tp2.17 work_ice_deep work_ice_deepB"                                            >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -i input_deep -w work_deep  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -i input_deep -w work_deepB -g e -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
+   echo "./bin/test.comp ww3_tp2.17 work_deep work_deepB"                                            >> matrix.body
+
+
 
      if [ "$rstrt_b4b" = 'y' ]
      then
@@ -2053,12 +2055,13 @@
         echo "$rtst -s MPI -s PDLIB -i input_ice_restart -w work_ice_restart  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
         echo "./bin/test.comp ww3_tp2.17 work_ice work_ice_restart"                                >> matrix.body
 
-        echo "mkdir -p ww3_tp2.17/work_ice_deep_restart"                                                >> matrix.body
-        echo "cp ww3_tp2.17/work_ice_deep/20151214.120000.restart.ww3 ww3_tp2.17/work_ice_deep_restart/restart.ww3" >> matrix.body
-        echo "$rtst -s MPI -s RWPS -i input_ice_restart -w work_ice_deep_restart  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
-        echo "./bin/test.comp ww3_tp2.17 work_ice_deep work_ice_deep_restart"                                >> matrix.body
-     fi
+        echo "mkdir -p ww3_tp2.17/work_deep_restart"                                                >> matrix.body
+        echo "cp ww3_tp2.17/work_deep/20151214.120000.restart.ww3 ww3_tp2.17/work_deep_restart/restart.ww3" >> matrix.body
+        echo "$rtst -s MPI -s PDLIB -i input_deep_restart -w work_deep_restart  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_deep work_deep_restart"                                >> matrix.body
 
+
+     fi
  fi
 
  # unstructured grid with PDLIB for domain decomposition and implicit solver, Neumann Bnd, depth breaking & triad interaction ST

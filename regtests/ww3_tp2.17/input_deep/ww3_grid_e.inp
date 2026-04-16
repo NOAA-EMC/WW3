@@ -166,7 +166,9 @@ $
         NOSW =  5, FMICHE = 1.600, RWNDC = 1.000,
         FACBERG = 1.0, GSHIFT =   0.000E+00 /
 $
-$
+$Parameters needed for IC4 switch:
+&SIC4 IC4METHOD = 9 ,  IC4CN =   2.9, 4.5/
+$   
 $AW021317 &MISC P2SF = 1 ,I1P2SF = 2, I2P2SF = 16 /
 $&REF1 REFCOAST=0.1 /
 $&REF1 REFCOAST=0.10, REFSLOPE=0.1, REFCOSP_STRAIGHT=4, REFFREQ=1., REFSUBGRID = 0.00  /
@@ -212,7 +214,7 @@ $
 $ 
  'UNST' T F 
 $
-    4.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' '../input/deepinlet.msh'
+    4.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' '../input_deep/DeepInlet425m.msh'
 $
 $ If the above unit number equals 10, the bottom data is read from 
 $ this file and follows below (no intermediate comment lines allowed).
