@@ -1447,11 +1447,18 @@ CONTAINS
       DO IBI=1, NBI
         ISEA   = ISBPI(IBI)
         DO ISP=1, NSPEC
+#ifdef W3_PDLIB
+          BBPI0(ISP,IBI) = ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
+               + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
+               + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
+               + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) ) / SIG2(ISP)
+#else
           BBPI0(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *      &
                ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
                + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
                + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
                + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) )
+#endif
         END DO
       END DO
       !
@@ -1466,11 +1473,18 @@ CONTAINS
     DO IBI=1, NBI
       ISEA   = ISBPI(IBI)
       DO ISP=1, NSPEC
-        BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
+#ifdef W3_PDLIB
+        BBPIN(ISP,IBI) = ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
+             + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
+             + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
+             + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) ) / SIG2(ISP)
+#else
+       BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
              ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
              + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
              + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
              + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) )
+#endif
       END DO
       !
 #ifdef W3_RTD
@@ -1495,10 +1509,15 @@ CONTAINS
       HS1    = 0.
       HS2    = 0.
       DO ISP=1, NSPEC
+#ifdef W3_PDLIB
+        HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP))
+        HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP))
+#else
         HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
              CG(MAPWN(ISP),ISBPI(IBI))
         HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
              CG(MAPWN(ISP),ISBPI(IBI))
+#endif
       END DO
       HS1    = 4. * SQRT ( HS1 )
       HS2    = 4. * SQRT ( HS2 )
