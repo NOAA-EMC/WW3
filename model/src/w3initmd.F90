@@ -1406,7 +1406,11 @@ CONTAINS
       ! In deep water, KDCHCK >= KDMAX, assign time constant WN and CG based on bathymetric depth (-ZB).
       !
       ! Calculate the wavenumber for lowest frequency based on bathymetric depth
-      DEPTHbat=MAX(DMIN,-ZB(IS))
+      IF (IS.GT.0) THEN
+        DEPTHbat = MAX(DMIN,-ZB(IS))
+      ELSE
+        DEPTHbat = DMIN
+      END IF
 #ifdef W3_PDLIB
       CALL WAVNU3(SIG(1),DEPTHbat,WNbat,CGbat)
 #else
@@ -1414,7 +1418,7 @@ CONTAINS
 #endif
       KDCHCK = WNbat * DEPTHbat
       IF ( KDCHCK .GE. KDMAX ) THEN
-        ! Use time constant CG and WN based on bathymtry for this point rather than time varying total depth.
+        ! Use time constant CG and WN based on bathymetry for this point rather than time varying total depth.
         DEPTH=DEPTHbat
       ENDIF
 
