@@ -2201,6 +2201,7 @@ CONTAINS
          OWN(NK), DWN(NK)
     REAL                    :: KDMAX = 4., RDKMIN = 0.05
     REAL                    :: WLVeff
+    REAL                    :: DEPTHbat, CGbat, WNbat
 #ifdef W3_T3
     REAL                    :: OUT(NK,NTH)
 #endif
@@ -2345,7 +2346,18 @@ CONTAINS
       !
       ! 2.a Check if deep water
       !
-      KDCHCK = WN(1,ISEA) * MIN( DWO(ISEA) , DW(ISEA) )
+      !
+      ! In shallow water, KDCHCK < KDMAX, assign time varying WN and CG as water level changes.
+      ! In deep water, KDCHCK >= KDMAX, assign time constant WN and CG based on bathymetric depth (-ZB).
+      !
+      ! Calculate the wavenumber for lowest frequency based on bathymetric depth
+      DEPTHbat=MAX(DMIN,-ZB(ISEA))
+#ifdef W3_PDLIB
+      CALL WAVNU3(SIG(1),DEPTHbat,WNbat,CGbat)
+#else
+      CALL WAVNU1(SIG(1),DEPTHbat,WNbat,CGbat) 
+#endif
+      KDCHCK = WNbat * DEPTHbat
       IF ( KDCHCK .LT. KDMAX ) THEN
         !
         ! 2.b Update grid and save old grid
