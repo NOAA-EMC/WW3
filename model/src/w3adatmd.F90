@@ -563,7 +563,7 @@ MODULE W3ADATMD
 #endif
     REAL, POINTER         :: SPPNT(:,:,:)
     !
-    INTEGER               :: ITIME, IPASS, IDLAST, NSEALM
+    INTEGER               :: ITIME, IPASS, IDLAST, NSEALM, ITSTEP
     REAL, POINTER         :: ALPHA(:,:)
     LOGICAL               :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
     !
@@ -685,7 +685,7 @@ MODULE W3ADATMD
 #endif
   REAL, POINTER           :: SPPNT(:,:,:)
   !
-  INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
+  INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM, ITSTEP
   REAL, POINTER           :: ALPHA(:,:)
   LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
   !/
@@ -757,7 +757,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NGRIDS
     USE W3SERVMD, ONLY: EXTCDE
-    USE W3ODATMD, ONLY: IAPROC
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -800,6 +799,7 @@ CONTAINS
       WADATS(I)%IPASS  = 0
       WADATS(I)%IDLAST = 0
       WADATS(I)%NSEALM = 0
+      WADATS(I)%ITSTEP = 0
       WADATS(I)%FLCOLD = .FALSE.
       WADATS(I)%FLIWND = .FALSE.
       WADATS(I)%AINIT  = .FALSE.
@@ -925,11 +925,9 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-         NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
-         USSPF, GTYPE, UNGTYPE
-    USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
-         NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
+    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,        &
+         NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF, USSPF, GTYPE, UNGTYPE
+    USE W3ODATMD, ONLY: IAPROC, NAPROC, NOSWLL, NOEXTR, UNDEF
     USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA, FLRHOA
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -946,12 +944,12 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: JGRID, NXXX, NSEAL_tmp
+    INTEGER                 :: JGRID, NXXX
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -1542,12 +1540,8 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-         NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
-         USSPF, GTYPE, UNGTYPE
-    USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
-         NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2,      &
-         NOGRP, NGRPP
+    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, E3DF, P2MSF, UNGTYPE
+    USE W3ODATMD, ONLY: IAPROC, NAPROC, NOSWLL, NOEXTR, UNDEF, NOGRP, NGRPP
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1564,11 +1558,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, I
+    integer :: memunit
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3XDMA')
 #endif
-    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -2494,9 +2488,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NGRIDS, IGRID, NK, NX, NY, NSEA, NSEAL,     &
-         NSPEC, NTH, GTYPE, UNGTYPE
-    USE W3ODATMD, ONLY: NAPROC
+    USE W3GDATMD, ONLY: NGRIDS, UNGTYPE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -2710,7 +2702,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !
     USE W3IDATMD, ONLY: INPUTS
-    USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, GTYPE, UNGTYPE
+    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
     !
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -2760,6 +2752,7 @@ CONTAINS
     IPASS  => WADATS(IMOD)%IPASS
     IDLAST => WADATS(IMOD)%IDLAST
     NSEALM => WADATS(IMOD)%NSEALM
+    ITSTEP => WADATS(IMOD)%ITSTEP
     FLCOLD => WADATS(IMOD)%FLCOLD
     FLIWND => WADATS(IMOD)%FLIWND
     AINIT  => WADATS(IMOD)%AINIT
@@ -3137,8 +3130,7 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !
-    USE W3IDATMD, ONLY: INPUTS
-    USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, GTYPE, UNGTYPE
+    USE W3GDATMD, ONLY: UNGTYPE
     !
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S

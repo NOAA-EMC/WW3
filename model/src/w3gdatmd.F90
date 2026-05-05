@@ -1055,6 +1055,7 @@ MODULE W3GDATMD
     LOGICAL :: B_JGS_LIMITER
     LOGICAL :: B_JGS_USE_JACOBI
     LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL
+    INTEGER :: B_JGS_TRUNK_DIGITS
     INTEGER :: B_JGS_MAXITER
     INTEGER :: B_JGS_LIMITER_FUNC
     REAL*8  :: B_JGS_PMIN
@@ -1418,6 +1419,7 @@ MODULE W3GDATMD
   LOGICAL, POINTER :: B_JGS_BLOCK_GAUSS_SEIDEL
   INTEGER, POINTER :: B_JGS_MAXITER
   INTEGER, POINTER :: B_JGS_LIMITER_FUNC
+  INTEGER, POINTER :: B_JGS_TRUNK_DIGITS
   REAL(8), POINTER :: B_JGS_PMIN
   REAL(8), POINTER :: B_JGS_DIFF_THR
   REAL(8), POINTER :: B_JGS_NORM_THR
@@ -2871,6 +2873,7 @@ CONTAINS
     B_JGS_NORM_THR => MPARS(IMOD)%SCHMS%B_JGS_NORM_THR
     B_JGS_NLEVEL => MPARS(IMOD)%SCHMS%B_JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR => MPARS(IMOD)%SCHMS%B_JGS_SOURCE_NONLINEAR
+    B_JGS_TRUNK_DIGITS => MPARS(IMOD)%SCHMS%B_JGS_TRUNK_DIGITS
     RETURN
     !
     ! Formats
@@ -2974,7 +2977,10 @@ CONTAINS
     LOGICAL, PARAMETER :: SPHERE = .FALSE.
     INTEGER :: PRANGE(2), QRANGE(2)
     INTEGER :: LBI(2), UBI(2), LBO(2), UBO(2), ISTAT
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
     REAL   , ALLOCATABLE :: COSA(:,:)
+#endif
+
 #ifdef W3_S
     INTEGER, SAVE      :: IENT = 0
     CALL STRACE (IENT, 'W3GNTX')
@@ -3193,7 +3199,6 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)     :: IMOD, MTRI, MX, COUNTOTA, NNZ, NDSE, NDST
-    INTEGER                 :: IAPROC = 1
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -3365,15 +3370,19 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER                 :: ISEA, IX, IY, IXY, IXN, IXP, IYN, IYP
-    INTEGER                 :: J, K, NEIGH1(0:7)
-    INTEGER                 :: ILEV, NLEV
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
+#ifdef W3_REF1
+    REAL                    :: COSAVG, SINAVG, THAVG, CLAT
+    INTEGER                 :: J, K
+#endif
+#if defined(W3_REF1) || defined(W3_REFT)
+    INTEGER                 :: IX, IY
+    INTEGER                 :: NEIGH1(0:7)
+    REAL                    :: ANGLES(0:7)
+#endif
 
-    REAL                    :: TRIX(NY*NX), TRIY(NY*NX), DX, DY,    &
-         COSAVG, SINAVG, THAVG, ANGLES(0:7), CLAT
     !/
     !/ ------------------------------------------------------------------- /
     !/

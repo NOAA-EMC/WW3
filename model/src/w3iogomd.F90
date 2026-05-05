@@ -401,7 +401,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
-    USE W3GDATMD, ONLY: US3DF, USSPF
     USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
     USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
 #ifdef W3_S
@@ -657,7 +656,6 @@ CONTAINS
     USE CONSTANTS
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT
     USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
-    USE W3GDATMD, ONLY: US3DF, USSPF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -676,7 +674,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER             :: I, IFI, IFJ, IOUT
+    INTEGER             :: IFI, IFJ, IOUT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1300,24 +1298,23 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
     USE W3GDATMD
-    USE W3WDATMD, ONLY: UST, FPIS
     USE W3ADATMD, ONLY: CG, WN, DW
     USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0,               &
          THM, THS, THP0
     USE W3ADATMD, ONLY: ABA, ABD, UBA, UBD, FCUT, SXX,              &
          SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,    &
-         PWST, PNR, USERO, TUSX, TUSY, PRMS, TPMS,   &
+         PWST, PNR, TUSX, TUSY, PRMS, TPMS,          &
          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,   &
-         MSCD, CHARN,                                &
-         BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
+         MSCD, BHD, CGE, P2SMS, EF, TH1M, STH1M,     &
          TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
-         HCMAXE, HMAXE, HCMAXD, HMAXD, USSP, QP, PQP,&
+         HCMAXE, HMAXE, HCMAXD, HMAXD, QP, PQP,      &
          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,  &
          WBT, QKK
-    USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
-         ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
-         NOGRP, NGRPP
-    USE W3ADATMD, ONLY: NSEALM
+    USE W3ODATMD, ONLY: UNDEF, ICPRT, DTPRT, WSCUT,  &
+         NOSWLL, FLOGRD, FLOGR2, NOGRP, NGRPP
+#ifdef W3_T
+    USE W3ODATMD, ONLY: NDST
+#endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -1335,13 +1332,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: IK, ITH, JSEA, ISEA, IX, IY,         &
-         IKP0(NSEAL), NKH(NSEAL),             &
-         I, J, LKMS, HKMS, ITL
+         IKP0(NSEAL), NKH(NSEAL), I, J, ITL
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
     REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
-         AABS, UABS,                          &
          XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
          M1, M2, MA, MB, MC, STEX, STEY, STED
     REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
@@ -1367,8 +1362,8 @@ CONTAINS
          T02P(NSEAL), NV(NSEAL), NS(NSEAL),   &
          NB(NSEAL), MODE(NSEAL),              &
          MU(NSEAL), NI(NSEAL), STMAXEL(NSEAL),&
-         PHI(21,NSEAL),PHIST(NSEAL),         &
-         EBC(NK,NSEAL), ABP(NSEAL),           &
+         PHI(21,NSEAL),PHIST(NSEAL),          &
+         EBC(NK,NSEAL),                       &
          STMAXDL(NSEAL), TLPHI(NSEAL),        &
          WL02X(NSEAL), WL02Y(NSEAL),          &
          ALPXT(NSEAL), ALPYT(NSEAL),          &
@@ -1684,7 +1679,7 @@ CONTAINS
         IF ( FLOLOC( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
              STH1M(JSEA,IK)= SQRT(ABS(2.*(1-M1)))*RADE
         IF ( FLOLOC( 3, 4).AND.(IK.GE.E3DF(2,4).AND.IK.LE.E3DF(3,4)))  &
-             TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),AB2X(JSEA)) , 180. )
+             TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(AB2Y(JSEA),AB2X(JSEA)) , 180. )
         M2 = SQRT(AB2X(JSEA)**2+AB2Y(JSEA)**2)/MAX(1E-20,AB(JSEA))
         IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
              STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
@@ -2518,7 +2513,7 @@ CONTAINS
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
     USE W3ODATMD, ONLY: W3SETO
     !/
-    USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, ICEF, ICEH, BERG,    &
+    USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, BERG,                &
          UST,  USTDIR, ASF, RHOAIR
     USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN,          &
          TAUA, TAUADIR
@@ -2537,18 +2532,23 @@ CONTAINS
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
          USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1, EMBIA2
     !/
-    USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
+    USE W3ODATMD, ONLY: NOGRP, NGRPP, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
          FNMPRE, FNMGRD, NOSWLL, NOEXTR
     !/
     USE W3SERVMD, ONLY: EXTCDE, EXTOPN, EXTIOF
-    USE W3ODATMD, only: IAPROC
     USE W3ODATMD, ONLY: OFILES
+#ifdef W3_T
+    USE W3ODATMD, ONLY: IDOUT
+#endif
 #ifdef W3_SETUP
     USE W3WDATMD, ONLY: ZETA_SETUP
 #endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
+#endif
+#ifdef W3_IS2
+    USE W3WDATMD, ONLY: ICEF, ICEH
 #endif
     !
     IMPLICIT NONE
@@ -2569,14 +2569,12 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
-         MGRPP, ISEA, MOSWLL, IK, IFI, IFJ    &
-         ,IFILOUT
+         MGRPP, ISEA, MOSWLL, IFI, IFJ
     INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-    REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
-         AUX3(NSEA), AUX4(NSEA)
+    REAL                    :: AUX1(NSEA), AUX2(NSEA)
 #ifdef W3_SMC
     REAL                    :: UDARC
 #endif
@@ -4191,12 +4189,11 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: TPIINV, GRAV, TPI
-    USE W3GDATMD,  ONLY: DDEN, DSII, XFR, SIG, NK, NTH, NSEAl,    &
+    USE W3GDATMD,  ONLY: DDEN, DSII, SIG, NK, NTH, NSEAl,    &
          ECOS, ESIN, US3DF, USSPF, USSP_WN
     USE W3ADATMD,  ONLY: CG, WN, DW
-    USE W3ADATMD,  ONLY: USSX, USSY,  US3D, USSP
-    USE W3ODATMD, ONLY: IAPROC, NAPROC
-    USE W3PARALL, ONLY: INIT_GET_ISEA
+    USE W3ADATMD,  ONLY: US3D, USSP
+    USE W3PARALL,  ONLY: INIT_GET_ISEA
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -4645,7 +4642,7 @@ CONTAINS
     !          V E ZAKHAROV(1967)
     !-------------------------------------------------------------------
     USE CONSTANTS, ONLY: GRAV, TPI
-    USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
+    USE W3GDATMD,  ONLY: NTH, XFR, SIG, TH, DTH, ECOS, ESIN
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: NKHF
@@ -4930,7 +4927,7 @@ CONTAINS
    
     REAL(KIND=4) :: CONX, DELTA
     REAL(KIND=4) :: FH, DELF, XK1
-    REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
+    REAL(KIND=4) :: XPI, XPJ, XPK, XN, CO1
     REAL(KIND=4), DIMENSION(:,:), ALLOCATABLE :: F2
     REAL(KIND=4), DIMENSION(0:3,0:2,0:2) :: XMU, XLAMBDA
     REAL(KIND=4), DIMENSION(:) , ALLOCATABLE::  SIGHF, DFIMHF, FAK

@@ -401,6 +401,7 @@ CONTAINS
     !
     ! 0.d Output
     !
+    TPRNT(:) = 0
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
       CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
       CALL STME21 ( TSYNC(:,0), MTIME )

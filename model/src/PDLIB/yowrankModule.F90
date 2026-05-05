@@ -73,7 +73,7 @@ contains
 
   !> allocate and exchange
   subroutine initRankModule()
-    use yowDatapool, only: nTasks, myrank
+    use yowDatapool, only: nTasks
     implicit none
     integer :: stat
 
@@ -235,7 +235,7 @@ contains
 
   !> \internal
   subroutine calcISTART()
-    use yowDatapool, only: nTasks, myrank
+    use yowDatapool, only: nTasks
     implicit none
     integer :: ir
 
