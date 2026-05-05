@@ -1558,13 +1558,18 @@ CONTAINS
     !
     !     Output of time
     !
-    IF (  ( ITYPE.EQ.1 .AND. OTYPE.EQ.3 ) .OR.                      &
-         ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) ) THEN
+    IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.3 ) THEN
+      IF ( FLFORM ) THEN
+        WRITE (NDSTABSPC) TIME
+      ELSE
+        WRITE (NDSTABSPC,900) TIME
+      END IF
+    ELSE IF ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) THEN 
       IF ( FLFORM ) THEN
         WRITE (NDSTAB) TIME
       ELSE
         WRITE (NDSTAB,900) TIME
-      END IF
+      END IF      
     END IF
     !
     IF (ITYPE.EQ.2) THEN
