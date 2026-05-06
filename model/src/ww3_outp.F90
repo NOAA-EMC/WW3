@@ -1557,7 +1557,7 @@ CONTAINS
         WRITE (NDSTAB) TIME
       ELSE
         WRITE (NDSTAB,900) TIME
-      END IF 
+      END IF
     END IF
     !
     IF (ITYPE.EQ.2) THEN
