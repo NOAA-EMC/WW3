@@ -577,7 +577,6 @@ PROGRAM W3OUTP
         WRITE (NDSO,943) 'Transfer file for each point'
         DO IJ = 1, NOPTS
           IF (FLREQ(IJ)) THEN
-            !JDM MAD UPDATES HERE
             TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
             WRITE (NDSO,1943) TRIM(TFNAME), 'Transfer File'
             J = LEN_TRIM(FNMPRE)
@@ -599,7 +598,6 @@ PROGRAM W3OUTP
               WRITE (NDSTABSPC,1945) (SIG(IK)*TPIINV, IK = 1, NK)
               WRITE (NDSTABSPC,1946) (MOD(2.5*PI-TH(ITH), TPI), ITH= 1, NTH)
             END IF
-            !CLOSE(NDSTAB)
           END IF
         END DO
       ELSE
@@ -968,21 +966,11 @@ PROGRAM W3OUTP
     IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
       DO IJ = 1, NOPTS
         IF (FLREQ(IJ)) THEN
-          !TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
-          !J = LEN_TRIM(FNMPRE)
           NDSTABSPC = NDSTAB + (IJ - 1) + NOPTS*2
-          !IF (FLFORM) THEN
-          !  OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
-          !      IOSTAT=IERR, FORM='UNFORMATTED', ACCESS='APPEND')
-          !ELSE
-          !  OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
-          !      IOSTAT=IERR, FORM='FORMATTED', ACCESS='APPEND')
-          !END IF
           PROCESS_POINT_ONLY = .TRUE.
           ACTIVE_POINT = IJ
           CALL W3EXPO
           PROCESS_POINT_ONLY = .FALSE.
-          !CLOSE(NDSTABSPC)
         END IF
       END DO
     ELSE
@@ -1569,7 +1557,7 @@ CONTAINS
         WRITE (NDSTAB) TIME
       ELSE
         WRITE (NDSTAB,900) TIME
-      END IF      
+      END IF
     END IF
     !
     IF (ITYPE.EQ.2) THEN
