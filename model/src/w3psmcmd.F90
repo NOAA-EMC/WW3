@@ -884,6 +884,9 @@ CONTAINS
           CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))   &
                /CG(IK,ISEA)
         END DO
+        ! Because ISBPI may return 0 for unmatched boundary points, this b.c 
+        ! update may set CQ(0) values non-zero.  JGLi06May2026
+        CQ(0) = 0.0
       ENDIF
       !
       !!    End of ITLOC DO
