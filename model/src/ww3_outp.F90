@@ -253,7 +253,7 @@ PROGRAM W3OUTP
        IERR, I, TOUT(2), NOUT, TDUM(2),     &
        NREQ, IPOINT, ITYPE, OTYPE, NDSTAB,  &
        IOTEST, IK, ITH, IOUT, J, DIMXP,     &
-       NDSBUL, NDSCSV, ICSV, IJ
+       NDSBUL, NDSCSV, ICSV, IJ, NDSTABSPC
 #ifdef W3_NCO
   INTEGER                 :: NDSCBUL
 #endif
@@ -580,24 +580,24 @@ PROGRAM W3OUTP
             TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
             WRITE (NDSO,1943) TRIM(TFNAME), 'Transfer File'
             J = LEN_TRIM(FNMPRE)
+            NDSTABSPC = NDSTAB + (IJ - 1) + NOPTS*2
             IF (FLFORM) THEN
-              OPEN (NDSTAB, FILE=TRIM(TFNAME),  &
+              OPEN (NDSTABSPC, FILE=TRIM(TFNAME),  &
                    IOSTAT=IERR, FORM='UNFORMATTED')
               IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
-              WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',     &
+              WRITE (NDSTABSPC) 'WAVEWATCH III SPECTRA',     &
                    NK, NTH, 1, GNAME
-              WRITE (NDSTAB) (SIG(IK)*TPIINV, IK = 1, NK)
-              WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH), TPI), ITH = 1, NTH)
+              WRITE (NDSTABSPC) (SIG(IK)*TPIINV, IK = 1, NK)
+              WRITE (NDSTABSPC) (MOD(2.5*PI-TH(ITH), TPI), ITH = 1, NTH)
             ELSE
-              OPEN (NDSTAB, FILE=TRIM(TFNAME),  &
+              OPEN (NDSTABSPC, FILE=TRIM(TFNAME),  &
                    IOSTAT=IERR, FORM='FORMATTED')
               IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUTP','IDL',44)
-              WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA', &
+              WRITE (NDSTABSPC,1944) 'WAVEWATCH III SPECTRA', &
                    NK, NTH, 1, GNAME
-              WRITE (NDSTAB,1945) (SIG(IK)*TPIINV, IK = 1, NK)
-              WRITE (NDSTAB,1946) (MOD(2.5*PI-TH(ITH), TPI), ITH= 1, NTH)
+              WRITE (NDSTABSPC,1945) (SIG(IK)*TPIINV, IK = 1, NK)
+              WRITE (NDSTABSPC,1946) (MOD(2.5*PI-TH(ITH), TPI), ITH= 1, NTH)
             END IF
-            CLOSE(NDSTAB)
           END IF
         END DO
       ELSE
@@ -606,6 +606,7 @@ PROGRAM W3OUTP
         WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
              MOD(TOUT(1),1000000), TOUT(2)/10000
         WRITE (NDSO,943) 'Transfer file'
+        NDSTABSPC = NDSTAB
         IF ( FLFORM ) THEN
           WRITE (NDSO,1943) TRIM(TFNAME), 'UNFORMATTED'
           J      = LEN_TRIM(FNMPRE)
@@ -965,21 +966,11 @@ PROGRAM W3OUTP
     IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
       DO IJ = 1, NOPTS
         IF (FLREQ(IJ)) THEN
-          TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
-          J = LEN_TRIM(FNMPRE)
-          IF (FLFORM) THEN
-            OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
-                IOSTAT=IERR, FORM='UNFORMATTED', ACCESS='APPEND')
-          ELSE
-            OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
-                IOSTAT=IERR, FORM='FORMATTED', ACCESS='APPEND')
-          END IF
-
+          NDSTABSPC = NDSTAB + (IJ - 1) + NOPTS*2
           PROCESS_POINT_ONLY = .TRUE.
           ACTIVE_POINT = IJ
           CALL W3EXPO
           PROCESS_POINT_ONLY = .FALSE.
-          CLOSE(NDSTAB)
         END IF
       END DO
     ELSE
@@ -989,6 +980,15 @@ PROGRAM W3OUTP
     CALL TICK21 ( TOUT , DTREQ )
     IF ( IOUT .GE. NOUT ) EXIT
   END DO
+
+  ! Close files: 
+  IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
+    DO IJ = 1, NOPTS
+      NDSTABSPC = NDSTAB + (IJ - 1) + NOPTS*2
+      CLOSE(NDSTABSPC)
+    END DO
+  END IF
+
 
   !
   ! ... ITYPE=4 & OTYPES=[2,4] requires adding lines at bottom of
@@ -1546,8 +1546,13 @@ CONTAINS
     !
     !     Output of time
     !
-    IF (  ( ITYPE.EQ.1 .AND. OTYPE.EQ.3 ) .OR.                      &
-         ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) ) THEN
+    IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.3 ) THEN
+      IF ( FLFORM ) THEN
+        WRITE (NDSTABSPC) TIME
+      ELSE
+        WRITE (NDSTABSPC,900) TIME
+      END IF
+    ELSE IF ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) THEN 
       IF ( FLFORM ) THEN
         WRITE (NDSTAB) TIME
       ELSE
@@ -2353,15 +2358,15 @@ CONTAINS
           ELSE IF ( OTYPE .EQ. 3 ) THEN
             !
             IF ( FLFORM ) THEN
-              WRITE (NDSTAB) PTNME(J), PTLOC(2,J),          &
+              WRITE (NDSTABSPC) PTNME(J), PTLOC(2,J),          &
                    PTLOC(1,J), DPO(J), WAO(J),    &
                    UDIR, CAO(J), CDIR
-              WRITE (NDSTAB) ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
+              WRITE (NDSTABSPC) ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
             ELSE
-              WRITE (NDSTAB,901) PTNME(J), M2KM*PTLOC(2,J), &
+              WRITE (NDSTABSPC,901) PTNME(J), M2KM*PTLOC(2,J), &
                    M2KM*PTLOC(1,J), DPO(J),   &
                    WAO(J), UDIR, CAO(J), CDIR
-              WRITE (NDSTAB,902)                            &
+              WRITE (NDSTABSPC,902)                            &
                    ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
             END IF
             !
