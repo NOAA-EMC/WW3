@@ -2021,6 +2021,8 @@
  if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
+ 
+
    echo "$rtst -s MPI -s NO_PDLIB -w work_a     -g a        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s NO_PDLIB -w work_ma    -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_b     -g b        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
@@ -2028,6 +2030,17 @@
    echo "$rtst -s MPI -s PDLIB    -w work_pdlib -g pdlib    -f -p $mpi -n $np $ww3 ww3_tp2.6"      >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_mb    -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
    echo "$rtst -s MPI -s PDLIB    -w work_mc    -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+
+   echo "$rtst -s MPI -s PDLIB -i input_ice -w work_ice  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -i input_ice -w work_iceB -g d -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
+   echo "./bin/test.comp ww3_tp2.17 work_ice work_iceB"                                            >> matrix.body
+
+   echo "$rtst -s MPI -s PDLIB -i input_deep -w work_deep  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -i input_deep -w work_deepB -g e -f -p $mpi -n $(( $np -1 )) $ww3 ww3_tp2.17" >> matrix.body
+   echo "./bin/test.comp ww3_tp2.17 work_deep work_deepB"                                            >> matrix.body
+
+
+
      if [ "$rstrt_b4b" = 'y' ]
      then
         echo "mkdir -p ww3_tp2.17/work_ma1"                                                        >> matrix.body
@@ -2038,6 +2051,18 @@
         echo "cp ww3_tp2.17/work_mc/restart001.inlc ww3_tp2.17/work_mc1/restart.inlc"              >> matrix.body
         echo "$rtst -s MPI -s PDLIB    -w work_mc1 -m grdset_c1 -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
         echo "./bin/test.comp ww3_tp2.17 work_mc work_mc1"                                         >> matrix.body
+
+        echo "mkdir -p ww3_tp2.17/work_ice_restart"                                                >> matrix.body
+        echo "cp ww3_tp2.17/work_ice/20151214.120000.restart.ww3 ww3_tp2.17/work_ice_restart/restart.ww3" >> matrix.body
+        echo "$rtst -s MPI -s PDLIB -i input_ice_restart -w work_ice_restart  -g d -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_ice work_ice_restart"                                >> matrix.body
+
+        echo "mkdir -p ww3_tp2.17/work_deep_restart"                                                >> matrix.body
+        echo "cp ww3_tp2.17/work_deep/20151214.120000.restart.ww3 ww3_tp2.17/work_deep_restart/restart.ww3" >> matrix.body
+        echo "$rtst -s MPI -s PDLIB -i input_deep_restart -w work_deep_restart  -g e -f -p $mpi -n $np   $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_deep work_deep_restart"                                >> matrix.body
+
+
      fi
  fi
 
