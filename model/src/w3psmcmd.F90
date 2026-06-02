@@ -881,8 +881,12 @@ CONTAINS
         END IF
         DO IBI=1, NBI
           ISEA     = ISBPI(IBI)
+#ifdef W3_PDLIB
+          CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))
+#else
           CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))   &
                /CG(IK,ISEA)
+#endif
         END DO
         ! Because ISBPI may return 0 for unmatched boundary points, this b.c 
         ! update may set CQ(0) values non-zero.  JGLi06May2026

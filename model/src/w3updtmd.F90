@@ -1447,11 +1447,18 @@ CONTAINS
       DO IBI=1, NBI
         ISEA   = ISBPI(IBI)
         DO ISP=1, NSPEC
+#ifdef W3_PDLIB
+          BBPI0(ISP,IBI) = ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
+               + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
+               + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
+               + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) ) / SIG2(ISP)
+#else
           BBPI0(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *      &
                ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
                + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
                + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
                + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) )
+#endif
         END DO
       END DO
       !
@@ -1466,11 +1473,18 @@ CONTAINS
     DO IBI=1, NBI
       ISEA   = ISBPI(IBI)
       DO ISP=1, NSPEC
-        BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
+#ifdef W3_PDLIB
+        BBPIN(ISP,IBI) = ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
+             + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
+             + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
+             + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) ) / SIG2(ISP)
+#else
+       BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
              ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
              + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
              + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
              + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) )
+#endif
       END DO
       !
 #ifdef W3_RTD
@@ -1495,10 +1509,15 @@ CONTAINS
       HS1    = 0.
       HS2    = 0.
       DO ISP=1, NSPEC
+#ifdef W3_PDLIB
+        HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP))
+        HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP))
+#else
         HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
              CG(MAPWN(ISP),ISBPI(IBI))
         HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
              CG(MAPWN(ISP),ISBPI(IBI))
+#endif
       END DO
       HS1    = 4. * SQRT ( HS1 )
       HS2    = 4. * SQRT ( HS2 )
@@ -2182,6 +2201,7 @@ CONTAINS
          OWN(NK), DWN(NK)
     REAL                    :: KDMAX = 4., RDKMIN = 0.05
     REAL                    :: WLVeff
+    REAL                    :: DEPTHbat, CGbat, WNbat
 #ifdef W3_T3
     REAL                    :: OUT(NK,NTH)
 #endif
@@ -2326,7 +2346,18 @@ CONTAINS
       !
       ! 2.a Check if deep water
       !
-      KDCHCK = WN(1,ISEA) * MIN( DWO(ISEA) , DW(ISEA) )
+      !
+      ! In shallow water, KDCHCK < KDMAX, assign time varying WN and CG as water level changes.
+      ! In deep water, KDCHCK >= KDMAX, assign time constant WN and CG based on bathymetric depth (-ZB).
+      !
+      ! Calculate the wavenumber for lowest frequency based on bathymetric depth
+      DEPTHbat=MAX(DMIN,-ZB(ISEA))
+#ifdef W3_PDLIB
+      CALL WAVNU3(SIG(1),DEPTHbat,WNbat,CGbat)
+#else
+      CALL WAVNU1(SIG(1),DEPTHbat,WNbat,CGbat) 
+#endif
+      KDCHCK = WNbat * DEPTHbat
       IF ( KDCHCK .LT. KDMAX ) THEN
         !
         ! 2.b Update grid and save old grid
