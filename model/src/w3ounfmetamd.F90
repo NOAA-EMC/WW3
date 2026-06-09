@@ -3255,7 +3255,7 @@ CONTAINS
     META(1)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_'// IPART_TOKEN
     META(1)%VARNC = PARTCOM
     META(1)%VMIN = 0
-    META(1)%VMAX = 200
+    META(1)%VMAX = 1000
     ! IFI=4, IFJ=16, TWS
     META => GROUP(4)%FIELD(16)%META
     META(1)%FSC = 0.001
