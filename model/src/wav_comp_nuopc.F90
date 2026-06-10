@@ -1694,7 +1694,7 @@ contains
 
     fnmpre = './'
     if (root_task) write(stdout,'(a)') trim(subname)//' call read_shel_config'
-    call read_shel_config(mpicomm, mds, time0_overwrite=time0, timen_overwrite=timen, rstfldlist=fldrst)
+    call read_shel_config(mpicomm, mds) !, time0_overwrite=time0, timen_overwrite=timen, rstfldlist=fldrst)
 
     ! Define any additional restart fields
     if(len_trim(fldrst) > 0) then
