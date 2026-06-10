@@ -56,12 +56,11 @@ MODULE W3NMLOUNFMD
   ! smc grid structure
   TYPE NML_SMC_T
     INTEGER                     :: TYPE
-    DOUBLE PRECISION            :: SXO
-    DOUBLE PRECISION            :: SYO
+    REAL                        :: SXO
+    REAL                        :: SYO
     REAL                        :: EXO
     REAL                        :: EYO
     INTEGER                     :: CELFAC
-    LOGICAL                     :: DOUBLE_COORD
   END TYPE NML_SMC_T
 
   ! miscellaneous
@@ -516,7 +515,6 @@ CONTAINS
     SMC%EYO       = -999.9
     SMC%CELFAC    = 1
     SMC%TYPE      = 1
-    SMC%DOUBLE_COORD     = .FALSE.
 
     ! read smc namelist
     REWIND (NDSI)
@@ -808,10 +806,8 @@ CONTAINS
     WRITE (NDSN,14) TRIM(MSG),'EXO       = ', NML_SMC%EXO
     WRITE (NDSN,14) TRIM(MSG),'EYO       = ', NML_SMC%EYO
     WRITE (NDSN,11) TRIM(MSG),'CELFAC    = ', NML_SMC%CELFAC
-    WRITE (NDSN,13) TRIM(MSG),'DOUBLE_COORD  = ', NML_SMC%DOUBLE_COORD
 
 11  FORMAT (A,2X,A,I12)
-13  FORMAT (A,2X,A,L1)
 14  FORMAT (A,2X,A,F8.2)
 
   END SUBROUTINE REPORT_SMC_NML

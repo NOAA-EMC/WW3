@@ -1268,7 +1268,6 @@ CONTAINS
     !
     REAL :: R
     INTEGER :: I, IERR
-    DOUBLE PRECISION :: D
 
     ! Get attribute and type (default to "c" if no type set)
     ATT_TYPE = 'c'
@@ -1292,14 +1291,6 @@ CONTAINS
         WRITE(NDSE, 8001) "REAL/FLOAT", TRIM(FN_META), ILINE, TRIM(ATTV)
         CALL EXTCDE(10)
       ENDIF
-      
-    CASE("d")
-      READ(attv, *, iostat=ierr) d
-      IF(ierr .ne. 0) THEN
-        WRITE(NDSE, 8001) "DOUBLE", TRIM(FN_META), ILINE, TRIM(ATTV)
-        CALL EXTCDE(10)
-      ENDIF
-
 
     CASE("c")
       ! Always ok.
@@ -1317,7 +1308,7 @@ CONTAINS
          '  => ', A /)
     !
 8002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
-         '     ATTRIBUTE TYPE SHOULD BE ONE OF [c,i,r,d] '/       &
+         '     ATTRIBUTE TYPE SHOULD BE ONE OF [c,i,r] '/       &
          '     FILENAME = ', A /                                &
          '     LINE NO =', I5 /                                 &
          '  => ', A /)
@@ -1331,7 +1322,7 @@ CONTAINS
   !>    or EOF is found. Splits meta pairs on the `=` character.
   !>
   !>    Freeform metadata pairs can also provide a variable type
-  !>    ("c", "i", "r", or "d"; for character, int, real, or double respectively).
+  !>    ("c", "i", or "r"; for character, int or real respectively).
   !>    String values with spaces should be quoted.
   !>
   !> @param[in]      NDMI      Unit number of metadata input file
@@ -2334,7 +2325,6 @@ CONTAINS
     !/
     INTEGER :: I, IVAL
     REAL    :: RVAL
-    DOUBLE PRECISION :: DVAL
     TYPE(META_PAIR_T), POINTER :: P
 
     IF(METALIST%N .EQ. 0) RETURN
@@ -2352,11 +2342,6 @@ CONTAINS
       CASE('i')
         READ(P%ATTVAL, *) IVAL
         ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, IVAL)
-        IF(ERR /= NF90_NOERR) RETURN
-        
-      CASE('d')
-        READ(P%ATTVAL, *) DVAL
-        ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, DVAL)
         IF(ERR /= NF90_NOERR) RETURN
 
       CASE('r', 'f')

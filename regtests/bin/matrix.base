@@ -1898,8 +1898,6 @@
     echo ' ' >> matrix.body
     echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
     echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
-    echo "$rtst -s MPI -w work_MPI_double -i input_double -N -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
-    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII_double -i input_double -N  -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
   fi
 
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
