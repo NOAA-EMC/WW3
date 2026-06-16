@@ -550,6 +550,12 @@ CONTAINS
     REAL                    :: COSU, SINU, TAUX, TAUY, USDIRP, USTP
     REAL                    :: TAUPX, TAUPY, UST2, TAUW, TAUWB
     REAL   , PARAMETER      :: EPS1 = 0.00001, EPS2 = 0.000001
+    REAL                    :: BBETA_EFF        !PBS: The effective "betamax" after we apply a linear approximation.
+                                                !     Part of SOFAR enhancements to be able to better calibrate betamax
+                                                !     Estimated as BBETA_EFF= BETAMAX_INTERCEPT + BETAMAX_SLOPE * U
+    REAL   , PARAMETER      :: BETAMAX_INTERCEPT=1.43 ! Intercept of the linear betamax relation
+    REAL   , PARAMETER      :: BETAMAX_SLOPE=0.0 ! Slope of the linear betamax relation
+      
     REAL                    :: Usigma           !standard deviation of U due to gustiness
     REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
     REAL                    :: CM,UCN,ZCN, &
@@ -599,9 +605,11 @@ CONTAINS
     STRESSSTABN =0.
     !
     ! Coupling coefficient times density ratio DRAT
-    !
-    CONST1=BBETA/KAPPA**2  ! needed for the tail
-    CONST0=CONST1*DRAT     ! needed for the resolved spectrum
+    ! PBS: Instead of a constant betamax we use a betamax linearly dependent on wind speed to allow for more flexibility
+    !      in calibration. (SOFAR SPECIFIC)
+    BBETA_EFF = BETAMAX_INTERCEPT + BETAMAX_SLOPE * MIN(U, 25.0)
+    CONST1=BBETA_EFF/KAPPA**2  ! needed for the tail
+    CONST0=CONST1*DRAT          ! needed for the resolved spectrum
     !
     ! 1.a  estimation of surface roughness parameters
     !
@@ -954,6 +962,10 @@ CONTAINS
         TAU1 =(TAUHFT(IND,J)*DELI2+TAUHFT(IND+1,J)*DELI1 )*DELJ2 &
              +(TAUHFT(IND,J+1)*DELI2+TAUHFT(IND+1,J+1)*DELI1)*DELJ1
       END IF
+
+      ! PBS - SOFAR: Because we recompute betamax based on windspeed we have to reschale the tabulated tail
+      !              contributions with the new betamax value
+      TAU1 = TAU1 * (BBETA_EFF / BBETA)
       !
       TAUHF = LEVTAIL0*UST**2*TAU1
     END IF ! End of test on use of table
