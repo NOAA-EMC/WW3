@@ -888,6 +888,9 @@ CONTAINS
                /CG(IK,ISEA)
 #endif
         END DO
+        ! Because ISBPI may return 0 for unmatched boundary points, this b.c 
+        ! update may set CQ(0) values non-zero.  JGLi06May2026
+        CQ(0) = 0.0
       ENDIF
       !
       !!    End of ITLOC DO
