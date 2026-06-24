@@ -6041,9 +6041,9 @@ CONTAINS
         ENDIF ! .NOT. LCONVERGED
 
         IF (B_JGS_TERMINATE_DIFFERENCE) THEN
-          Sum_New = sum(eSum)
+          Sum_New = sum(VA(:,IP))
           if (Sum_new .gt. 0.d0) then
-            DiffNew = abs(sum(ACLOC-eSum))/Sum_new
+            DiffNew = abs(sum(ACLOC-VA(:,IP)))/Sum_new
 #ifdef W3_DEBUGFREQSHIFT
             WRITE(740+IAPROC,*) 'DiffNew=', DiffNew, ' Sum_new=', Sum_new
 #endif
