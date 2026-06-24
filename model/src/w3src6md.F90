@@ -100,10 +100,12 @@ MODULE W3SRC6MD
   !/
   PUBLIC  ::  W3SPR6, W3SIN6, W3SDS6
   PRIVATE ::  LFACTOR, TAUWINDS, IRANGE
-  PRIVATE
     INTEGER, SAVE :: MK10Hz
     INTEGER, ALLOCATABLE, SAVE :: IKN(:)
     REAL, ALLOCATABLE, SAVE :: IK10Hz(:), SIG10Hz(:), DSII10Hz(:)
+#ifdef W3_OMPG || W3_OMPH
+    !$OMP THREADPRIVATE(IKN, MK10Hz, IK10Hz, SIG10Hz, DSII10Hz)
+#endif
 CONTAINS
   !/ ------------------------------------------------------------------- /
 
