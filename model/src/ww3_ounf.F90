@@ -1039,9 +1039,6 @@ CONTAINS
     LOGICAL                 :: FLFRQ, FLDIR, FEXIST, FREMOVE
     LOGICAL                 :: CUSTOMFRQ=.FALSE.
     LOGICAL                 :: LOOP
-    DOUBLE PRECISION        :: PREC
-    DOUBLE PRECISION        :: PRECT
-    DOUBLE PRECISION        :: PRECD
 #ifdef W3_T
     LOGICAL                 :: LTEMP(NGRPP)
 #endif
@@ -2330,13 +2327,10 @@ CONTAINS
                       X0D = DBLE(SXO)
                       Y0D = DBLE(SYO)
                     ELSE
-                      PREC=6
-                      PRECT=10**PREC
-                      PRECD=10**(-PREC)
-                      SXD=DBLE(PRECD*DNINT(PRECT*(DBLE(DXO)) ))
-                      SYD=DBLE(PRECD*DNINT(PRECT*(DBLE(DYO)) ))
-                      X0D=DBLE(PRECD*DNINT(PRECT*(DBLE(SXO)) ))
-                      Y0D=DBLE(PRECD*DNINT(PRECT*(DBLE(SYO)) ))
+                      SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DXO)) ))
+                      SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DYO)) ))
+                      X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SXO)) ))
+                      Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SYO)) ))
                     ENDIF
                     DO i=1,NXO
                       lon(i)=REAL(X0D+SXD*DBLE(i-1))
@@ -2393,13 +2387,10 @@ CONTAINS
                   ENDIF ! SMCOTYPE
 #endif
                 ELSE ! SMCGRD
-                  PREC=6
-                  PRECT=10**PREC
-                  PRECD=10**(-PREC)
-                  SXD=DBLE(PRECD*DNINT(PRECT*(DBLE(SX)) ))
-                  SYD=DBLE(PRECD*DNINT(PRECT*(DBLE(SY)) ))
-                  X0D=DBLE(PRECD*DNINT(PRECT*(DBLE(X0)) ))
-                  Y0D=DBLE(PRECD*DNINT(PRECT*(DBLE(Y0)) ))
+                  SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SX)) ))
+                  SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SY)) ))
+                  X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(X0)) ))
+                  Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(Y0)) ))
                   DO I=1,NX
                     LON(I)=REAL(X0D+SXD*DBLE(I-1))
                   END DO
