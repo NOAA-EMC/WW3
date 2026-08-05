@@ -530,14 +530,6 @@ check_switches()
       echo ' ' ; exit 14
   fi
 
-  if [ "$oasis" = 'OASIS' ] && [ "$str_st3" = 'no' ]
-  then
-      echo ' '
-      echo "   *** !/OASIS cannot be used in combination with !/$stress"
-      echo "       Stresses embedded in source terms, use FLX0."
-      echo ' ' ; exit 15
-  fi
-
   if [ -n "$thread1" ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '

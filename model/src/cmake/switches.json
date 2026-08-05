@@ -744,10 +744,9 @@
         "valid-options": [
             {
                 "name": "OASIS",
-		"requires": ["MPI"],
                 "build_files": ["w3oacpmd.F90"],
-                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
-
+                "requires": ["MPI"],
+                "conflicts": ["FLX1", "FLX2", "FLX3"]
             }
         ]
     },
