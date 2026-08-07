@@ -1162,12 +1162,11 @@ CONTAINS
           IP_glob = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -1462,12 +1461,11 @@ CONTAINS
           IP_glob    = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -1837,12 +1835,11 @@ CONTAINS
           IP_glob = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -5135,9 +5132,8 @@ CONTAINS
             DO ITH=1,NTH
               DO IK=1,NK
                 ISP=ITH + (IK-1)*NTH
-                eAC = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                     / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-                eVA = MAX(0., CG(IK,ISEA)/CLATS(ISEA)*eAC)
+                eAC = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )
+                eVA = MAX(0., CG(IK,ISEA) * eAC)
                 VA(ISP,JSEA) = eVA
               END DO
             END DO
@@ -5282,7 +5278,7 @@ CONTAINS
             DO IK=1,NK
               ISP=ITH + (IK-1)*NTH
               VA(ISP,JX) = (( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )  &
-                   / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))) * IOBDP_LOC(JX)
+                   * CLATS(ISBPI(IBI))) * IOBDP_LOC(JX)
             END DO
           END DO
 #ifdef W3_DEBUGIOBC
@@ -5302,8 +5298,8 @@ CONTAINS
 
 #ifdef W3_DEBUGSOLVER
           sumAC=sumAC + VA(:,JX)
-          sumBPI0=sumBPI0 + BBPI0(:,IBI)
-          sumBPIN=sumBPIN + BBPIN(:,IBI)
+          sumBPI0=sumBPI0 + BBPI0(:,IBI) * CG(IK,ISBPI(IBI))
+          sumBPIN=sumBPIN + BBPIN(:,IBI) * CG(IK,ISBPI(IBI))
           sumCG=sumCG + CG(IK,ISBPI(IBI))
           sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -5784,6 +5780,10 @@ CONTAINS
       ENDIF
     END IF
     CALL APPLY_BOUNDARY_CONDITION(IMOD)
+    !
+    !    for reproducability state must be communicated after BC application 
+    !
+    CALL PDLIB_exchange2DREAL_zero(VA)
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 6')
     !
 #ifdef W3_DEBUGSOLVERCOH
@@ -6654,7 +6654,7 @@ CONTAINS
               IP_glob = MAPSF(ISBPI(IBI),1)
               JX      = IPGL_npa(IP_glob)
               IF (JX .gt. 0) THEN
-                U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
               END IF
             END DO
           ENDDO

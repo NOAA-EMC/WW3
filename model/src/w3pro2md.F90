@@ -1084,8 +1084,12 @@ CONTAINS
         DO IBI=1, NBI
           ISEA    = ISBPI(IBI)
           IXY     = MAPSF(ISBPI(IBI),3)
+#ifdef W3_PDLIB
+          VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISEA)
+#else
           VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                / CG(IK,ISEA) * CLATS(ISEA)
+#endif
         END DO
       END IF
       !

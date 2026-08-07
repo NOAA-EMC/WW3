@@ -1174,7 +1174,7 @@ CONTAINS
 #endif
 #ifdef W3_ST6
           CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
-               DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
+               DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, CHARN, XWI, DIA )
 #endif
         END IF
         IF ( FLSRCE(3) ) THEN
