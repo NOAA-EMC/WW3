@@ -4,7 +4,7 @@
 !>
 !> @author S. Zieger
 !> @author Q. Liu
-!> @date   26-Jun-2018
+!> @date   02-Jan-2025
 !>
 
 #include "w3macros.h"
@@ -22,7 +22,7 @@
 !>
 !> @author S. Zieger
 !> @author Q. Liu
-!> @date   26-Jun-2018
+!> @date   02-Jan-2025
 !>
 MODULE W3SRC6MD
   !/
@@ -31,7 +31,7 @@ MODULE W3SRC6MD
   !/                  |           S. Zieger               |
   !/                  |           Q. Liu                  |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         26-Jun-2018 |
+  !/                  | Last update :         02-Dec-2024 |
   !/                  +-----------------------------------+
   !/
   !/    29-May-2009 : Origination (w3srcxmd.ftn)          ( version 3.14 )
@@ -39,6 +39,8 @@ MODULE W3SRC6MD
   !/                                                         (S. Zieger)
   !/    26-Jun-2017 : Recalibration of ST6                ( verison 6.06 )
   !/                                                         (Q. Liu   )
+  !/    02-Jan-2025 : Add Charnock parameter and consider ( verison 7.14 )
+  !/                  DAIR variable                          (S. Zieger)
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -98,6 +100,12 @@ MODULE W3SRC6MD
   !/
   PUBLIC  ::  W3SPR6, W3SIN6, W3SDS6
   PRIVATE ::  LFACTOR, TAUWINDS, IRANGE
+    INTEGER, SAVE :: MK10Hz
+    INTEGER, ALLOCATABLE, SAVE :: IKN(:)
+    REAL, ALLOCATABLE, SAVE :: IK10Hz(:), SIG10Hz(:), DSII10Hz(:)
+#ifdef W3_OMPG || W3_OMPH
+    !$OMP THREADPRIVATE(IKN, MK10Hz, IK10Hz, SIG10Hz, DSII10Hz)
+#endif
 CONTAINS
   !/ ------------------------------------------------------------------- /
 
@@ -279,15 +287,16 @@ CONTAINS
   !> @param[out] TAUWY    Component of the wave-supported stress.
   !> @param[out] TAUWNX   Component of the negative part of the stress.
   !> @param[out] TAUWNY   Component of the negative part of the stress.
+  !> @param[out] CHARN    Charnck parameter (sea-state dependent).
   !> @param[out] S        Source term.
   !> @param[out] D        Diagonal term of derivative.
   !>
   !> @author S. Zieger
   !> @author Q. Liu
-  !> @date   13-Aug-2021
+  !> @date   02-Jan-2025
   !>
   SUBROUTINE W3SIN6 (A, CG, WN2, UABS, USTAR, USDIR, CD, DAIR, &
-       TAUWX, TAUWY, TAUNWX, TAUNWY, S, D )
+       TAUWX, TAUWY, TAUNWX, TAUNWY, CHARN, S, D )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
@@ -302,7 +311,7 @@ CONTAINS
     !/
     !/    26-Jun-2018 : UPROXY Update & UABS                ( version 6.06 )
     !/                                                        (Q. Liu)
-    !/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
+    !/    02-Jan-2025 : Consider DAIR a variable            ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -334,6 +343,7 @@ CONTAINS
     !      D¹       R.A. O  Diagonal term of derivative
     !      TAUWX-Y  Real O  Component of the wave-supported stress
     !      TAUNWX-Y Real O  Component of the negative part of the stress
+    !      CHARN    Real O  Charnock parameter
     !      ¹ Stored as 1-D array with dimension NTH*NK (column by column).
     !     ----------------------------------------------------------------
     !
@@ -375,8 +385,10 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, TPI, GRAV
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DTH, SIG2, DDEN2
+    USE W3GDATMD,  ONLY: SIN6CHKMIN
     USE W3GDATMD,  ONLY: ECOS, ESIN, SIN6A0, SIN6WS
     USE W3ODATMD,  ONLY: NDSE
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -387,7 +399,7 @@ CONTAINS
     !/ Parameter list
     REAL, INTENT(IN)       :: A (NSPEC), CG(NK), WN2(NSPEC)
     REAL, INTENT(IN)       :: UABS, USTAR, USDIR, CD, DAIR
-    REAL, INTENT(OUT)      :: TAUWX, TAUWY, TAUNWX, TAUNWY
+    REAL, INTENT(OUT)      :: TAUWX, TAUWY, TAUNWX, TAUNWY, CHARN
     REAL, INTENT(OUT)      :: S(NSPEC), D(NSPEC)
     !/
     !/ ------------------------------------------------------------------- /
@@ -395,7 +407,7 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE          :: IENT = 0
 #endif
-    INTEGER                :: IK, ITH, IKN(NK)
+    INTEGER                :: IK, ITH
     REAL                   :: COSU, SINU, UPROXY
     REAL, DIMENSION(NSPEC) :: CG2, ECOS2, ESIN2, DSII2
     REAL, DIMENSION(NK)    :: DSII, SIG, WN
@@ -416,6 +428,7 @@ CONTAINS
     TAUNWY = 0.
     TAUWX  = 0.
     TAUWY  = 0.
+    CHARN  = SIN6CHKMIN
     !
     !/    --- scale  friction velocity to wind speed (10m) in
     !/        the boundary layer ----------------------------------------- /
@@ -433,8 +446,14 @@ CONTAINS
     ECOS2  = ECOS(1:NSPEC)         ! Only indices from 1 to NSPEC
     ESIN2  = ESIN(1:NSPEC)         ! are requested.
     !
-    IKN    = IRANGE(1,NSPEC,NTH)   ! Index vector for elements of 1 ... NK
-    !                                    ! such that e.g. SIG(1:NK) = SIG2(IKN).
+    IF (.NOT.ALLOCATED(IKN)) THEN
+      IKN  = IRANGE(1,NSPEC,NTH)   ! Index vector for elements of 1 ... NK
+    !                              ! such that e.g. SIG(1:NK) = SIG2(IKN).
+      IF (SIZE(IKN).NE.NK) THEN
+        WRITE(NDSE,601) SIZE(IKN), NK
+        CALL EXTCDE(2)
+      END IF
+    END IF
     DSII2  = DDEN2 / DTH / SIG2    ! Frequency bandwidths (int.)  (rad)
     DSII   = DSII2(IKN)
     SIG    = SIG2(IKN)
@@ -484,8 +503,8 @@ CONTAINS
     !         spectral density of the wind input ------------------------- /
     CINV    = CINV2(IKN)
     SDENSIG = RESHAPE(S*SIG2/CG2,(/ NTH,NK /))
-    CALL LFACTOR(SDENSIG, CINV, UABS, USTAR, USDIR, SIG, DSII, &
-         LFACT, TAUWX, TAUWY                          )
+    CALL LFACTOR(SDENSIG, CINV, UABS, USTAR, USDIR, DAIR, SIG, DSII, &
+         LFACT, TAUWX, TAUWY, CHARN             )
     !
     !/ 6) --- apply reduction (LFACT) to the entire spectrum ------------- /
     IF (SUM(LFACT) .LT. NK) THEN
@@ -511,6 +530,9 @@ CONTAINS
       CALL TAU_WAVE_ATMOS(SDENSIG, CINV, SIG, DSII, TAUNWX, TAUNWY )
     END IF
     !
+    !/
+601 FORMAT (' *** WAVEWATCH III ERROR IN W3SIN6 : '/ &
+      '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
     !/
     !/ End of W3SIN6 ----------------------------------------------------- /
     !/
@@ -624,6 +646,7 @@ CONTAINS
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DDEN, DSII, SIG2, DTH, XFR
     USE W3GDATMD,  ONLY: SDS6A1, SDS6A2, SDS6P1, SDS6P2, SDS6ET
     USE W3ODATMD,  ONLY: NDSE
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_T6
     USE W3TIMEMD,  ONLY: STME21
     USE W3WDATMD,  ONLY: TIME
@@ -645,7 +668,7 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE     :: IENT = 0
 #endif
-    INTEGER           :: IK, ITH, IKN(NK)
+    INTEGER           :: IK, ITH
     REAL              :: FREQ(NK)     ! frequencies [Hz]
     REAL              :: DFII(NK)     ! frequency bandwiths [Hz]
     REAL              :: ANAR(NK)     ! directional narrowness
@@ -670,9 +693,16 @@ CONTAINS
 #endif
     !
     !/ 0) --- Initialize essential parameters ---------------------------- /
-    IKN     = IRANGE(1,NSPEC,NTH)    ! Index vector for elements of 1,
-    !                                      ! 2,..., NK such that for example
-    !                                      ! SIG(1:NK) = SIG2(IKN).
+    IF (.NOT.ALLOCATED(IKN)) THEN
+       IKN = IRANGE(1,NSPEC,NTH)     ! Index vector for elements of 1,
+    !                                ! 2,..., NK such that for example
+    !                                ! SIG(1:NK) = SIG2(IKN).
+      IF (SIZE(IKN).NE.NK) THEN
+         WRITE(NDSE,601) SIZE(IKN), NK
+         CALL EXTCDE(2)
+      END IF
+    END IF
+    !
     FREQ    = SIG2(IKN)/TPI
     ANAR    = 1.0
     BNT     = 0.035**2
@@ -732,6 +762,8 @@ CONTAINS
 270 FORMAT (' TEST W3SDS6 : ',A,'(',A,')',':',70E11.3)
 271 FORMAT (' TEST W3SDS6 : Total SDS  =',E13.5)
 #endif
+601 FORMAT (' *** WAVEWATCH III ERROR IN W3SDS6 : '/ &
+      '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
     !/
     !/ End of W3SDS6 ----------------------------------------------------- /
     !/
@@ -742,42 +774,50 @@ CONTAINS
   !>
   !> @brief Numerical approximation for the reduction factor.
   !>
-  !> @details Numerical approximation for the reduction factor LFACTOR(f) to
-  !>  reduce energy in the high-frequency part of the resolved part
+  !> @details Numerical approximation for the reduction factor LFACTOR(f)
+  !>  to reduce energy in the high-frequency part of the resolved part
   !>  of the spectrum to meet the constraint on total stress (TAU).
   !>  The constraint is TAU <= TAU_TOT (TAU_TOT = TAU_WAV + TAU_VIS),
   !>  thus the wind input is reduced to match our constraint.
+  !>  This subroutine will compute the charnock parameter
+  !>  CHARN = CHKMIN / SQRT(1-TAU_WAV/TAU_TOT) with CHKMIN being the
+  !>  minimum value. To allow for a reduction of surface drag at high
+  !>  wind speeds a threshold based minimum charnock parameter is
+  !>  optional.
   !>
   !> @param[in]  S      Wind input energy density spectrum.
   !> @param[in]  CINV   Inverse phase speed.
   !> @param[in]  U10    Wind speed.
   !> @param[in]  USTAR  Friction velocity.
   !> @param[in]  USDIR  Wind direction.
+  !> @param[in]  DAIR   Air densiry.
   !> @param[in]  SIG    Relative frequencies (in rad.).
   !> @param[in]  DSII   Frequency bandwidths (in rad.).
   !> @param[out] LFACT  Factor array.
   !> @param[out] TAUWX  Component of the wave-supported stress.
   !> @param[out] TAUWY  Component of the wave-supported stress.
+  !> @param[out] CHARN  Charnock parameter.
   !>
   !> @author S. Zieger
   !> @author Q. Liu
-  !> @date   26-Jun-2018
+  !> @date   11-Oct-2024
   !>
-  SUBROUTINE LFACTOR(S, CINV, U10, USTAR, USDIR, SIG, DSII, &
-       LFACT, TAUWX, TAUWY                    )
+  SUBROUTINE LFACTOR(S, CINV, U10, USTAR, USDIR, DAIR, SIG, DSII, &
+       LFACT, TAUWX, TAUWY, CHARN             )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
     !/                  |           S. Zieger               |
     !/                  |           Q. Liu                  |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         26-Jun-2018 |
+    !/                  | Last update :         02-Dec-2024 |
     !/                  +-----------------------------------+
     !/
     !/    15-Feb-2011 : Implemented following Rogers et al. (2012)
     !/                                                        (S. Zieger)
     !/    26-Jun-2018 : UPROXY, DSII10Hz Updates            ( version 6.06 )
     !/                                                        (Q. Liu   )
+    !/    02-Jan-2025 : Consider DAIR a variable           ( version 7.14 )
     !
     !     Rogers et al. (2012) JTECH 29(9), 1329-1346
     !
@@ -809,20 +849,32 @@ CONTAINS
     !        using reduction factor:
     !                          LFACT(F) = MIN(1,exp((1-U/C(F))*RTAU))
     !        Then alter RTAU and repeat 3) until our constraint is matched.
+    !     4) Charnock parameter after equation (3.47) (Komen el al, 1994):
+    !                            CHKMIN
+    !           CHARN = ---------------------------
+    !                   SQRT( 1.0 - TAU_W/TAU_TOT )
     !
+    !        OPTIONAL: To allow for a reduction of surface drag at high
+    !        wind speeds a threshold based minimum charnock parameter
+    !        CHKMIN is adopted (Breivik et al, 2022, JGR):
+    !                                                            U-UCAP
+    !           CHKMIN = CHKINF + 0.5(CHKMIN - CHKINF)*(1 - TANH ------)
+    !                                                            DELTA
     !  3. Parameters :
     !
     !     Parameter list
     !     ----------------------------------------------------------------
-    !      S       R.A. I  Wind input energy density spectrum  (S_{in}(σ, θ))
+    !      S       R.A. I  Wind input energy density spectrum Sin(sigma,theta)
     !      CINV    R.A. I  Inverse phase speed                  1/C(sigma)
     !      U10     Real I  Wind speed (10m)
     !      USTAR   Real I  Friction velocity
     !      USDIR   Real I  Wind direction
+    !      DAIR    Real I  Air densiry
     !      SIG     R.A. I  Relative frequencies [in rad.]
     !      DSII    R.A. I  Frequency bandwiths [in rad.]
     !      LFACTOR R.A. O  Factor array                       LFACT(sigma)
     !      TAUWX-Y Real O  Component of the wave-supported stress
+    !      CHARN   Real O  Charnock parameter
     !     ----------------------------------------------------------------
     !
     !  4. Subroutines used :
@@ -843,12 +895,14 @@ CONTAINS
     !      case the last approximation for RTAU is used.
     !
     !/
-    USE CONSTANTS, ONLY: DAIR, GRAV, TPI
+    USE CONSTANTS, ONLY: GRAV, TPI
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DTH, XFR, ECOS, ESIN
-    USE W3GDATMD,  ONLY: SIN6WS
+    USE W3GDATMD,  ONLY: SIN6WS, SIN6CHKMIN, SIN6FLCAP,             &
+                         SIN6CHKCAP, SIN6CHKINF, SIN6CHKSIG
     USE W3ODATMD,  ONLY: NDST, NDSE, IAPROC, NAPERR
     USE W3TIMEMD,  ONLY: STME21
     USE W3WDATMD,  ONLY: TIME
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -859,10 +913,12 @@ CONTAINS
     REAL, INTENT(IN)  :: CINV(NK)       ! inverse phase speed
     REAL, INTENT(IN)  :: U10            ! wind speed
     REAL, INTENT(IN)  :: USTAR, USDIR   ! friction velocity & direction
+    REAL, INTENT(IN)  :: DAIR           ! air densiry
     REAL, INTENT(IN)  :: SIG(NK)        ! relative frequencies
     REAL, INTENT(IN)  :: DSII(NK)       ! frequency bandwidths
     REAL, INTENT(OUT) :: LFACT(NK)      ! correction factor
     REAL, INTENT(OUT) :: TAUWX, TAUWY   ! normal stress components
+    REAL, INTENT(OUT) :: CHARN          ! Charnock parameter
     !
     !/    --- local parameters (in order of appearance) ------------------ /
 #ifdef W3_S
@@ -874,14 +930,14 @@ CONTAINS
     INTEGER           :: IK, NK10Hz, SIGN_NEW, SIGN_OLD
     !
     REAL              :: ECOS2(NSPEC), ESIN2(NSPEC)
-    REAL, ALLOCATABLE :: IK10Hz(:), LF10Hz(:), SIG10Hz(:), CINV10Hz(:)
+    REAL, ALLOCATABLE :: LF10Hz(:), UCINV10Hz(:), CINV10Hz(:)
     REAL, ALLOCATABLE :: SDENS10Hz(:), SDENSX10Hz(:), SDENSY10Hz(:)
-    REAL, ALLOCATABLE :: DSII10Hz(:), UCINV10Hz(:)
     REAL              :: TAU_TOT, TAU, TAU_VIS, TAU_WAV
     REAL              :: TAUVX, TAUVY, TAUX, TAUY
     REAL              :: TAU_NND, TAU_INIT(2)
+    REAL              :: CHKMIN
     REAL              :: UPROXY, RTAU, DRTAU, ERR
-    LOGICAL           :: OVERSHOT
+    LOGICAL           :: OVERSHOT, FLGSET10Hz
     CHARACTER(LEN=23) :: IDTIME
     !
     !/ ------------------------------------------------------------------- /
@@ -892,16 +948,29 @@ CONTAINS
     !/ 0) --- Find the number of frequencies required to extend arrays
     !/        up to f=10Hz and allocate arrays --------------------------- /
     !/    ALOG is the same as LOG
+    FLGSET10Hz = .FALSE.
     NK10Hz = CEILING(ALOG(FRQMAX/(SIG(1)/TPI))/ALOG(XFR))+1
     NK10Hz = MAX(NK,NK10Hz)
     !
-    ALLOCATE(IK10Hz(NK10Hz))
-    IK10Hz = REAL( IRANGE(1,NK10Hz,1) )
+    IF (.NOT.ALLOCATED(IK10Hz)) THEN
+      IK10Hz = RRANGE(1,NK10Hz,1)
+      MK10Hz = NK10Hz
+      IF (SIZE(IK10Hz).NE.NK10Hz) THEN
+         WRITE(NDSE,601) SIZE(IK10Hz), NK10Hz
+         CALL EXTCDE(2)
+      END IF
+    END IF
+    IF (.NOT.ALLOCATED(SIG10Hz)) THEN
+      ALLOCATE(SIG10Hz(NK10Hz))
+      FLGSET10Hz = .TRUE.
+    END IF
+    IF (.NOT.ALLOCATED(DSII10Hz)) THEN
+      ALLOCATE(DSII10Hz(NK10Hz))
+      FLGSET10Hz = .TRUE.
+    END IF
     !
-    ALLOCATE(SIG10Hz(NK10Hz))
-    ALLOCATE(CINV10Hz(NK10Hz))
-    ALLOCATE(DSII10Hz(NK10Hz))
     ALLOCATE(LF10Hz(NK10Hz))
+    ALLOCATE(CINV10Hz(NK10Hz))
     ALLOCATE(SDENS10Hz(NK10Hz))
     ALLOCATE(SDENSX10Hz(NK10Hz))
     ALLOCATE(SDENSY10Hz(NK10Hz))
@@ -910,6 +979,12 @@ CONTAINS
     ECOS2  = ECOS(1:NSPEC)
     ESIN2  = ESIN(1:NSPEC)
     !
+    !/    --- Check array size --- /
+    IF (MK10Hz.NE.NK10Hz) THEN
+      WRITE(NDSE,602) MK10Hz, NK10Hz
+      CALL EXTCDE(3)
+    END IF
+    !
     !/ 1) --- Either extrapolate arrays up to 10Hz or use discrete spectral
     !         grid per se. Limit the constraint to the positive part of the
     !         wind input only. ---------------------------------------------- /
@@ -917,22 +992,26 @@ CONTAINS
       SDENS10Hz(1:NK)         = SUM(S,1) * DTH
       SDENSX10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
       SDENSY10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
-      SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
-      CINV10Hz(1:NK)          = CINV
-      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=σ/g
-      DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
-      !        The first and last frequency bin:
-      DSII10Hz(1)             = 0.5 * SIG10Hz(1) * (XFR-1.0)
-      DSII10Hz(NK10Hz)        = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
+      IF (FLGSET10Hz) THEN
+        SIG10Hz               = SIG(1)*XFR**(IK10Hz-1.0)
+        DSII10Hz              = 0.5 * SIG10Hz * (XFR-1.0/XFR)
+        !        The first and last frequency bin:
+        DSII10Hz(1)           = 0.5 * SIG10Hz(1) * (XFR-1.0)
+        DSII10Hz(NK10Hz)      = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
+      END IF
       !
+      CINV10Hz(1:NK)          = CINV
+      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=sigma/grav
       !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
       SDENS10Hz(NK+1:NK10Hz)  = SDENS10Hz(NK)  * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
       SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
       SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
     ELSE
-      SIG10Hz          = SIG
-      CINV10Hz         = CINV
-      DSII10Hz         = DSII
+      IF (FLGSET10Hz) THEN
+        SIG10Hz  = SIG
+        DSII10Hz = DSII
+      END IF
+      CINV10Hz = CINV
       SDENS10Hz(1:NK)  = SUM(S,1) * DTH
       SDENSX10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
       SDENSY10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
@@ -1017,6 +1096,17 @@ CONTAINS
     !
     LFACT(1:NK) = LF10Hz(1:NK)
     !
+    !/ 4) --- Sea-state depended Charnoc parameter w/ wind speed cap --------- /
+    !
+    CHKMIN = SIN6CHKMIN
+    !
+    IF (SIN6FLCAP) THEN
+      CHKMIN = SIN6CHKINF + 0.5 * (SIN6CHKMIN - SIN6CHKINF) *  &
+             (1.0 - TANH( (U10 - SIN6CHKCAP) / SIN6CHKSIG ))
+    END IF
+    !
+    CHARN = CHKMIN / SQRT(1.0 - MIN(TAU_WAV / TAU_TOT, 0.99))
+    !
 #ifdef W3_T6
     WRITE (NDST,273) 'Sin ', IDTIME(1:19), SDENS10Hz*TPI
     WRITE (NDST,273) 'SinR', IDTIME(1:19), SDENS10Hz*LF10Hz*TPI
@@ -1034,9 +1124,13 @@ CONTAINS
 274 FORMAT (' TEST W3SIN6 : Total ',A,' =', E13.5                  )
 280 FORMAT (' WARNING LFACTOR (TIME,U10,TAU,TAU_TOT,ERR,TAUW_XY,'  &
          'TAUV_XY,TAU_SCALAR): ',A,F6.1,2F7.4,E10.3,4F7.4,F7.3  )
+601 FORMAT (' *** WAVEWATCH III ERROR IN W3SIN6 LFACTOR: '/ &
+      '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
+602 FORMAT (' *** WAVEWATCH III ERROR IN W3SIN6 LFACTOR: '/ &
+      '     ARRAY SIZE MISMATCH MK=',I4,' .NE. NK=',I4)
     !
-    DEALLOCATE(IK10Hz,SIG10Hz,CINV10Hz,DSII10Hz,LF10Hz)
-    DEALLOCATE(SDENS10Hz,SDENSX10Hz,SDENSY10Hz,UCINV10Hz)
+    DEALLOCATE(LF10Hz,CINV10Hz,UCINV10Hz)
+    DEALLOCATE(SDENS10Hz,SDENSX10Hz,SDENSY10Hz)
     !/
   END SUBROUTINE LFACTOR
   !/ ------------------------------------------------------------------- /
@@ -1114,6 +1208,8 @@ CONTAINS
     !/
     USE CONSTANTS, ONLY: GRAV, TPI
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DTH, XFR, ECOS, ESIN
+    USE W3ODATMD, ONLY: NDSE
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -1134,9 +1230,9 @@ CONTAINS
     INTEGER           :: NK10Hz
     !
     REAL              :: ECOS2(NSPEC), ESIN2(NSPEC)
-    REAL, ALLOCATABLE :: IK10Hz(:), SIG10Hz(:), CINV10Hz(:)
     REAL, ALLOCATABLE :: SDENSX10Hz(:), SDENSY10Hz(:)
-    REAL, ALLOCATABLE :: DSII10Hz(:), UCINV10Hz(:)
+    REAL, ALLOCATABLE :: CINV10Hz(:), UCINV10Hz(:)
+    LOGICAL           :: FLGSET10Hz
     !
     !/ ------------------------------------------------------------------- /
 #ifdef W3_S
@@ -1145,15 +1241,28 @@ CONTAINS
     !
     !/ 0) --- Find the number of frequencies required to extend arrays
     !/        up to f=10Hz and allocate arrays --------------------------- /
+    FLGSET10Hz = .FALSE.
     NK10Hz = CEILING(ALOG(FRQMAX/(SIG(1)/TPI))/ALOG(XFR))+1
     NK10Hz = MAX(NK,NK10Hz)
     !
-    ALLOCATE(IK10Hz(NK10Hz))
-    IK10Hz = REAL( IRANGE(1,NK10Hz,1) )
+    IF (.NOT.ALLOCATED(IK10Hz)) THEN
+      IK10Hz = RRANGE(1,NK10Hz,1)
+      MK10Hz = NK10hz
+      IF (SIZE(IK10Hz).NE.NK10Hz) THEN
+         WRITE(NDSE,601) SIZE(IK10Hz), NK10Hz
+         CALL EXTCDE(2)
+      END IF
+    END IF
+    IF (.NOT.ALLOCATED(SIG10Hz)) THEN
+      ALLOCATE(SIG10Hz(NK10Hz))
+      FLGSET10Hz = .TRUE.
+    END IF
+    IF (.NOT.ALLOCATED(DSII10Hz)) THEN
+      ALLOCATE(DSII10Hz(NK10Hz))
+      FLGSET10Hz = .TRUE.
+    END IF
     !
-    ALLOCATE(SIG10Hz(NK10Hz))
     ALLOCATE(CINV10Hz(NK10Hz))
-    ALLOCATE(DSII10Hz(NK10Hz))
     ALLOCATE(SDENSX10Hz(NK10Hz))
     ALLOCATE(SDENSY10Hz(NK10Hz))
     ALLOCATE(UCINV10Hz(NK10Hz))
@@ -1161,13 +1270,25 @@ CONTAINS
     ECOS2  = ECOS(1:NSPEC)
     ESIN2  = ESIN(1:NSPEC)
     !
+    !/    --- Check array size --- /
+    IF (MK10Hz.NE.NK10Hz) THEN
+      WRITE(NDSE,602) MK10Hz, NK10Hz
+      CALL EXTCDE(3)
+    END IF
     !/ 1) --- Either extrapolate arrays up to 10Hz or use discrete spectral
     !         grid per se. Limit the constraint to the positive part of the
     !         wind input only. ---------------------------------------------- /
     IF (NK .LT. NK10Hz) THEN
       SDENSX10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
       SDENSY10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
-      SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
+      IF (FLGSET10Hz) THEN
+        SIG10Hz               = SIG(1)*XFR**(IK10Hz-1.0)
+        DSII10Hz              = 0.5 * SIG10Hz * (XFR-1.0/XFR)
+        !        The first and last frequency bin:
+        DSII10Hz(1)           = 0.5 * SIG10Hz(1) * (XFR-1.0)
+        DSII10Hz(NK10Hz)      = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
+      END IF
+      !
       CINV10Hz(1:NK)          = CINV
       CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978
       DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
@@ -1179,9 +1300,11 @@ CONTAINS
       SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
       SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
     ELSE
-      SIG10Hz          = SIG
+      IF (FLGSET10Hz) THEN
+        SIG10Hz  = SIG
+        DSII10Hz = DSII
+      END IF
       CINV10Hz         = CINV
-      DSII10Hz         = DSII
       SDENSX10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
       SDENSY10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
     END IF
@@ -1190,6 +1313,14 @@ CONTAINS
     !     --- The wave supported stress (waves to atmosphere) ------------ /
     TAUNWX = TAUWINDS(SDENSX10Hz,CINV10Hz,DSII10Hz)   ! x-component
     TAUNWY = TAUWINDS(SDENSY10Hz,CINV10Hz,DSII10Hz)   ! y-component
+    !/
+    DEALLOCATE(CINV10Hz,UCINV10Hz)
+    DEALLOCATE(SDENSX10Hz,SDENSY10Hz)
+    !/
+601 FORMAT (' *** WAVEWATCH III ERROR IN W3SIN6 TAU_WAVE_ATMOS : '/ &
+      '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
+602 FORMAT (' *** WAVEWATCH III ERROR IN W3SIN6 TAU_WAV_ATMOS : '/ &
+      '     ARRAY SIZE MISMATCH MK=',I4,' .NE. NK=',I4)
     !/
   END SUBROUTINE TAU_WAVE_ATMOS
   !/ ------------------------------------------------------------------- /
@@ -1203,7 +1334,7 @@ CONTAINS
   !> @param   X0
   !> @param   X1
   !> @param   DX
-  !> @returns IX
+  !> @returns IX (I.A.)
   !>
   !> @author S. Zieger
   !> @date   15-Feb-2011
@@ -1238,6 +1369,51 @@ CONTAINS
     END DO
     !/
   END FUNCTION IRANGE
+  !/ ------------------------------------------------------------------- /
+  !/
+  !>
+  !> @brief Generate a sequence of linear-spaced integer numbers.
+  !>
+  !> @details Used for instance array addressing (indexing).
+  !>
+  !> @param   X0
+  !> @param   X1
+  !> @param   DX
+  !> @returns IX (R.A.)
+  !>
+  !> @author S. Zieger
+  !> @date   15-Feb-2011
+  !>
+  FUNCTION RRANGE(X0,X1,DX) RESULT(RX)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           S. Zieger               |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-Feb-2011 |
+    !/                  +-----------------------------------+
+    !/
+    !/    15-Feb-2011 : Origination                         ( version 4.04 )
+    !/                                                        (S. Zieger)
+    !/
+    !  1. Purpose :
+    !         Generate a sequence of linear-spaced numbers.
+    !         Used for instance array addressing (indexing).
+    !
+    !/
+    IMPLICIT NONE
+    INTEGER, INTENT(IN)  :: X0, X1, DX
+    REAL, ALLOCATABLE :: RX(:)
+    INTEGER              :: N
+    INTEGER              :: I
+    !
+    N = INT(REAL(X1-X0)/REAL(DX))+1
+    ALLOCATE(RX(N))
+    DO I = 1, N
+      RX(I) = REAL(X0+ (I-1)*DX)
+    END DO
+    !/
+  END FUNCTION RRANGE
   !/ ------------------------------------------------------------------- /
   !/
 
