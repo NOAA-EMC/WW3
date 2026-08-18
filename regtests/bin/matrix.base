@@ -2202,6 +2202,8 @@
   fi
   if [ "$ufs" = 'y' ] && [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]; then
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a -g a -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
+  # Namelist test for unstructured grid a
+     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a_nml -g a -N -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >> matrix.body 
  # Domain Decomposition Block Explicit
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_b -g b -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
  # Domain Decomposition Implicit
