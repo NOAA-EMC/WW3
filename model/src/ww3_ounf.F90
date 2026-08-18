@@ -68,6 +68,8 @@ PROGRAM W3OUNF
   !/    14-Feb-2023 : Added QKK output                    ( version 7.12 )
   !/    03-Mar-2024 : Added SKEW & EMBIAS  output         ( version 7.xx )
   !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
+  !/    24-Sep-2025 : Added double precision output for   ( version 7.xx )
+  !/                  SMC grid types 2, 3 and 4.
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -155,6 +157,14 @@ PROGRAM W3OUNF
   !  9. Switches :
   !
   !     !/S     Enable subroutine tracing.
+  !     !/SETUP Wave setup switch.
+  !     !/SMC   Enable SMC grids.
+  !     !/RTD   Enable rotated grids.
+  !     !/T     Enable test output.
+  !     !/BT4   SHOWEX bottom friction formulation.
+  !     !/IS2   Floe-size dependent scattering and dissipation.
+  !     
+  !    
   !
   ! 10. Source code :
   !
@@ -248,7 +258,7 @@ PROGRAM W3OUNF
   CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11, TTYPE*1
   !
   LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
-       VECTOR, TOGETHER, FLGNML, FLGFC
+       VECTOR, TOGETHER, FLGNML, FLGFC, ISDOUBLE
   LOGICAL                 :: MAPSTAOUT = .TRUE.
   LOGICAL                 :: SMCGRD = .FALSE.
 #ifdef W3_RTD
@@ -369,6 +379,7 @@ PROGRAM W3OUNF
       EXO = NML_SMC%EXO
       EYO = NML_SMC%EYO
       CELFAC = NML_SMC%CELFAC
+      ISDOUBLE = NML_SMC%DOUBLE_COORD
       SMCNOVAL = NOVAL
 #endif
     ELSE
@@ -425,6 +436,10 @@ PROGRAM W3OUNF
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     READ (NDSI,*,IOSTAT=IERR) TOGETHER
     IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNF','INPUT',11)
+    !CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    !READ (NDSI,*,IOSTAT=IERR) ISDOUBLE
+    !IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNF','INPUT',11) Not yet supported for .inp
+    ISDOUBLE = .FALSE.
 
     !       The following are only configurable via the namelist input
     !       and are hardcoded for .inp files:
@@ -872,6 +887,7 @@ CONTAINS
     !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
     !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
+    !/    24-Sep-2025 : Added double precision output       ( version 7.xx )
     !/
     !  1. Purpose :
     !
@@ -934,7 +950,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY : W3S2XY, UV_TO_MAG_DIR
 #ifdef W3_RTD
-    USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL
+    USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL, W3EQTOLL_DBL
 #endif
     USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
     USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2
@@ -994,9 +1010,12 @@ CONTAINS
     !
     REAL,DIMENSION(:),  ALLOCATABLE    :: LON, LAT, FREQ
     REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2D, LAT2D, ANGLD2D
+    DOUBLE PRECISION,DIMENSION(:,:),  ALLOCATABLE  :: LON2DRGRD, LAT2DRGRD, ANGLD2DRGRD
 #ifdef W3_RTD
     REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2DEQ, LAT2DEQ
+    DOUBLE PRECISION,DIMENSION(:,:),  ALLOCATABLE  :: LON2DEQRGRD, LAT2DEQRGRD
 #endif
+    DOUBLE PRECISION,DIMENSION(:),  ALLOCATABLE    :: LONRGRD, LATRGRD
     ! Make the below allocatable to avoid stack overflow on some machines
     REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
          XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    &
@@ -2205,6 +2224,10 @@ CONTAINS
                     ! Regular gridded file
                     IF(.NOT.ALLOCATED(lon)) ALLOCATE(lon(NXO))
                     IF(.NOT.ALLOCATED(lat)) ALLOCATE(lat(NYO))
+                    IF( ISDOUBLE) THEN
+                      IF(.NOT.ALLOCATED(LONRGRD)) ALLOCATE(LONRGRD(NXO))
+                      IF(.NOT.ALLOCATED(LATRGRD)) ALLOCATE(LATRGRD(NYO))
+                    ENDIF
 #endif
 #ifdef W3_RTD
                     ! Intermediate EQUatorial lat/lon arrays for de-rotation
@@ -2216,6 +2239,10 @@ CONTAINS
                     ! avoid compile error when SMC switch not enabled (C.Bunney):
                     IF(.NOT.ALLOCATED(LON2DEQ)) ALLOCATE(LON2DEQ(RTDNX,RTDNY))
                     IF(.NOT.ALLOCATED(LAT2DEQ)) ALLOCATE(LAT2DEQ(RTDNX,RTDNY))
+                    IF ( ISDOUBLE ) THEN
+                      IF(.NOT.ALLOCATED(LON2DEQRGRD)) ALLOCATE(LON2DEQRGRD(RTDNX,RTDNY))
+                      IF(.NOT.ALLOCATED(LAT2DEQRGRD)) ALLOCATE(LAT2DEQRGRD(RTDNX,RTDNY))
+                    ENDIF
 #endif
 #ifdef W3_SMC
                   ENDIF
@@ -2231,6 +2258,13 @@ CONTAINS
                     ALLOCATE(LON2D(RTDNX,RTDNY), LAT2D(RTDNX,RTDNY))
                     ALLOCATE(ANGLD2D(RTDNX,RTDNY))
                   ENDIF
+                  
+                  IF ( ISDOUBLE ) THEN
+                   IF(.NOT.ALLOCATED(LON2DRGRD)) THEN
+                     ALLOCATE(LON2DRGRD(RTDNX,RTDNY), LAT2DRGRD(RTDNX,RTDNY))
+                     ALLOCATE(ANGLD2DRGRD(RTDNX,RTDNY))
+                   ENDIF
+                ENDIF
 #endif
                 ELSE ! SMCGRD
                   ! instanciates lon with x/lon for regular grid or nodes for unstructured mesh
@@ -2287,23 +2321,40 @@ CONTAINS
 #ifdef W3_SMC
                   ELSE
                     ! CB: Regridded SMC data
-                    SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DXO)) ))
-                    SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DYO)) ))
-                    X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SXO)) ))
-                    Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SYO)) ))
+                    IF ( ISDOUBLE ) THEN
+                      SXD = DBLE(DXO)
+                      SYD = DBLE(DYO)
+                      X0D = DBLE(SXO)
+                      Y0D = DBLE(SYO)
+                    ELSE
+                      SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DXO)) ))
+                      SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(DYO)) ))
+                      X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SXO)) ))
+                      Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(SYO)) ))
+                    ENDIF
                     DO i=1,NXO
                       lon(i)=REAL(X0D+SXD*DBLE(i-1))
+                      IF (ISDOUBLE) LONRGRD(i)=X0D+SXD*DBLE(i-1)
 #endif
 #ifdef W3_RTD
-                      LON2DEQ(i,:) = lon(i)
+                      IF ( ISDOUBLE ) THEN
+                        LON2DEQRGRD(i,:) = LONRGRD(i)
+                      ELSE
+                        LON2DEQ(i,:) = lon(i)
+                      ENDIF
 #endif
 #ifdef W3_SMC
                     END DO
                     DO i=1,NYO
                       lat(i)=REAL(Y0D+SYD*DBLE(i-1))
+                      IF (ISDOUBLE) LATRGRD(i)=Y0D+SYD*DBLE(i-1)
 #endif
 #ifdef W3_RTD
-                      LAT2DEQ(:,i) = lat(i)
+                      IF ( ISDOUBLE ) THEN
+                        LAT2DEQRGRD(:,i) = LATRGRD(i)
+                      ELSE
+                        LAT2DEQ(:,i) = lat(i)
+                      ENDIF
 #endif
 #ifdef W3_SMC
                     END DO
@@ -2324,8 +2375,13 @@ CONTAINS
                     !
                     ! Use local RTDNX/RTDNY variables until CPP implemented to
                     ! avoid compile error when SMC switch not enabled (C.Bunney):
-                    CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
-                         ANGLD2D, POLAT, POLON, RTDNY*RTDNX)
+                    IF ( ISDOUBLE ) THEN
+                      CALL W3EQTOLL_DBL(LAT2DEQRGRD, LON2DEQRGRD, LAT2DRGRD, LON2DRGRD,       &
+                          ANGLD2DRGRD, DBLE(POLAT), DBLE(POLON), RTDNY*RTDNX)
+                    ELSE
+                      CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
+                          ANGLD2D, POLAT, POLON, RTDNY*RTDNX)
+                    ENDIF
 #endif
 #ifdef W3_SMC
                   ENDIF ! SMCOTYPE
@@ -2461,15 +2517,25 @@ CONTAINS
               IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
                 IF(SMCGRD) THEN ! CB: shelter original code from SMC grid
 #ifdef W3_SMC
-                  IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(:))
-                  CALL CHECK_ERR(IRET)
                   IF(SMCOTYPE .EQ. 1) THEN
+                    IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
+                    CALL CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(:))
+                    CALL CHECK_ERR(IRET)
                     ! For type 1 SCM file also put lat/lons and cell sizes:
                     IRET=NF90_PUT_VAR(NCID,VARID(5),SMCCX)
                     CALL CHECK_ERR(IRET)
                     IRET=NF90_PUT_VAR(NCID,VARID(6),SMCCY)
+                    CALL CHECK_ERR(IRET)
+                  ELSE IF( ISDOUBLE ) THEN ! KS: write regridded SMC coords with double precision
+                    IRET=NF90_PUT_VAR(NCID,VARID(1),LONRGRD(:))
+                    CALL CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(2),LATRGRD(:))
+                    CALL CHECK_ERR(IRET)
+                  ELSE
+                    IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
+                    CALL CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(:))
                     CALL CHECK_ERR(IRET)
                   ENDIF
 #endif
@@ -2480,12 +2546,23 @@ CONTAINS
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
 #ifdef W3_RTD
-                IF ( RTDL ) THEN
-                  IRET=NF90_PUT_VAR(NCID,VARID(7),LON2D(IX1:IXN,IY1:IYN))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(8),LAT2D(IX1:IXN,IY1:IYN))
-                  CALL CHECK_ERR(IRET)
-                END IF
+              IF ( RTDL ) THEN
+#ifdef W3_SMC
+                IF (ISDOUBLE .AND. (SMCOTYPE .NE. 1)) THEN
+                   IRET=NF90_PUT_VAR(NCID,VARID(7),LON2DRGRD(IX1:IXN,IY1:IYN))
+                   CALL CHECK_ERR(IRET)
+                   IRET=NF90_PUT_VAR(NCID,VARID(8),LAT2DRGRD(IX1:IXN,IY1:IYN))
+                   CALL CHECK_ERR(IRET)
+                ELSE
+#endif
+                   IRET=NF90_PUT_VAR(NCID,VARID(7),LON2D(IX1:IXN,IY1:IYN))
+                   CALL CHECK_ERR(IRET)
+                   IRET=NF90_PUT_VAR(NCID,VARID(8),LAT2D(IX1:IXN,IY1:IYN))
+                   CALL CHECK_ERR(IRET)
+#ifdef W3_SMC
+                ENDIF
+#endif
+              END IF
 #endif
               END IF
 
@@ -3222,8 +3299,13 @@ CONTAINS
     DEALLOCATE(AUX1)
     IF (ALLOCATED(LON)) DEALLOCATE(LON, LAT)
     IF (ALLOCATED(LON2D)) DEALLOCATE(LON2D, LAT2D)
+    IF (ALLOCATED(LON2DRGRD)) DEALLOCATE(LON2DRGRD, LAT2DRGRD)
 #ifdef W3_RTD
     IF (ALLOCATED(LON2DEQ)) DEALLOCATE(LAT2DEQ, LON2DEQ, ANGLD2D)
+    IF (ALLOCATED(LON2DEQRGRD)) DEALLOCATE(LAT2DEQRGRD, LON2DEQRGRD, ANGLD2DRGRD)
+#endif
+#ifdef W3_SMC
+    IF (ALLOCATED(LONRGRD)) DEALLOCATE(LONRGRD, LATRGRD)
 #endif
     !
     RETURN
@@ -3403,11 +3485,19 @@ CONTAINS
             IRET = NF90_PUT_ATT(NCID, VARID(6), 'valid_min', 1)
             IRET = NF90_PUT_ATT(NCID, VARID(6), 'valid_max', 256)
           ELSE
-            ! Regirdded regular SMC grid - use lon/lat dimensions:
-            IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
-            call CHECK_ERR(IRET)
-            IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(3), VARID(2))
-            call CHECK_ERR(IRET)
+            IF ( ISDOUBLE ) THEN
+              ! Regirdded regular SMC grid - use lon/lat dimensions:
+              ! These are now written to netcdf as doubles (K. Stokes)
+              IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_DOUBLE, DIMID(2), VARID(1))
+              call CHECK_ERR(IRET)
+              IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_DOUBLE, DIMID(3), VARID(2))
+              call CHECK_ERR(IRET)
+            ELSE
+              IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
+              call CHECK_ERR(IRET)
+              IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(3), VARID(2))
+              call CHECK_ERR(IRET)
+            ENDIF
           ENDIF
 #endif
         ELSE
@@ -3477,13 +3567,26 @@ CONTAINS
 #endif
 #ifdef W3_RTD
           IF ( RTDL ) THEN
-            IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
-                 (/ DIMID(2), DIMID(3)/), VARID(7))
-            call CHECK_ERR(IRET)
+            
+            IF ( ISDOUBLE ) THEN
+              IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_DOUBLE, &
+                   (/ DIMID(2), DIMID(3)/), VARID(7))
+              call CHECK_ERR(IRET)
 
-            IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
-                 (/ DIMID(2), DIMID(3)/), VARID(8))
-            call CHECK_ERR(IRET)
+              IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_DOUBLE, &
+                   (/ DIMID(2), DIMID(3)/), VARID(8))
+              call CHECK_ERR(IRET)
+            ELSE
+            
+              IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
+                   (/ DIMID(2), DIMID(3)/), VARID(7))
+              call CHECK_ERR(IRET)
+
+              IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
+                   (/ DIMID(2), DIMID(3)/), VARID(8))
+              call CHECK_ERR(IRET)
+            
+            ENDIF
           ENDIF ! RTDL
 #endif
 #ifdef W3_SMC
@@ -3919,3 +4022,4 @@ CONTAINS
   !/ End of W3OUNF ----------------------------------------------------- /
   !/
 END PROGRAM W3OUNF
+
