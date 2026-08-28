@@ -6038,6 +6038,7 @@ CONTAINS
               ENDDO
             ENDDO
 #endif
+          eSum(1:NSPEC) = VA(1:NSPEC,IP)
           ELSE
             U_JAC(1:NSPEC,IP) = eSum
           END IF
