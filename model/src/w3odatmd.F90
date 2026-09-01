@@ -328,7 +328,7 @@ MODULE W3ODATMD
   INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
   !
   INTEGER, PARAMETER      :: NOGRP = 10
-  INTEGER, PARAMETER      :: NGRPP = 20
+  INTEGER, PARAMETER      :: NGRPP = 22
   INTEGER, PARAMETER      :: DIMP = 15
   INTEGER                 :: NOGE(NOGRP)
   INTEGER                 :: NOTYPE
@@ -784,7 +784,7 @@ CONTAINS
     !
     ! 2) Standard mean wave parameters
     !
-    NOGE(2) = 19
+    NOGE(2) = 22
 #ifdef W3_OASOCM
     NOGE(2) = 20
 #endif
@@ -811,6 +811,8 @@ CONTAINS
 #ifdef W3_OASOCM
     IDOUT( 2, 20) = 'Mean wave dir. norot'
 #endif
+    IDOUT( 2, 21)  = 'Peak wave length'
+    IDOUT( 2, 22)  = 'Percent wave breaking'
     !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
     !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
     !      IDOUT( 2,12)  = 'Windsea height(Sin)'
@@ -852,7 +854,7 @@ CONTAINS
     !
     ! 5) Atmosphere-waves layer
     !
-    NOGE(5) = 11
+    NOGE(5) = 12
     !
     IDOUT( 5, 1)  = 'Friction velocity   '
     IDOUT( 5, 2)  = 'Charnock parameter  '
@@ -866,10 +868,11 @@ CONTAINS
     IDOUT( 5,10)  = 'Dominant break prob '
     IDOUT( 5,11)  = 'Wind sea period' ! C.Bunney - reinstated this as is used in ww3_ounf
     ! Is it suposed to be defunct? It is not in ww3_outf...
+    IDOUT( 5,12)  = 'Sea surface roughness'
     !
     ! 6) Wave-ocean layer
     !
-    NOGE(6) = 13
+    NOGE(6) = 16
     !
     IDOUT( 6, 1)  = 'Radiation stresses  '
     IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -884,6 +887,9 @@ CONTAINS
     IDOUT( 6,11)  = 'Wave-ice energy flux'
     IDOUT( 6,12)  = 'Split Surface Stokes'
     IDOUT( 6,13)  = 'Tot wav-ocn mom flux'
+    IDOUT( 6,14)  = 'Src wav-ocn mom flux'
+    IDOUT( 6,15)  = 'Dissip brk depth lim'
+    IDOUT( 6,16)  = 'Dissip white capping'
     !
     ! 7) Wave-bottom layer
     !

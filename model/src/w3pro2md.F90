@@ -683,6 +683,9 @@ CONTAINS
     USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME,   &
          NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
          NMXY, MAPX2, MAPY2, MAPAXY, MAPXY
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+#endif
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
          ISBPI, BBPI0, BBPIN, IAPROC, NAPERR
@@ -781,10 +784,18 @@ CONTAINS
 #endif
     !
     IF ( FLCUR ) THEN
+#ifdef W3_CURSP
+!     ISPC=INT((ISP-1)/NTH)+1
+      CXMIN  = MINVAL ( CXTH(1:NSEA,IK) )
+      CXMAX  = MAXVAL ( CXTH(1:NSEA,IK) )
+      CYMIN  = MINVAL ( CYTH(1:NSEA,IK) )
+      CYMAX  = MAXVAL ( CYTH(1:NSEA,IK) )
+#else
       CXMIN  = MINVAL ( CX(1:NSEA) )
       CXMAX  = MAXVAL ( CX(1:NSEA) )
       CYMIN  = MINVAL ( CY(1:NSEA) )
       CYMAX  = MAXVAL ( CY(1:NSEA) )
+#endif
       IF ( ABS(CGX+CXMIN) .GT. ABS(CGX+CXMAX) ) THEN
         CGX    = CGX + CXMIN
       ELSE
@@ -907,8 +918,13 @@ CONTAINS
 #endif
       DO ISEA=1, NSEA
         IXY         = MAPSF(ISEA,3)
+#ifdef W3_CURSP
+        CXTOT(IXY) = CXTOT(IXY) + CXTH(ISEA,IK)/CLATS(ISEA)
+        CYTOT(IXY) = CYTOT(IXY) + CYTH(ISEA,IK)
+#else
         CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
         CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
+#endif
 #ifdef W3_T1
         WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
              VQ(IXY), CXTOT(IXY), CYTOT(IXY)
@@ -1303,9 +1319,15 @@ CONTAINS
   !> @author H. L. Tolman
   !> @date   01-Jul-2013
   !>
+#ifdef W3_CURSP
+  SUBROUTINE W3KTP2 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
+       DDDX, DDDY, CXTH, CYTH, DCXDXTH, DCXDYTH,           &
+       DCYDXTH, DCYDYTH, DCDX, DCDY, VA )
+#else
   SUBROUTINE W3KTP2 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
        DCYDX, DCYDY, DCDX, DCDY, VA )
+#endif
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1435,16 +1457,22 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)     :: ISEA
+#ifdef W3_CURSP
+    REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
+         WN(0:NK+1), DEPTH, DDDX, DDDY,       &
+         CXTH(:), CYTH(:), DCXDXTH(:), DCXDYTH(:), DCYDXTH(:), DCYDYTH(:)
+#else
     REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
          WN(0:NK+1), DEPTH, DDDX, DDDY,       &
          CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
+#endif
     REAL, INTENT(IN)        :: DCDX(0:NK+1), DCDY(0:NK+1)
     REAL, INTENT(INOUT)     :: VA(NSPEC)
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: ITH, IK, ISP
+    INTEGER                 :: ITH, IK, ISP, IP
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1548,6 +1576,17 @@ CONTAINS
       ! 3.d Current refraction
       !
       IF ( FLCUR ) THEN
+#ifdef W3_CURSP
+        DO ISP=1, NSPEC
+          IK = 1 + (ISP-1)/NTH
+          DCYX   = FACTH *   DCYDXTH(IK)
+          DCXXYY = FACTH * ( DCXDXTH(IK) - DCYDYTH(IK) )
+          DCXY   = FACTH *   DCXDYTH(IK)
+        !
+          VCFLT(MAPTH2(ISP)) = VCFLT(MAPTH2(ISP)) +             &
+               ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+        END DO
+#else
         !
         DCYX   = FACTH *   DCYDX
         DCXXYY = FACTH * ( DCXDX - DCYDY )
@@ -1557,6 +1596,7 @@ CONTAINS
           VCFLT(MAPTH2(ISP)) = VCFLT(MAPTH2(ISP)) +             &
                ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
         END DO
+#endif
         !
       END IF
       !
@@ -1569,19 +1609,41 @@ CONTAINS
       !
       ! 4.a Directionally dependent part
       !
+#if !defined W3_CURSP
+      FKD    =    ( CX*DDDX + CY*DDDY )
       DCXX   =  -   DCXDX
       DCXYYX =  - ( DCXDY + DCYDX )
       DCYY   =  -   DCYDY
-      FKD    =    ( CX*DDDX + CY*DDDY )
       !
       DO ITH=1, NTH
         FKC(ITH) = EC2(ITH)*DCXX +                                &
              ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
       END DO
+#endif
       !
       ! 4.b Velocities
       !
       DO IK=0, NK+1
+#if defined W3_CURSP
+        IF (IK.eq.0) THEN
+          IP = 1
+        ELSE IF (IK.EQ.NK+1) THEN
+          IP = NK
+        ELSE
+          IP = IK
+        END IF
+
+        DO ITH=1, NTH
+          DCXX   =  -   DCXDXTH(IP)
+          DCXYYX =  - ( DCXDYTH(IP) + DCYDXTH(IP) )
+          DCYY   =  -   DCYDYTH(IP)
+      !
+          FKC(ITH) = EC2(ITH)*DCXX +                             &
+                     ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+        END DO
+!
+        FKD = ( CXTH(IP)*DDDX + CYTH(IP)*DDDY )
+#endif
         FKD0   = FKD / CG(IK) * DSDD(IK)
         DO ITH=1, NTH
           CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)

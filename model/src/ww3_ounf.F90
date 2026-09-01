@@ -198,6 +198,12 @@ PROGRAM W3OUNF
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
        WN, USSP, WBT, WNMEAN, QKK, SKEW, EMBIA1, EMBIA2
+#ifdef W3_CURSP
+  USE W3ADATMD, ONLY: CXTH, CYTH
+#endif
+  USE W3ADATMD, ONLY: PHIBRKX, PHIBRKY,             &
+                      PHICAPX, PHICAPY, WLP, QB,    &
+                      TAUOSX, TAUOSY, Z0_WAV
   USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
        UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
   !
@@ -1196,11 +1202,35 @@ CONTAINS
 
               ! Surface current
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
-              !! Note - CX and CY read in from .ww3 file are X-Y vectors
-#ifdef W3_RTD
+#ifdef W3_CURSP
+            ! Information for spectral
+            FLFRQ  = .TRUE.
+            I1F=1
+            I2F=NK
+            DO IK= I1F,I2F
+              !! Note - CXTH and CYTH read in from .ww3 file are X-Y vectors
+# ifdef W3_RTD
+               ! Rotate x,y vector back to standard pole
+              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CXTH(1:NSEA,IK), CYTH(1:NSEA,IK), AnglD)
+# endif
+              !
+              IF( .NOT. VECTOR ) THEN
+                CALL UV_TO_MAG_DIR(CXTH(1:NSEA,IK), CYTH(1:NSEA,IK), NSEA,  &
+                     TOLERANCE=0.05, CONV='O')
+              ENDIF
+              !
+              CALL S2GRID(CXTH(1:NSEA,IK), XX)
+              CALL S2GRID(CYTH(1:NSEA,IK), XY)
+              XXK(:,:,IK)=XX
+              XYK(:,:,IK)=XY
+            END DO
+            NFIELD=2
+#else
+            !! Note - CX and CY read in from .ww3 file are X-Y vectors
+# ifdef W3_RTD
               ! Rotate x,y vector back to standard pole
               IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
-#endif
+# endif
               !
               IF( .NOT. VECTOR ) THEN
                 CALL UV_TO_MAG_DIR(CX(1:NSEA), CY(1:NSEA), NSEA,       &
@@ -1210,7 +1240,7 @@ CONTAINS
               CALL S2GRID(CX(1:NSEA), XX)
               CALL S2GRID(CY(1:NSEA), XY)
               NFIELD=2
-              !
+#endif
               ! Wind
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               !! Note - UA and UD read in from .ww3 file are UX,UY
@@ -1397,6 +1427,14 @@ CONTAINS
               ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
               END IF
+              !
+              ! Peak wave length
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 21 ) THEN
+              CALL S2GRID(WLP, X1)
+              !
+              ! Percent wave breaking
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 22 ) THEN
+              CALL S2GRID(QB, X1)
               !
               ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
@@ -1659,6 +1697,10 @@ CONTAINS
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               CALL S2GRID(TWS(1:NSEA), X1)
               !
+              ! Surface rougness
+            ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 12 ) THEN
+              CALL S2GRID(Z0_WAV(1:NSEA), X1)
+              !
               ! Radiation stress
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
 #ifdef W3_RTD
@@ -1851,7 +1893,58 @@ CONTAINS
                      , MAPSF, XY )
               ENDIF ! SMCGRD
               NFIELD=2
-              !
+            ! Total momentum to the ocean
+          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+# ifdef W3_RTD
+            ! Rotate x,y vector back to standard pole
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOSX(1:NSEA), TAUOSY(1:NSEA), AnglD)
+# endif
+            IF( SMCGRD ) THEN
+# ifdef W3_SMC
+              CALL W3S2XY_SMC( TAUOSX(1:NSEA), XX )
+              CALL W3S2XY_SMC( TAUOSY(1:NSEA), XY )
+# endif
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOSX(1:NSEA)     &
+                   , MAPSF, XX )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOSY(1:NSEA)     &
+                   , MAPSF, XY )
+            ENDIF ! SMCGRD
+            NFIELD=2
+          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 15 ) THEN
+# ifdef W3_RTD
+            ! Rotate x,y vector back to standard pole
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, PHIBRKX(1:NSEA), PHIBRKY(1:NSEA), AnglD)
+# endif
+            IF( SMCGRD ) THEN
+# ifdef W3_SMC
+              CALL W3S2XY_SMC( PHIBRKX(1:NSEA), XX )
+              CALL W3S2XY_SMC( PHIBRKY(1:NSEA), XY )
+# endif
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBRKX(1:NSEA)     &
+                   , MAPSF, XX )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBRKY(1:NSEA)     &
+                   , MAPSF, XY )
+            ENDIF ! SMCGRD
+            NFIELD=2
+          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 16 ) THEN
+# ifdef W3_RTD
+            ! Rotate x,y vector back to standard pole
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, PHICAPX(1:NSEA), PHICAPY(1:NSEA), AnglD)
+# endif
+            IF( SMCGRD ) THEN
+# ifdef W3_SMC
+              CALL W3S2XY_SMC( PHICAPX(1:NSEA), XX )
+              CALL W3S2XY_SMC( PHICAPY(1:NSEA), XY )
+# endif
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHICAPX(1:NSEA)     &
+                   , MAPSF, XX )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHICAPY(1:NSEA)     &
+                   , MAPSF, XY )
+            ENDIF ! SMCGRD
+            NFIELD=2
               ! RMS of bottom displacement amplitude
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
               ! NB: ABA and ABD are the X and Y components of the bottom displacement
@@ -2831,6 +2924,8 @@ CONTAINS
                 ! Time in days
                 OUTJULDAY = TSUB(EPOCHDATE,CURDATE)
                 IRET = NF90_PUT_VAR(NCID, VARID(3), OUTJULDAY, (/N/))
+                IRET=nf90_sync(NCID)
+                CALL CHECK_ERR(IRET)
               ENDIF
               CALL CHECK_ERR(IRET)
 
@@ -3182,6 +3277,8 @@ CONTAINS
                       IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                            MX1R(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
                       call CHECK_ERR(IRET)
+                      IRET=nf90_sync(NCID)
+                      CALL CHECK_ERR(IRET)
 #ifdef W3_SMC
                     ENDIF
 #endif
