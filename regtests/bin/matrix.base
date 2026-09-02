@@ -923,6 +923,7 @@
     echo "$rtst -g ST4_T707 -w work_T707GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -g ST4_T713 -w work_T713GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4      -w work_ST4_CAP -i input_capcha -N  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST6      -w work_ST6_CAP -i input_capcha -N  $ww3 ww3_ts1" >> matrix.body
   fi
 
 # fetch limited growth, no switch sharing here
@@ -989,6 +990,8 @@
     echo "$rtst -s ST6_PR2_UNO  -w work_ST6_PR2_UNO $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST6_PR3_UQ   -w work_ST6_PR3_UQ  $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST6_PR3_UNO  -w work_ST6_PR3_UNO $ww3 ww3_ts3" >> matrix.body
+    echo "$rtst -s ST6_PR1_FLD1 -w work_ST6_PR1_FLD1 $ww3 ww3_ts3" >> matrix.body
+    echo "$rtst -s ST6_PR1_FLD2 -w work_ST6_PR1_FLD2 $ww3 ww3_ts3" >> matrix.body
   fi
 
 # Moving grid cases for MPI, ww3_ts3 and mww3_test_05 share switches
@@ -1174,6 +1177,9 @@
       echo "$rtst -s ST4_PR1_FLD1_MPI -w work_ST4_FLD1_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
       echo "$rtst -s ST4_PR1_FLD2_MPI -w work_ST4_FLD2_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
       echo "$rtst -s ST4_PR1_MPI     -w work_ST4_PR1_MPI                 -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
+      echo "$rtst -s ST6_PR1_FLD1_MPI -w work_ST6_FLD1_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
+      echo "$rtst -s ST6_PR1_FLD2_MPI -w work_ST6_FLD2_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
+      echo "$rtst -s ST6_PR1_MPI     -w work_ST6_PR1_MPI                 -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
     fi
     if [ "$multi05" = 'y' ]
     then
@@ -1896,8 +1902,8 @@
   if [ "$multi09" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
-    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI -w work_MPI -N -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -N -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
   fi
 
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
@@ -2196,6 +2202,8 @@
   fi
   if [ "$ufs" = 'y' ] && [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]; then
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a -g a -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
+  # Namelist test for unstructured grid a
+     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a_nml -g a -N -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >> matrix.body 
  # Domain Decomposition Block Explicit
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_b -g b -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
  # Domain Decomposition Implicit
