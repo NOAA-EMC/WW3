@@ -489,7 +489,8 @@ CONTAINS
 #endif
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6 + INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +    &
+         INT(3.0/LRB)) )
     IF (IAPROC .gt. NAPROC) THEN
       RETURN
     END IF
@@ -701,7 +702,8 @@ CONTAINS
     END DO
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6 + INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +    &
+         INT(3.0/LRB)) )
     nbBlock=NSEA / BlockSize + 1
     DO iBlock=1,nbBlock
       iFirst= 1 + (iBlock - 1)*BlockSize

@@ -457,7 +457,8 @@ CONTAINS
     IF ( IAPROC .LE. NAPROC ) VA(:,0) = 0.
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6+ INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +     &
+         INT(3.0/LRB)) )
     NSIZE  = LRECL / LRB
     !     --- Allocate buffer array with zeros (used to
     !         fill bytes up to size LRECL). ---

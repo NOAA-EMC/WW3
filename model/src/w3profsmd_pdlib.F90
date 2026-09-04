@@ -916,7 +916,7 @@ CONTAINS
     !
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -932,6 +932,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -1247,7 +1248,7 @@ CONTAINS
 
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -1264,6 +1265,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -1548,7 +1550,7 @@ CONTAINS
 
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -1564,6 +1566,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -3078,7 +3081,7 @@ CONTAINS
           Vcoll(ISP,I)=VcollExp(ISP + NSPEC*(I-1))
         END DO
       END DO
-      OPEN(fhndl, FILE=eFile)
+      OPEN(NEWUNIT=fhndl, FILE=eFile)
       DO IX=1,NX
         eSum=sum(VColl(:,IX))
         WRITE(fhndl,*) 'IX=', IX, 'eSum=', eSum
@@ -5079,7 +5082,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, only: STRACE
 #endif
-    USE W3GDATMD, only: CLATS, GTYPE, UNGTYPE
+    USE W3GDATMD, only: GTYPE, UNGTYPE
     USE W3WDATMD, only: TIME
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: CG
@@ -5197,7 +5200,9 @@ CONTAINS
     USE W3WDATMD, only: TIME
     USE W3TIMEMD, only: DSEC21
     USE W3WDATMD, only : VA
+#if defined(W3_DEBUGIOBC) || defined(W3_DEBUGSOLVER)
     USE W3ADATMD, only: CG
+#endif
     USE W3GDATMD, only: NK, NTH
     USE W3ODATMD, only: TBPI0, TBPIN, FLBPI, BBPI0, BBPIN, ISBPI, NBI
     USE W3GDATMD, only: IOBDP_LOC
