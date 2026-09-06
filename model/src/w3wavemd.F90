@@ -430,6 +430,13 @@ CONTAINS
                           TAUICE, PHIBBL, TAUOCX, TAUOCY, WNMEAN, PHIAW,   &
                           PHIOC, TWS, PHICE, CHARN, W3SETA, ITSTEP
     !/
+    USE W3ADATMD,  ONLY : PHIBRKX, PHIBRKY, PHICAPX, PHICAPY, QB,          &
+                          TAUOSX, TAUOSY, Z0_WAV
+    !/
+#ifdef W3_CURSP
+    USE W3ADATMD,  ONLY : CXTH, CYTH, DCXDXTH, DCXDYTH, DCYDXTH, DCYDYTH
+#endif
+    !/
     USE W3IDATMD,  ONLY : IIDATA, INFLAGS1, FLLEV, FLCUR, FLWIND, FLICE,   &
                           FLTAUA, FLRHOA, FLIC1,                           &
                           TLN, TC0, TCN, TW0, TWN, TIN, TU0, TUN,          &
@@ -1205,13 +1212,27 @@ CONTAINS
 #ifdef W3_DEBUGDCXDX
             WRITE(740+IAPROC,*) 'Before call to UG_GRADIENT for assigning DCXDX/DCXDY array'
 #endif
+#ifdef W3_CURSP
+            DO IK=1,NK
+              CALL UG_GRADIENTS(CXTH(:,IK), DCXDXTH(:,:,IK), DCXDYTH(:,:,IK))
+              CALL UG_GRADIENTS(CYTH(:,IK), DCYDXTH(:,:,IK), DCYDYTH(:,:,IK))
+            END DO
+#else
             CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
             CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
+#endif
             UGDTUPDATE=.TRUE.
             CFLXYMAX = 0.
           ELSE
+#ifdef W3_CURSP
+            DO IK=1,NK
+              CALL W3DZXY(CXTH(1:UBOUND(CX,1),IK),'m/s',DCXDXTH(:,:,IK), DCXDYTH(:,:,IK)) !CX GRADIENT
+              CALL W3DZXY(CYTH(1:UBOUND(CY,1),IK),'m/s',DCYDXTH(:,:,IK), DCYDYTH(:,:,IK)) !CY GRADIENT
+            END DO
+#else
             CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
             CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
+#endif
           ENDIF  !! End GTYPE
           !
           call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 4')
@@ -1638,6 +1659,9 @@ CONTAINS
                    TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
                    PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),             &
                    TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),          &
+                   PHIBRKX(JSEA), PHIBRKY(JSEA), QB(JSEA),            &
+                   PHICAPX(JSEA), PHICAPY(JSEA),                      &
+                   TAUOSX(JSEA), TAUOSY(JSEA), Z0_WAV(JSEA),          &
                    RHOAIR(ISEA), ASF(ISEA))
               IF (.not. LSLOC) THEN
                 VSTOT(:,JSEA) = VSioDummy
@@ -1839,22 +1863,49 @@ CONTAINS
                       J = 1
                       !
 #ifdef W3_PR1
+# ifdef W3_CURSP
+                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# else
                       CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                            CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# endif
 #endif
 #ifdef W3_PR2
+# ifdef W3_CURSP
+                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# else
                       CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                            CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# endif
 #endif
 #ifdef W3_PR3
+# ifdef W3_CURSP
+                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
+                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+# else
                       CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
@@ -1862,6 +1913,7 @@ CONTAINS
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
                            CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+# endif
 #endif
                       !
                     END IF  !!  GTYPE
@@ -2162,22 +2214,49 @@ CONTAINS
                     ELSE
                       J = 1
 #ifdef W3_PR1
+# ifdef W3_CURSP
+                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# else
                       CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                            CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# endif
 #endif
 #ifdef W3_PR2
+# ifdef W3_CURSP
+                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# else
                       CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                            CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+# endif
 #endif
 #ifdef W3_PR3
+# ifdef W3_CURSP
+                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                           DDDX(IY,IXrel), DDDY(IY,IXrel), CXTH(ISEA,:),   &
+                           CYTH(ISEA,:), DCXDXTH(IY,IXrel,:), DCXDYTH(IY,IXrel,:),&
+                           DCYDXTH(IY,IXrel,:), DCYDYTH(IY,IXrel,:),       &
+                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
+                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+# else
                       CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
                            CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                            DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
@@ -2185,6 +2264,7 @@ CONTAINS
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
                            CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+# endif
 #endif
                       !
                     END IF  !! GTYPE
@@ -2305,6 +2385,9 @@ CONTAINS
                          TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
                          PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),            &
                          TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
+                         PHIBRKX(JSEA), PHIBRKY(JSEA), QB(JSEA),           &
+                         PHICAPX(JSEA), PHICAPY(JSEA),                     &
+                         TAUOSX(JSEA), TAUOSY(JSEA), Z0_WAV(JSEA),         &
                          RHOAIR(ISEA), ASF(ISEA))
                   ELSE
 #endif
@@ -2331,6 +2414,9 @@ CONTAINS
                          TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,     &
                          PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),           &
                          TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
+                         PHIBRKX(JSEA), PHIBRKY(JSEA), QB(JSEA),           &
+                         PHICAPX(JSEA), PHICAPY(JSEA),                     &
+                         TAUOSX(JSEA), TAUOSY(JSEA), Z0_WAV(JSEA),         &
                          RHOAIR(ISEA), ASF(ISEA))
 #ifdef W3_PDLIB
                   END IF
@@ -2438,6 +2524,9 @@ CONTAINS
       !     Delay if data assimilation time.
       !
       !
+
+      ! Reset RSTYPE to 0 in case it was a hot start. See usage in w3srcemd.
+      RSTYPE=0
       IF ( TOFRST(1)  .EQ. -1 ) THEN
         DTTST  = 1.
       ELSE
@@ -2619,6 +2708,7 @@ CONTAINS
         IF ( NRQMAX .NE. 0 ) ALLOCATE ( STATIO(NRQMAX) )
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 2')
+
         !
         ! 4.c Reset next output time
 
