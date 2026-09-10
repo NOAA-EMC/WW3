@@ -916,7 +916,7 @@ CONTAINS
     !
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -932,6 +932,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -1162,12 +1163,11 @@ CONTAINS
           IP_glob = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -1248,7 +1248,7 @@ CONTAINS
 
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -1265,6 +1265,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -1462,12 +1463,11 @@ CONTAINS
           IP_glob    = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -1550,7 +1550,7 @@ CONTAINS
 
     USE W3GDATMD, only: NTH, CLATS, MAPSF
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-    USE W3ADATMD, only: CG, ITER, CFLXYMAX
+    USE W3ADATMD, only: ITER, CFLXYMAX
     USE W3ODATMD, only: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: MPI_COMM_WCMP
@@ -1566,6 +1566,7 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_DEBUGSOLVER
     USE W3ODATMD, only : IAPROC
+    USE W3ADATMD, only : CG
 #endif
     use mpi_f08, only : MPI_MIN, MPI_ALLREDUCE
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
@@ -1837,12 +1838,11 @@ CONTAINS
           IP_glob = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
-            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+            AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
 #ifdef W3_DEBUGSOLVER
             sumAC=sumAC + AC(JX)
-            sumBPI0=sumBPI0 + BBPI0(ISP,IBI)
-            sumBPIN=sumBPIN + BBPIN(ISP,IBI)
+            sumBPI0=sumBPI0 + BBPI0(ISP,IBI) * CG(IK,ISBPI(IBI))
+            sumBPIN=sumBPIN + BBPIN(ISP,IBI) * CG(IK,ISBPI(IBI))
             sumCG=sumCG + CG(IK,ISBPI(IBI))
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -3081,7 +3081,7 @@ CONTAINS
           Vcoll(ISP,I)=VcollExp(ISP + NSPEC*(I-1))
         END DO
       END DO
-      OPEN(fhndl, FILE=eFile)
+      OPEN(NEWUNIT=fhndl, FILE=eFile)
       DO IX=1,NX
         eSum=sum(VColl(:,IX))
         WRITE(fhndl,*) 'IX=', IX, 'eSum=', eSum
@@ -5081,7 +5081,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, only: STRACE
 #endif
-    USE W3GDATMD, only: CLATS, GTYPE, UNGTYPE
+    USE W3GDATMD, only: GTYPE, UNGTYPE
     USE W3WDATMD, only: TIME
     USE W3TIMEMD, only: DSEC21
     USE W3ADATMD, only: CG
@@ -5135,9 +5135,8 @@ CONTAINS
             DO ITH=1,NTH
               DO IK=1,NK
                 ISP=ITH + (IK-1)*NTH
-                eAC = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                     / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-                eVA = MAX(0., CG(IK,ISEA)/CLATS(ISEA)*eAC)
+                eAC = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )
+                eVA = MAX(0., CG(IK,ISEA) * eAC)
                 VA(ISP,JSEA) = eVA
               END DO
             END DO
@@ -5200,7 +5199,9 @@ CONTAINS
     USE W3WDATMD, only: TIME
     USE W3TIMEMD, only: DSEC21
     USE W3WDATMD, only : VA
+#if defined(W3_DEBUGIOBC) || defined(W3_DEBUGSOLVER)
     USE W3ADATMD, only: CG
+#endif
     USE W3GDATMD, only: NK, NTH
     USE W3ODATMD, only: TBPI0, TBPIN, FLBPI, BBPI0, BBPIN, ISBPI, NBI
     USE W3GDATMD, only: IOBDP_LOC
@@ -5282,7 +5283,7 @@ CONTAINS
             DO IK=1,NK
               ISP=ITH + (IK-1)*NTH
               VA(ISP,JX) = (( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )  &
-                   / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))) * IOBDP_LOC(JX)
+                   * CLATS(ISBPI(IBI))) * IOBDP_LOC(JX)
             END DO
           END DO
 #ifdef W3_DEBUGIOBC
@@ -5302,8 +5303,8 @@ CONTAINS
 
 #ifdef W3_DEBUGSOLVER
           sumAC=sumAC + VA(:,JX)
-          sumBPI0=sumBPI0 + BBPI0(:,IBI)
-          sumBPIN=sumBPIN + BBPIN(:,IBI)
+          sumBPI0=sumBPI0 + BBPI0(:,IBI) * CG(IK,ISBPI(IBI))
+          sumBPIN=sumBPIN + BBPIN(:,IBI) * CG(IK,ISBPI(IBI))
           sumCG=sumCG + CG(IK,ISBPI(IBI))
           sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
@@ -5784,6 +5785,10 @@ CONTAINS
       ENDIF
     END IF
     CALL APPLY_BOUNDARY_CONDITION(IMOD)
+    !
+    !    for reproducability state must be communicated after BC application 
+    !
+    CALL PDLIB_exchange2DREAL_zero(VA)
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 6')
     !
 #ifdef W3_DEBUGSOLVERCOH
@@ -6032,6 +6037,7 @@ CONTAINS
               ENDDO
             ENDDO
 #endif
+          eSum(1:NSPEC) = VA(1:NSPEC,IP)
           ELSE
             U_JAC(1:NSPEC,IP) = eSum
           END IF
@@ -6654,7 +6660,7 @@ CONTAINS
               IP_glob = MAPSF(ISBPI(IBI),1)
               JX      = IPGL_npa(IP_glob)
               IF (JX .gt. 0) THEN
-                U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
               END IF
             END DO
           ENDDO

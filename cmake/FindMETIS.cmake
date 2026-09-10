@@ -7,6 +7,14 @@ set_target_properties(METIS::METIS PROPERTIES
   IMPORTED_LOCATION "${metis_lib}"
   INTERFACE_INCLUDE_DIRECTORIES "${metis_inc}")
 
+find_package(GKLIB)
+if(NOT GKLIB_FOUND)
+  message(STATUS "GKLIB not found")
+  target_link_libraries(METIS::METIS)
+else()
+  target_link_libraries(METIS::METIS INTERFACE GKLIB::GKLIB)
+endif()
+
 ## Finalize find_package
 include(FindPackageHandleStandardArgs)
 
@@ -14,5 +22,3 @@ find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS metis_lib
     metis_inc)
-
-message(STATUS "Found METIS: ${metis_lib}")

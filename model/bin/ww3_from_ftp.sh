@@ -105,6 +105,7 @@ cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww
 cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM6
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
+cp -r data_regtests/ww3_tp2.17/input_ice/* regtests/ww3_tp2.17/input_ice/
 cp -r data_regtests/ww3_tp2.19/input/*     regtests/ww3_tp2.19/input/
 cp -r data_regtests/ww3_tp2.21/input/*     regtests/ww3_tp2.21/input/
 cp -r data_regtests/mww3_test_09/input/*   regtests/mww3_test_09/input/

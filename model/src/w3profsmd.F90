@@ -529,9 +529,12 @@ CONTAINS
          IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,           &
          IOBPA, FSBCCFL
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS
+    USE W3GDATMD, ONLY: REFPARS
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -706,8 +709,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB 
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF
@@ -771,12 +778,15 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                        &
+    USE W3GDATMD, ONLY: NTH, NTRI, NX, SI,                         &
          IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY :  REFPARS
+    USE W3GDATMD, ONLY:  REFPARS
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -957,8 +967,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF
@@ -1261,7 +1275,7 @@ CONTAINS
       DO IBI=1, NBI
         IP    = MAPSF(ISBPI(IBI),1)
         AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-             *IOBPA(IP)*IOBPD(ITH,IP) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+             * IOBPA(IP) * IOBPD(ITH,IP) * CLATS(ISBPI(IBI))
       END DO
     END IF
 
@@ -1322,12 +1336,15 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                      &
+    USE W3GDATMD, ONLY: NTH, NTRI, NX, SI,                       &
          IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS, IOBPA
+    USE W3GDATMD, ONLY: REFPARS, IOBPA
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -1564,8 +1581,12 @@ CONTAINS
         !
         DO IBI=1, NBI
           IP = MAPSF(ISBPI(IBI),1)
+#ifdef W3_PDLIB
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) * CLATS(ISBPI(IBI))
+#else
           AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+#endif
         END DO
 
       ENDIF

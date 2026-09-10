@@ -158,6 +158,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: GRAV, DWAT
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG2, DDEN, FTE, SWL6B1
+    USE W3ODATMD,  ONLY: NDSE
+    USE W3SERVMD,  ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -174,7 +176,8 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE     :: IENT = 0
 #endif
-    INTEGER           :: IKN(NK), ITH
+    INTEGER           :: ITH
+    INTEGER, ALLOCATABLE, SAVE :: IKN(:)
     REAL, PARAMETER   :: VA = 1.4E-5 ! Air kinematic viscosity (used in WAM).
     REAL              :: EB(NK), WN2(NSPEC), EMEAN
     REAL              :: FE, AORB, RE, RECRIT, UOSIG, CDSV
@@ -185,7 +188,14 @@ CONTAINS
     CALL STRACE (IENT, 'W3SWL4')
 #endif
     !
-    IKN = IRANGE(1,NSPEC,NTH)
+    IF (.NOT.ALLOCATED(IKN)) THEN
+      IKN = IRANGE(1,NSPEC,NTH)
+    END IF
+    IF (SIZE(IKN).NE.NK) THEN
+       WRITE(NDSE,6001) SIZE(IKN), NK
+       CALL EXTCDE(2)
+    END IF
+    !
     D   = 0.
     WN2 = 0.
     !
@@ -223,6 +233,9 @@ CONTAINS
     !  WRITE(*,*) ' AORB     =',AORB
     !  WRITE(*,*) ' RE/RECRIT=',RE/RECRIT
     !  WRITE(*,*) ' SWL4_tot =',SUM(SUM(RESHAPE(S,(/ NTH,NK /)),1)*DDEN/CG)
+    !/
+6001 FORMAT (' *** WAVEWATCH III ERROR IN W3SWL4 : '/ &
+       '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
     !/
     !/ End of W3SWL4 ----------------------------------------------------- /
     !/
@@ -321,6 +334,8 @@ CONTAINS
     USE CONSTANTS, ONLY: GRAV
     USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DDEN, DTH
     USE W3GDATMD,  ONLY: SWL6CSTB1, SWL6B1, FTE, FTWN
+    USE W3ODATMD,  ONLY: NDSE
+    USE W3SERVMD,  ONLY: EXTCDE
 #ifdef W3_T6
     USE W3ODATMD,  ONLY: NDST
 #endif
@@ -340,7 +355,8 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE     :: IENT = 0
 #endif
-    INTEGER             :: IK, ITH, IKN(NK)
+    INTEGER             :: IK, ITH
+    INTEGER, ALLOCATABLE, SAVE :: IKN(:)
     REAL, DIMENSION(NK) :: ABAND, KMAX, ANAR, BN, AORB, DDIS
     REAL                :: K(NTH,NK), B1
     !/
@@ -351,8 +367,15 @@ CONTAINS
 #endif
     !
     !/ 0) --- Initialize parameters -------------------------------------- /
-    IKN   = IRANGE(1,NSPEC,NTH)            ! Index vector for array access, e.g.
-    !                                            ! in form of WN(1:NK) == WN2(IKN).
+    IF (.NOT.ALLOCATED(IKN)) THEN
+      IKN = IRANGE(1,NSPEC,NTH)            ! Index vector for array access, e.g.
+    !                                      ! in form of WN(1:NK) == WN2(IKN).
+    END IF
+    IF (SIZE(IKN).NE.NK) THEN
+       WRITE(NDSE,6001) SIZE(IKN), NK
+       CALL EXTCDE(2)
+    END IF
+    !
     ABAND = SUM(RESHAPE(A,(/ NTH,NK /)),1) ! action density as function of wavenumber
     DDIS  = 0.
     D     = 0.
@@ -407,6 +430,9 @@ CONTAINS
     !  WRITE(*,*) ' '
     !  WRITE(*,*) ' SWL6_tot =',sum(SUM(RESHAPE(S,(/ NTH,NK /)),1)*DDEN/CG)
     !
+    !/
+6001 FORMAT (' *** WAVEWATCH III ERROR IN W3SWL6 : '/ &
+       '     INDEX ARRAY DIM MISMATCH SIZE(IKN)=',I4,' .NE. NK=',I4)
     !/
     !/ End of W3SWL6 ----------------------------------------------------- /
     !/

@@ -18,5 +18,3 @@ find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS parmetis_lib
                   parmetis_inc)
-
-message(STATUS "Found ParMETIS: ${parmetis_lib}")

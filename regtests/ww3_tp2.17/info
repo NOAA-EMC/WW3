@@ -48,4 +48,31 @@
 #                   Ali Abdolali, Aron Roland, Jessica Meixner, May 2018    #
 #                                                   Last Mod : May 2018     #
 #                                                                           #
-#############################################################################
+#
+#---------------------------------------------------------------------------#
+#
+#---------------------------------------------------------------------------#
+# Addendum Keston Smith, Jessica Meixner, November 2025
+# A test is added with ice forcing in addition to currents, water level,    #
+# and boundary forcing. This test exhibits failure to restart reproduce bit #
+# for bit when both boundary forcing and water level are present.           #
+#
+# The full: ice, wind, water level, currents and boundary forcing can be run
+# with the following script:
+#
+#mkdir ww3_tp2.17/work_ice_restart24
+#
+# ./bin/run_cmake_test -b slurm -o all -S -T -s MPI -s PDLIB -i input_ice              -w work_ice                -g d -f -p srun -n 24 ../model ww3_tp2.17
+#
+# cp ww3_tp2.17/work_ice/20151214.120000.restart.ww3 ww3_tp2.17/work_ice_restart24/restart.ww3
+#
+# ./bin/run_cmake_test -b slurm -o all -S -T -s MPI -s PDLIB -i input_ice_restart      -w work_ice_restart24      -g d -f -p srun -n 24 ../model ww3_tp2.17
+# ./bin/run_cmake_test -b slurm -o all -S -T -s MPI -s PDLIB -i input_ice              -w work_ice20              -g d -f -p srun -n 20 ../model ww3_tp2.17
+#
+# Bit for bit reproducability for different numbers of MPI processes        #
+# is evident in comparison of solutions in work_ice and work_ice20          #
+# (cold starts) with 24 and 20 MPI processes respectivly. Restart           #
+# reproducability can be checked by comparing solution in work_ice/ to      #
+# work_ice_restart24.                                                       # 
+#---------------------------------------------------------------------------#
+############################################################################

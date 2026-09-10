@@ -225,31 +225,39 @@ narrowness parameter is set to unity $A(k)\approx 1$ in Eqs.
 \begin{table} \begin{center}
 \footnotesize
 \begin{threeparttable}
-\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers.\,6.07 \\
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
+Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers.\,6.07 & vers.\,7.14 \\
 \hline
-  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         & T          \\
-  $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    & 4.75E-6    \\
-  $p_1$            &  SDSP1       & SDS6     &  4       &  4         & 4          \\
-  $a_2$            &  SDSA2       & SDS6     & 8.74E-6  & 5.24E-6    & 7.00E-5    \\
-  $p_2$            &  SDSP2       & SDS6     &  4       &  4         & 4          \\
+  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         & T          & T       \\
+  $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    & 4.75E-6    & 4.75E-6 \\
+  $p_1$            &  SDSP1       & SDS6     &  4       &  4         & 4          & 4       \\
+  $a_2$            &  SDSA2       & SDS6     & 8.74E-6  & 5.24E-6    & 7.00E-5    & 7.00E-5 \\
+  $p_2$            &  SDSP2       & SDS6     &  4       &  4         & 4          & 4 \\
 \hline
-  $\Upsilon$\tnote{\textdagger}       &  SINWS       & SIN6     & n/a      & n/a        & 32.0       \\
-  $N_{hf}$\tnote{\textdagger}         &  SINFC       & SIN6     & n/a      & n/a        & 6.0        \\
-  $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       & 0.09       \\
-  $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         & F          \\
-  $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     & 0.0041     \\
-  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    & 1.0\tnote{\textdaggerdbl}        \\
+  $\Upsilon$\tnote{\textdagger}       &  SINWS       & SIN6     & n/a      & n/a        & 32.0   & 32.0   \\
+  $N_{hf}$\tnote{\textdagger}         &  SINFC       & SIN6     & n/a      & n/a        & 6.0    & 6.0    \\
+  $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       & 0.09       &  0.09 \\
+  $\hat{\alpha}$        &  CHKMIN & SIN6     & n/a      & n/a        & n/a        &  0.0095 \\
+  $\hat{\alpha}_\infty$ &  CHKINF & SIN6     & n/a      & n/a        & n/a        &  1.0E-4 \\
+  $U_c$            &  CHKCAP      & SIN6     & n/a      & n/a        & n/a        &  0.0\tnote{\S} \\
+  $\sigma_U$       &  CHKSIG      & SIN6     & n/a      & n/a        & n/a        &  5.0 \\
 \hline
-  $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    & 3.00E7    \\
+  $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         & F          &  F      \\
+  $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     & 0.0041     &  0.0041 \\
+\hline
+  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    & 1.0\tnote{\textdaggerdbl} & 1.0       \\
+\hline
+  $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    & 3.00E7   & 3.00E7 \\
  \hline \hline
 \end{tabular}
 \begin{tablenotes}
-	\item[\textdagger] In WW3 version 4.18 and 5.16, $\Upsilon = 28.0$
+    \item[\textdagger] In WW3 version 4.18 and 5.16, $\Upsilon = 28.0$
             and $N_{hf} = 6.0$ were hard-coded in {\code ST6} module.
     \item[\textdaggerdbl] For the CFS winds from 2011 onwards, $\mathrm{CDFAC} \sim 1.0$
             is recommended for global simulations; for the ERA5 reanalysis winds,
             $\mathrm{CDFAC} \sim 1.08$ is suggested \citep{Liu2019, Liu2021}.
+    \item[\S] Capped Charnock parameter in Eq.~(\ref{eq:ST627}) disabled
+
 \end{tablenotes}
 \end{threeparttable} \end{center}
 \caption{Summary of calibration parameters for {\code ST6} when it is applied with
@@ -385,6 +393,32 @@ in vers.\,6.07, where $f_{hf}$ is the cut-off high-frequency limit
 (Table~\ref{tab:ST601}), and a negative $N_{hf}$ (say, $N_{hf} = -1$)
 means \emph{the high-frequency spectral tail evolves freely without any
 prescribed slope.}
+
+\noindent
+\paragraph{Charnock parameter}
+We introducted the calculation of the Charnock parameter $\alpha$
+within the ST6 source term in vers.\,7.14. The Charnock parameter
+is calculated from the wave supported stress, $\tau_{w}$ in Eq.~(\ref{eq:ST609}),
+ the total stress $\tau_{tot}$, and the minimum Charnock parameter,
+$\hat{\alpha}$.
+\begin{equation}\label{eq:ST626}
+\alpha = \hat{\alpha} \ \left [ 1- \frac{\tau_{w}}{\tau_{tot}}\right ]^{-1/2}
+\end{equation}
+Following \citet{art:BET22}, we included an option to reduce the minimum
+Charnock parameter for high wind speed and to allow reaching an asymptotic
+minimum value $\hat{\alpha}_\infty$. Using a threshold $U_c$ for
+wind speed $U$, and blending window $\sigma_U$, the minimum Charnock
+parameter takes the functional form given in Eq.~(\ref{eq:ST627}).
+A wind speed threshold greater than zero will trigger Eq.~(\ref{eq:ST627}).
+\begin{equation}\label{eq:ST627}
+\hat{\alpha} = \hat{\alpha}_\infty + \frac{1}{2} \left [ \hat{\alpha} - \hat{\alpha}_\infty \right ] \left [ 1 - \tanh \frac{U-U_c}{\sigma_U} \right ]
+\end{equation}
+While there is no consensus on the choice of parameters yet, we extended
+the namelist parameters {\code \&SIN6} in Table~\ref{tab:ST601}
+for minimum Charnock $\hat{\alpha}$,
+asymptotic Charnock $\hat{\alpha}_\infty$,
+wind speed threshold $U_c$, and
+blending window $\sigma_U$.
 
 \noindent
 \paragraph{Dominant Wave Breaking Probability}

@@ -99,6 +99,7 @@
 !     SMC%EYO           = -999.9         ! Last latitude
 !     SMC%CELFAC        = 1              ! Cell size factor (SMCTYPE=2 only)
 !     SMC%NOVAL         = UNDEF          ! Fill value for wet cells with no data
+!     SMC%DOUBLE_COORD               = F                  ! Return coordinates as double precision floats
 ! -------------------------------------------------------------------- !
 &SMC_NML
 /

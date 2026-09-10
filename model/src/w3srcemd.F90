@@ -14,7 +14,7 @@
 !>
 !> @author H. L. Tolman
 !> @author F. Ardhuin
-!> @date   22-Mar-2021
+!> @date   11-Oct-2024
 !>
 !> @copyright Copyright 2009-2022 National Weather Service (NWS),
 !>       National Oceanic and Atmospheric Administration.  All rights
@@ -28,7 +28,7 @@ MODULE W3SRCEMD
   !/                  |           H. L. Tolman            |
   !/                  |            F. Ardhuin             |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         22-Mar-2021 |
+  !/                  | Last update :         11-Oct-2024 |
   !/                  +-----------------------------------+
   !/
   !/    For updates see subroutine.
@@ -265,6 +265,7 @@ CONTAINS
     !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
     !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 )
     !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+    !/    11-Oct-2024 : Provide CHARN to ST6 (S. Zieger)
     !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -526,11 +527,12 @@ CONTAINS
 #endif
 #ifdef W3_FLD1
     USE W3FLD1MD, ONLY: W3FLD1
-    USE W3GDATMD, ONLY: AALPHA
 #endif
 #ifdef W3_FLD2
     USE W3FLD2MD, ONLY: W3FLD2
-    USE W3GDATMD, ONLY: AALPHA
+#endif
+#if defined(W3_FLD1) || defined(W3_FLD2)
+    USE W3GDATMD, ONLY: FLDALPHA
 #endif
 #ifdef W3_FLX1
     USE W3FLX1MD
@@ -569,7 +571,7 @@ CONTAINS
     USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA, SINTAILPAR
 #endif
 #ifdef W3_ST6
-    USE W3SRC6MD
+    USE W3SRC6MD, ONLY : W3SPR6, W3SIN6, W3SDS6
     USE W3SWLDMD, ONLY : W3SWL6
     USE W3GDATMD, ONLY : SWL6S6
 #endif
@@ -1248,7 +1250,7 @@ CONTAINS
 
 #ifdef W3_ST6
       CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD, DAIR, &
-           TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
+           TAUWX, TAUWY, TAUWAX, TAUWAY, CHARN, VSIN, VDIN )
 #endif
       !
       ! 2.b Nonlinear interactions.
@@ -2273,10 +2275,7 @@ CONTAINS
 #endif
 
     ! FLD1/2 requires the calculation of FPI:
-#ifdef W3_FLD1
-    CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
-#endif
-#ifdef W3_FLD2
+#if defined(W3_FLD1) || defined(W3_FLD2)
     CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
 #endif
     !
@@ -2286,7 +2285,7 @@ CONTAINS
            COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
            DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
     ELSE
-      CHARN = AALPHA
+      CHARN = FLDALPHA
     ENDIF
 #endif
 #ifdef W3_FLD2
@@ -2295,7 +2294,7 @@ CONTAINS
            COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
            DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
     ELSE
-      CHARN = AALPHA
+      CHARN = FLDALPHA
     ENDIF
 #endif
     !

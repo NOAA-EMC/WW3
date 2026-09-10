@@ -797,10 +797,12 @@ CONTAINS
          '     POINT',I4,2E14.6,' NOT LOCATED IN GRID')
 911 FORMAT ( ' *** WAVEWATCH III WARNING : POINT',2I7,              &
          ' WILL NOT BE UPDATED')
+#ifdef W3_SMC
 920 FORMAT (/' *** SMCTYPE mapped boundary cells:'/ ((I8,2F9.3)) )
     !
     ! Note: This 1001 error can occur when multi-grid time steps are not
     !       compatible.
+#endif
 1001 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOBC : '/             &
          '     INPUT FILE WITH BOUNDARY CONDITIONS NOT FOUND'/  &
          '     BOUNDARY CONDITIONS WILL NOT BE UPDATED ',I5/)

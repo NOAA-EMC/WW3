@@ -223,7 +223,7 @@ CONTAINS
     ! Formats
     !
 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLX4 : '/               &
-         '     HIGHT OF WIND SHOULD BE 10m IN THIS APPRACH '/   &
+         '     HIGHT OF WIND SHOULD BE 10m IN THIS APPROACH '/   &
          '     ZWND =',F8.2,'m'/)
     !/
     !/ End of W3FLX4 ----------------------------------------------------- /

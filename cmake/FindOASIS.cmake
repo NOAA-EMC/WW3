@@ -35,7 +35,7 @@ else()
 endif()
 
 message(STATUS "  Searching for mod_oasis...")
-find_path(oasis_inc mod_oasis.mod PATHS $ENV{OASISDIR}/build/lib/psmile.MPI1)
+find_path(oasis_inc NAMES mod_oasis.mod HINTS ENV OASISDIR PATH_SUFFIXES build/lib/psmile.MPI1 include)
 if(oasis_inc)
   message(STATUS "  Found: ${oasis_inc}")
 else()
