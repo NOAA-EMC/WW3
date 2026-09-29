@@ -293,7 +293,7 @@ USE W3NMLOUTPMD
   LOGICAL                 :: FLGNML          
   INTEGER                 :: ACTIVE_POINT, J_START, J_END
   CHARACTER(LEN=100),ALLOCATABLE      :: POINTLIST(:)
-  INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
+  INTEGER, ALLOCATABLE    :: INDREQTMP(:)
 
   !/
   !/ ------------------------------------------------------------------- /
