@@ -29,6 +29,7 @@ set(ftn_src
   w3nmlmultimd.F90
   w3nmlounfmd.F90
   w3nmlounpmd.F90
+  w3nmloutpmd.F90
   w3nmlprncmd.F90
   w3nmlshelmd.F90
   w3nmltrncmd.F90

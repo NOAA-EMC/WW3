@@ -414,6 +414,7 @@
          'W3NMLPRNCMD'  ) modtest=w3nmlprncmd.o ;;
          'W3NMLOUNFMD'  ) modtest=w3nmlounfmd.o ;;
          'W3NMLOUNPMD'  ) modtest=w3nmlounpmd.o ;;
+         'W3NMLOUTPMD'  ) modtest=w3nmloutpmd.o ;;
          'W3NMLTRNCMD'  ) modtest=w3nmltrncmd.o ;;
          'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
          'W3NMLBOUNDMD' ) modtest=w3nmlboundmd.o ;;
