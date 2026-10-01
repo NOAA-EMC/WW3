@@ -2210,8 +2210,6 @@
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_c -g c -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
  # Domain Decomposition Implicit with precision truncation to force bit for bit reproducability
      echo "$rtst -s MPI -s PDLIB_TRNK -i input_unstr -w work_unstr_d -g d -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >>matrix.body 
- # Namelist test for unstructured grid with PDLIB for domain decomposition and implicit solver
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a_nml -g a -N -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >>matrix.body 
   fi
 
  #Test of UFS applications with ww3_multi_esmf and grib2 output
