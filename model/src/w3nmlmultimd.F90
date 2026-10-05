@@ -478,8 +478,7 @@ CONTAINS
 
     ! open namelist log file
     IF ( NMPLOG .EQ. IMPROC ) THEN
-      NDSN = 3
-      OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', status='old', iostat=IERR)
+      OPEN (NEWUNIT=NDSN, file=TRIM(INFILE)//'.log', form='formatted', status='old', iostat=IERR)
       IF (IERR.NE.0) THEN
         WRITE (MDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
         RETURN
