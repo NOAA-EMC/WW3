@@ -921,6 +921,12 @@ CONTAINS
       I = 2
       J = 20
 #endif
+    CASE('LP')
+      I = 2
+      J = 21
+    CASE('QB')
+      I = 2
+      J = 22
       !
       ! Group 3
       !
@@ -1042,6 +1048,9 @@ CONTAINS
     CASE('FWS')
       I = 5
       J = 11
+    CASE('Z0A')
+      I = 5
+      J = 12
       !
       ! Group 6
       !
@@ -1092,6 +1101,15 @@ CONTAINS
     CASE('TOC')
       I = 6
       J = 13
+    CASE('SOC')
+      I = 6
+      J = 14
+    CASE('FDB')
+      I = 6
+      J = 15
+    CASE('FDW')
+      I = 6
+      J = 16
       !
       ! Group 7
       !
@@ -1315,6 +1333,7 @@ CONTAINS
 #ifdef W3_T
     USE W3ODATMD, ONLY: NDST
 #endif
+    USE W3ADATMD, ONLY: WLP
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -1333,12 +1352,14 @@ CONTAINS
     !/
     INTEGER                 :: IK, ITH, JSEA, ISEA, IX, IY,         &
          IKP0(NSEAL), NKH(NSEAL), I, J, ITL
+    INTEGER ISIGM
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
     REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
          XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
          M1, M2, MA, MB, MC, STEX, STEY, STED
+    REAL DS, EMAX, ETD, ETOTX, ETOTY, ETOTXM1, ETOTYM1
     REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
          ETX(NSEAL), ETY(NSEAL), AB(NSEAL),   &
          ETXX(NSEAL), ETYY(NSEAL), ETXY(NSEAL),&
@@ -1479,6 +1500,7 @@ CONTAINS
     HMAXD = UNDEF
     QP    = UNDEF
     WBT    = UNDEF
+    WLP    = UNDEF
     !
     ! 2.  Integral over discrete part of spectrum ------------------------ *
     !
@@ -1689,6 +1711,34 @@ CONTAINS
       !$OMP END PARALLEL DO
 #endif
       !
+    END DO
+!
+!  Compute WLP
+!
+    DO JSEA=1, NSEAL
+      CALL INIT_GET_ISEA(ISEA, JSEA)
+      EMAX = 0.
+      ISIGM = -1
+!  WLP assume peak wl is not the first bin
+      DO IK=2, NK
+        ETD = 0.
+        FACTOR = WN(IK,ISEA)*SIG(IK)*DTH/CG(IK,ISEA)
+        DO ITH=1, NTH
+          ETD = ETD + A(ITH,IK,JSEA)*FACTOR
+        END DO
+        IF (ETD.GT.EMAX) THEN
+          EMAX  = ETD
+          ISIGM = IK
+        END IF
+      END DO
+!
+!  Finish WLP
+!
+      IF (ISIGM.GT.0) THEN
+        WLP(JSEA) = 2.*PI/WN(ISIGM,ISEA)
+      ELSE
+        WLP(JSEA) = 0.
+      END IF
     END DO
     !
     ! Start of Space-Time Extremes Section
@@ -2531,6 +2581,12 @@ CONTAINS
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
          USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1, EMBIA2
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+#endif
+    USE W3ADATMD, ONLY: PHIBRKX, PHIBRKY, PHICAPX, PHICAPY, &
+                        WLP, QB,                            &
+                        TAUOSX, TAUOSY, Z0_WAV
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2874,6 +2930,8 @@ CONTAINS
           IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
           IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
           IF ( FLOGRD( 2,19) ) WNMEAN(ISEA) = UNDEF
+          IF ( FLOGRD( 2,21) ) WLP(ISEA) = UNDEF
+          IF ( FLOGRD( 2,22) ) QB(ISEA)  = UNDEF
           !
           IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
           IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
@@ -2914,6 +2972,7 @@ CONTAINS
           IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
           IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
           IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+          IF ( FLOGRD( 5,12) ) Z0_WAV(ISEA) = UNDEF
           !
           IF ( FLOGRD( 6, 1) ) THEN
             SXX   (ISEA) = UNDEF
@@ -2946,6 +3005,18 @@ CONTAINS
           IF ( FLOGRD( 6, 13) ) THEN
             TAUOCX(ISEA) = UNDEF
             TAUOCY(ISEA) = UNDEF
+          END IF
+          IF ( FLOGRD( 6, 14) ) THEN
+            TAUOSX(ISEA) = UNDEF
+            TAUOSY(ISEA) = UNDEF
+          END IF
+          IF ( FLOGRD( 6, 15) ) THEN
+            PHIBRKX(ISEA) = UNDEF
+            PHIBRKY(ISEA) = UNDEF
+          END IF
+          IF ( FLOGRD( 6, 16) ) THEN
+            PHICAPX(ISEA) = UNDEF
+            PHICAPY(ISEA) = UNDEF
           END IF
           !
           IF ( FLOGRD( 7, 1) ) THEN
@@ -3039,13 +3110,24 @@ CONTAINS
               WRITE ( NDSOA,* ) 'DW:', DW(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+#ifdef W3_CURSP
+              WRITE ( NDSOG ) CXTH(1:NSEA,1:NK)
+# ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CXTH:', CXTH(1:NSEA,1:NK)
+# endif
+              WRITE ( NDSOG ) CYTH(1:NSEA,1:NK)
+# ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CYTH:', CYTH(1:NSEA,1:NK)
+# endif
+#else
               WRITE ( NDSOG ) CX(1:NSEA)
-#ifdef W3_ASCII
+# ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'CX:', CX(1:NSEA)
-#endif
+# endif
               WRITE ( NDSOG ) CY(1:NSEA)
-#ifdef W3_ASCII
+# ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'CY:', CY(1:NSEA)
+# endif
 #endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               DO ISEA=1, NSEA
@@ -3244,6 +3326,10 @@ CONTAINS
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'WNMEAN:', WNMEAN(1:NSEA)
 #endif
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 21 ) THEN
+              WRITE ( NDSOG ) WLP(1:NSEA)
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 22 ) THEN
+              WRITE ( NDSOG ) QB(1:NSEA)
               !
               !     Section 3)
               !
@@ -3448,6 +3534,11 @@ CONTAINS
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'TWS:', TWS(1:NSEA)
 #endif
+            ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 12 ) THEN
+              WRITE ( NDSOG ) Z0_WAV(1:NSEA)
+# ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'Z0_WAV:', Z0_WAV(1:NSEA)
+# endif
               !
               !     Section 6)
               !
@@ -3556,6 +3647,15 @@ CONTAINS
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'TAUOCY:', TAUOCY(1:NSEA)
 #endif
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+              WRITE ( NDSOG ) TAUOSX(1:NSEA)
+              WRITE ( NDSOG ) TAUOSY(1:NSEA)
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 15 ) THEN
+              WRITE ( NDSOG ) PHIBRKX(1:NSEA)
+              WRITE ( NDSOG ) PHIBRKY(1:NSEA)
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 16 ) THEN
+              WRITE ( NDSOG ) PHICAPX(1:NSEA)
+              WRITE ( NDSOG ) PHICAPY(1:NSEA)
               !
               !     Section 7)
               !
@@ -3730,9 +3830,15 @@ CONTAINS
             IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
               READ (NDSOG,IOSTAT=IERR) DW(1:NSEA)
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+#ifdef W3_CURSP
+              READ (NDSOG,IOSTAT=IERR) CXTH(1:NSEA,1:NK)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
+              READ (NDSOG,IOSTAT=IERR) CYTH(1:NSEA,1:NK)
+#else
               READ (NDSOG,IOSTAT=IERR) CX(1:NSEA)
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
               READ (NDSOG,IOSTAT=IERR) CY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               READ (NDSOG,IOSTAT=IERR) UA(1:NSEA)
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
@@ -3806,6 +3912,10 @@ CONTAINS
               READ (NDSOG,IOSTAT=IERR) WBT(1:NSEA)
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
               READ (NDSOG,IOSTAT=IERR) WNMEAN(1:NSEA)
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 21 ) THEN
+              READ (NDSOG,IOSTAT=IERR) WLP(1:NSEA)
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 22 ) THEN
+              READ (NDSOG,IOSTAT=IERR) QB(1:NSEA)
               !
               !     Section 3)
               !
@@ -3889,6 +3999,8 @@ CONTAINS
               READ (NDSOG,IOSTAT=IERR) WHITECAP(1:NSEA,4)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               READ (NDSOG,IOSTAT=IERR) TWS(1:NSEA)
+            ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 12 ) THEN
+              READ (NDSOG,IOSTAT=IERR) Z0_WAV(1:NSEA)
               !
               !     Section 6)
               !
@@ -3938,7 +4050,18 @@ CONTAINS
               READ (NDSOG,IOSTAT=IERR) TAUOCX(1:NSEA)
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
               READ (NDSOG,IOSTAT=IERR) TAUOCY(1:NSEA)
-
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+              READ (NDSOG,IOSTAT=IERR) TAUOSX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
+              READ (NDSOG,IOSTAT=IERR) TAUOSY(1:NSEA)
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 15 ) THEN
+              READ (NDSOG,IOSTAT=IERR) PHIBRKX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
+              READ (NDSOG,IOSTAT=IERR) PHIBRKY(1:NSEA)
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 16 ) THEN
+              READ (NDSOG,IOSTAT=IERR) PHICAPX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
+              READ (NDSOG,IOSTAT=IERR) PHICAPY(1:NSEA)
               !
               !     Section 7)
               !

@@ -2163,6 +2163,15 @@ CONTAINS
          HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW,    &
          PTM1, PT1, PT2, PEP, WBT, CX, CY,         &
          TAUOCX, TAUOCY, WNMEAN, QKK, SKEW, EMBIA1, EMBIA2
+    USE W3ADATMD, ONLY: PHIBRKX, PHIBRKY,          &
+         PHICAPX, PHICAPY, WLP, QB,                &
+         TAUOSX, TAUOSY, Z0_WAV
+    USE W3GDATMD, ONLY: ZB, MAPSF, NSEA
+    USE W3WDATMD, ONLY: WLV
+    USE W3IDATMD, ONLY: FLLEV
+# ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+# endif
 #endif
 
 #ifdef W3_MPI
@@ -2267,6 +2276,15 @@ CONTAINS
       IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
       IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
       IF ( FLGRDALL( 6,12) ) NRQMAX = NRQMAX + 2*NK
+# ifdef W3_CURSP
+      IF ( FLGRDALL( 1,2) ) NRQMAX = NRQMAX + 2*NK
+# endif
+      IF ( FLGRDALL( 2,21) ) NRQMAX = NRQMAX + 1
+      IF ( FLGRDALL( 2,22) ) NRQMAX = NRQMAX + 1
+      IF ( FLGRDALL( 5,12) ) NRQMAX = NRQMAX + 1
+      IF ( FLGRDALL( 6,14) ) NRQMAX = NRQMAX + 2
+      IF ( FLGRDALL( 6,15) ) NRQMAX = NRQMAX + 2
+      IF ( FLGRDALL( 6,16) ) NRQMAX = NRQMAX + 2
       !
       IF ( NRQMAX .GT. 0 ) THEN
         ALLOCATE ( OUTPTS(IMOD)%OUT1%IRQGO(NRQMAX) )
@@ -2476,6 +2494,26 @@ CONTAINS
 #endif
         END IF
         !
+        !
+        IF ( FLGRDALL( 2, 21) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (WLP(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 2/21', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
+        !
+        IF ( FLGRDALL( 2, 22) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (QB(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 2/22', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
         IF ( FLGRDALL( 3, 1) ) THEN
           DO IK=E3DF(2,1),E3DF(3,1)
             IH     = IH + 1
@@ -2874,6 +2912,16 @@ CONTAINS
           WRITE (NDST,9011) IH, ' 5/11', IROOT, IT, IRQGO(IH), IERR
 #endif
         END IF
+       !
+        IF ( FLGRDALL( 5, 12) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (Z0_WAV(1),NSEALM , MPI_REAL, IROOT, &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 5/12', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
         !
         IF ( FLGRDALL( 6, 1) ) THEN
           IH     = IH + 1
@@ -3066,6 +3114,57 @@ CONTAINS
           WRITE (NDST,9011) IH, ' 6/13', IROOT, IT, IRQGO(IH), IERR
 #endif
         END IF
+        IF ( FLGRDALL( 6, 14) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (TAUOSX(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+# endif
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (TAUOSY(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
+        !
+        IF ( FLGRDALL( 6, 15) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (PHIBRKX(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/15', IROOT, IT, IRQGO(IH), IERR
+# endif
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (PHIBRKY(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/15', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
+        !
+        IF ( FLGRDALL( 6, 16) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (PHICAPX(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/16', IROOT, IT, IRQGO(IH), IERR
+# endif
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (PHICAPY(1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+# ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/16', IROOT, IT, IRQGO(IH), IERR
+# endif
+        END IF
+        !
         !
         IF ( FLGRDALL( 7, 1) ) THEN
           IH     = IH + 1
@@ -3546,6 +3645,26 @@ CONTAINS
 #endif
           END IF
           !
+          IF ( FLGRDALL( 2, 21) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (WLP(I0),1,WW3_FIELD_VEC, IFROM, IT, &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 2/21', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
+          IF ( FLGRDALL( 2, 22) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (QB(I0),1,WW3_FIELD_VEC, IFROM, IT, &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 2/22', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
           IF ( FLGRDALL( 3, 1) ) THEN
             DO IK=E3DF(2,1),E3DF(3,1)
               IH     = IH + 1
@@ -3944,6 +4063,16 @@ CONTAINS
 #endif
           END IF
           !
+          IF ( FLGRDALL( 5,12) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (Z0_WAV(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 5/12', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
           IF ( FLGRDALL( 6, 1) ) THEN
             IH     = IH + 1
             IT     = IT + 1
@@ -4135,6 +4264,57 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 6/13', IFROM, IT, IRQGO2(IH), IERR
 #endif
           END IF
+          IF ( FLGRDALL( 6, 14) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (TAUOSX(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
+# endif
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (TAUOSY(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
+          IF ( FLGRDALL( 6, 15) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (PHIBRKX(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/15', IFROM, IT, IRQGO2(IH), IERR
+# endif
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (PHIBRKY(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/15', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
+          IF ( FLGRDALL( 6, 16) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (PHICAPX(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/16', IFROM, IT, IRQGO2(IH), IERR
+# endif
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (PHICAPY(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+# ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/16', IFROM, IT, IRQGO2(IH), IERR
+# endif
+          END IF
+          !
           !
           IF ( FLGRDALL( 7, 1) ) THEN
             IH     = IH + 1
@@ -4417,7 +4597,7 @@ CONTAINS
     !
     IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
       IF (OARST) THEN
-        ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(34*NAPROC) )
+        ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(44*NAPROC) )
       ELSE
         ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
       ENDIF
@@ -4488,11 +4668,29 @@ CONTAINS
       END IF
       !
       IF (OARST) THEN
-        IF ( FLOGRR( 1, 2) ) THEN
+        !
+        IF ( FLOGRR( 1, 1) ) THEN
           IH     = IH + 1
           IT     = IT0 + 4
+          CALL MPI_SEND_INIT (ZB(IAPROC), 1, WW3_FIELD_VEC, &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S DP', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+        !
+        IF ( FLOGRR( 1, 2) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 5
+#ifdef W3_CURSP
+          DO IK=1,NK
+            CALL MPI_SEND_INIT (CXTH(IAPROC,IK), 1, WW3_FIELD_VEC, &
+                 IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+          END DO
+#else
           CALL MPI_SEND_INIT (CX(IAPROC), 1, WW3_FIELD_VEC,   &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#endif
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S CX', IROOT, IT, IRQRS(IH), IERR
 #endif
@@ -4505,9 +4703,21 @@ CONTAINS
 #endif
         END IF
         !
+        IF ( FLLEV  ) THEN
+          IF ( FLOGRR( 1, 5) ) THEN
+            IH     = IH + 1
+            IT     = IT0 + 7
+            CALL MPI_SEND_INIT (WLV(IAPROC), 1, WW3_FIELD_VEC, &
+                 IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+            WRITE (NDST,9021) IH, 'S DP', IROOT, IT, IRQRS(IH), IERR
+#endif
+          END IF
+        END IF
+        !
         IF ( FLOGRR( 1, 12) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 6
+          IT     = IT0 + 8
           CALL MPI_SEND_INIT (ICEF(IAPROC), 1, WW3_FIELD_VEC, &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4517,7 +4727,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 1) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 7
+          IT     = IT0 + 9
           CALL MPI_SEND_INIT (HS   (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4527,7 +4737,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 2) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 8
+          IT     = IT0 + 10
           CALL MPI_SEND_INIT (WLM  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4537,7 +4747,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 4) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 9
+          IT     = IT0 + 11
           CALL MPI_SEND_INIT (T0M1(1), NSEALM, MPI_REAL,      &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4547,7 +4757,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 5) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 10
+          IT     = IT0 + 12
           CALL MPI_SEND_INIT (T01 (1), NSEALM, MPI_REAL,      &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4557,7 +4767,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 6) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 11
+          IT     = IT0 + 13
           CALL MPI_SEND_INIT (FP0  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4567,7 +4777,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 7) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 12
+          IT     = IT0 + 14
           CALL MPI_SEND_INIT (THM  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4577,7 +4787,7 @@ CONTAINS
         !
         IF ( FLOGRR( 2, 19) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 13
+          IT     = IT0 + 15
           CALL MPI_SEND_INIT (WNMEAN(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4585,9 +4795,19 @@ CONTAINS
 #endif
         END IF
         !
+        IF ( FLOGRR( 2, 22) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 16
+          CALL MPI_SEND_INIT (QB(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S QB', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+        !
         IF ( FLOGRR( 5, 2) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 14
+          IT     = IT0 + 17
           CALL MPI_SEND_INIT (CHARN(1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4597,14 +4817,14 @@ CONTAINS
         !
         IF ( FLOGRR( 5, 5) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 15
+          IT     = IT0 + 18
           CALL MPI_SEND_INIT (TAUWIX(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S WX', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 16
+          IT     = IT0 + 19
           CALL MPI_SEND_INIT (TAUWIY(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4614,7 +4834,7 @@ CONTAINS
         !
         IF ( FLOGRR( 5, 11) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 17
+          IT     = IT0 + 20
           CALL MPI_SEND_INIT (TWS  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4622,16 +4842,26 @@ CONTAINS
 #endif
         END IF
         !
+        IF ( FLOGRR( 5, 12) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 21
+          CALL MPI_SEND_INIT (Z0_WAV(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S Z0', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+        !
         IF ( FLOGRR( 6, 2) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 18
+          IT     = IT0 + 22
           CALL MPI_SEND_INIT (TAUOX(1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S OX', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 19
+          IT     = IT0 + 23
           CALL MPI_SEND_INIT (TAUOY(1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4641,7 +4871,7 @@ CONTAINS
         !
         IF ( FLOGRR( 6, 3) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 20
+          IT     = IT0 + 24
           CALL MPI_SEND_INIT (BHD  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4651,7 +4881,7 @@ CONTAINS
         !
         IF ( FLOGRR( 6, 4) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 21
+          IT     = IT0 + 25
           CALL MPI_SEND_INIT (PHIOC(1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4661,14 +4891,14 @@ CONTAINS
         !
         IF ( FLOGRR( 6, 5) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 22
+          IT     = IT0 + 26
           CALL MPI_SEND_INIT (TUSX (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S UX', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 23
+          IT     = IT0 + 27
           CALL MPI_SEND_INIT (TUSY (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4678,14 +4908,14 @@ CONTAINS
         !
         IF ( FLOGRR( 6, 6) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 24
+          IT     = IT0 + 28
           CALL MPI_SEND_INIT (USSX (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S SX', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 25
+          IT     = IT0 + 29
           CALL MPI_SEND_INIT (USSY (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4695,14 +4925,14 @@ CONTAINS
         !
         IF ( FLOGRR( 6,10) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 26
+          IT     = IT0 + 30
           CALL MPI_SEND_INIT (TAUICE(1,1), NSEALM, MPI_REAL,  &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S I1', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 27
+          IT     = IT0 + 31
           CALL MPI_SEND_INIT (TAUICE(1,2), NSEALM, MPI_REAL,  &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4712,14 +4942,14 @@ CONTAINS
         !
         IF ( FLOGRR( 6,13) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 28
+          IT     = IT0 + 32
           CALL MPI_SEND_INIT (TAUOCX(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S TX', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 29
+          IT     = IT0 + 33
           CALL MPI_SEND_INIT (TAUOCY(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4727,16 +4957,67 @@ CONTAINS
 #endif
         END IF
         !
+        IF ( FLOGRR( 6,14) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 34
+          CALL MPI_SEND_INIT (TAUOSX(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S OX', IROOT, IT, IRQRS(IH), IERR
+#endif
+          IH     = IH + 1
+          IT     = IT0 + 35
+          CALL MPI_SEND_INIT (TAUOSY(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S OY', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+        !
+        IF ( FLOGRR( 6,15) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 36
+          CALL MPI_SEND_INIT (PHIBRKX(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S BX', IROOT, IT, IRQRS(IH), IERR
+#endif
+          IH     = IH + 1
+          IT     = IT0 + 37
+          CALL MPI_SEND_INIT (PHIBRKY(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S BY', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+        !
+        IF ( FLOGRR( 6,16) ) THEN
+          IH     = IH + 1
+          IT     = IT0 + 38
+          CALL MPI_SEND_INIT (PHICAPX(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S AX', IROOT, IT, IRQRS(IH), IERR
+#endif
+          IH     = IH + 1
+          IT     = IT0 + 39
+          CALL MPI_SEND_INIT (PHICAPY(1), NSEALM, MPI_REAL,    &
+               IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9021) IH, 'S AY', IROOT, IT, IRQRS(IH), IERR
+#endif
+        END IF
+!
         IF ( FLOGRR( 7, 2) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 30
+          IT     = IT0 + 40
           CALL MPI_SEND_INIT (UBA  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S BA', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 31
+          IT     = IT0 + 41
           CALL MPI_SEND_INIT (UBD  (1), NSEALM, MPI_REAL,     &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4746,7 +5027,7 @@ CONTAINS
         !
         IF ( FLOGRR( 7, 4) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 32
+          IT     = IT0 + 42
           CALL MPI_SEND_INIT (PHIBBL(1), NSEALM, MPI_REAL,    &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4756,14 +5037,14 @@ CONTAINS
         !
         IF ( FLOGRR( 7, 5) ) THEN
           IH     = IH + 1
-          IT     = IT0 + 33
+          IT     = IT0 + 43
           CALL MPI_SEND_INIT (TAUBBL(1,1), NSEALM, MPI_REAL,  &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9021) IH, 'S T1', IROOT, IT, IRQRS(IH), IERR
 #endif
           IH     = IH + 1
-          IT     = IT0 + 34
+          IT     = IT0 + 44
           CALL MPI_SEND_INIT (TAUBBL(1,2), NSEALM, MPI_REAL,  &
                IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 #ifdef W3_MPIT
@@ -4777,26 +5058,63 @@ CONTAINS
           !
           DO I0=1, NAPROC
             IFROM  = I0 - 1
-            IF ( FLOGRR( 1, 2) ) THEN
+            !
+            IF ( FLOGRR( 1, 1) ) THEN
               IH     = IH + 1
               IT     = IT0 + 4
+              CALL MPI_RECV_INIT (ZB (I0),1,WW3_FIELD_VEC, &
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R DP', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
+            IF ( FLOGRR( 1, 2) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 5
+#ifdef W3_CURSP
+              DO IK=1,NK
+                CALL MPI_RECV_INIT (CXTH (I0,IK),1,WW3_FIELD_VEC, &
+                     IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+              END DO
+#else
               CALL MPI_RECV_INIT (CX   (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#endif
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R CX', IFROM, IT, IRQRS(IH), IERR
 #endif
-              IH     = IT0 + 5
-              IT     = IT + 1
+              IH     = IH + 1
+              IT     = IT0 + 6
+#ifdef W3_CURSP
+              DO IK=1,NK
+                CALL MPI_RECV_INIT (CYTH (I0,IK),1,WW3_FIELD_VEC, &
+                     IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+              END DO
+#else
               CALL MPI_RECV_INIT (CY   (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#endif
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R CY', IFROM, IT, IRQRS(IH), IERR
 #endif
             END IF
             !
+            IF ( FLLEV  ) THEN
+              IF ( FLOGRR( 1, 5) ) THEN
+                IH     = IH + 1
+                IT     = IT0 + 7
+                CALL MPI_RECV_INIT (WLV(I0),1,WW3_FIELD_VEC, &
+                     IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+                WRITE (NDST,9021) IH, 'R WL', IFROM, IT, IRQRS(IH), IERR
+#endif
+              END IF
+            END IF
+            !
             IF ( FLOGRR( 1, 12) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 6
+              IT     = IT0 + 8
               CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4806,7 +5124,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 1) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 7
+              IT     = IT0 + 9
               CALL MPI_RECV_INIT (HS   (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4816,7 +5134,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 2) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 8
+              IT     = IT0 + 10
               CALL MPI_RECV_INIT (WLM  (I0),1,WW3_FIELD_VEC,  &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4826,7 +5144,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 4) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 9
+              IT     = IT0 + 11
               CALL MPI_RECV_INIT (T0M1(I0),1,WW3_FIELD_VEC,  &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4836,7 +5154,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 5) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 10
+              IT     = IT0 + 12
               CALL MPI_RECV_INIT (T01 (I0),1,WW3_FIELD_VEC,  &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4846,7 +5164,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 6) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 11
+              IT     = IT0 + 13
               CALL MPI_RECV_INIT (FP0  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4856,7 +5174,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 7) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 12
+              IT     = IT0 + 14
               CALL MPI_RECV_INIT (THM  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4866,7 +5184,7 @@ CONTAINS
             !
             IF ( FLOGRR( 2, 19) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 13
+              IT     = IT0 + 15
               CALL MPI_RECV_INIT (WNMEAN(I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4874,9 +5192,19 @@ CONTAINS
 #endif
             END IF
             !
+            IF ( FLOGRR( 2, 22) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 16
+              CALL MPI_RECV_INIT (QB(I0),1,WW3_FIELD_VEC, &
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R QB', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
             IF ( FLOGRR( 5, 2) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 14
+              IT     = IT0 + 17
               CALL MPI_RECV_INIT (CHARN(I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4886,14 +5214,14 @@ CONTAINS
             !
             IF ( FLOGRR( 5, 5) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 15
+              IT     = IT0 + 18
               CALL MPI_RECV_INIT (TAUWIX(I0),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R WX', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 16
+              IT     = IT0 + 19
               CALL MPI_RECV_INIT (TAUWIY(I0),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4903,7 +5231,7 @@ CONTAINS
             !
             IF ( FLOGRR( 5,11) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 17
+              IT     = IT0 + 20
               CALL MPI_RECV_INIT (TWS  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4911,16 +5239,26 @@ CONTAINS
 #endif
             END IF
             !
+            IF ( FLOGRR( 5,12) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 21
+              CALL MPI_RECV_INIT (Z0_WAV(I0),1,WW3_FIELD_VEC, &
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R Z0', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
             IF ( FLOGRR( 6, 2) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 18
+              IT     = IT0 + 22
               CALL MPI_RECV_INIT (TAUOX(I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R OX', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 19
+              IT     = IT0 + 23
               CALL MPI_RECV_INIT (TAUOY(I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4930,7 +5268,7 @@ CONTAINS
             !
             IF ( FLOGRR( 6, 3) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 20
+              IT     = IT0 + 24
               CALL MPI_RECV_INIT (BHD  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4940,7 +5278,7 @@ CONTAINS
             !
             IF ( FLOGRR( 6, 4) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 21
+              IT     = IT0 + 25
               CALL MPI_RECV_INIT (PHIOC(I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4950,14 +5288,14 @@ CONTAINS
             !
             IF ( FLOGRR( 6, 5) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 22
+              IT     = IT0 + 26
               CALL MPI_RECV_INIT (TUSX (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R UX', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 23
+              IT     = IT0 + 27
               CALL MPI_RECV_INIT (TUSY (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4967,14 +5305,14 @@ CONTAINS
             !
             IF ( FLOGRR( 6, 6) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 24
+              IT     = IT0 + 28
               CALL MPI_RECV_INIT (USSX (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R SX', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 25
+              IT     = IT0 + 29
               CALL MPI_RECV_INIT (USSY (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -4984,14 +5322,14 @@ CONTAINS
             !
             IF ( FLOGRR( 6,10) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 26
+              IT     = IT0 + 30
               CALL MPI_RECV_INIT (TAUICE(I0,1),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R I1', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 27
+              IT     = IT0 + 31
               CALL MPI_RECV_INIT (TAUICE(I0,2),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -5001,14 +5339,14 @@ CONTAINS
             !
             IF ( FLOGRR( 6,13) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 28
+              IT     = IT0 + 32
               CALL MPI_RECV_INIT (TAUOCX(I0),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R SX', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 29
+              IT     = IT0 + 33
               CALL MPI_RECV_INIT (TAUOCY(I0),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -5016,16 +5354,67 @@ CONTAINS
 #endif
             END IF
             !
+            IF ( FLOGRR( 6,14) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 34
+              CALL MPI_RECV_INIT (TAUOSX(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R OX', IFROM, IT, IRQRS(IH), IERR
+#endif
+              IH     = IH + 1
+              IT     = IT0 + 35
+              CALL MPI_RECV_INIT (TAUOSY(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R OY', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
+            IF ( FLOGRR( 6,15) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 36
+              CALL MPI_RECV_INIT (PHIBRKX(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R BX', IFROM, IT, IRQRS(IH), IERR
+#endif
+              IH     = IH + 1
+              IT     = IT0 + 37
+              CALL MPI_RECV_INIT (PHIBRKY(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R BY', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
+            IF ( FLOGRR( 6,16) ) THEN
+              IH     = IH + 1
+              IT     = IT0 + 38
+              CALL MPI_RECV_INIT (PHICAPX(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R AX', IFROM, IT, IRQRS(IH), IERR
+#endif
+              IH     = IH + 1
+              IT     = IT0 + 39
+              CALL MPI_RECV_INIT (PHICAPY(I0),1,WW3_FIELD_VEC,&
+                   IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+#ifdef W3_MPIT
+              WRITE (NDST,9021) IH, 'R AY', IFROM, IT, IRQRS(IH), IERR
+#endif
+            END IF
+            !
             IF ( FLOGRR( 7, 2) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 30
+              IT     = IT0 + 40
               CALL MPI_RECV_INIT (UBA  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R BA', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 31
+              IT     = IT0 + 41
               CALL MPI_RECV_INIT (UBD  (I0),1,WW3_FIELD_VEC, &
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -5035,7 +5424,7 @@ CONTAINS
             !
             IF ( FLOGRR( 7, 4) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 32
+              IT     = IT0 + 42
               CALL MPI_RECV_INIT (PHIBBL(I0),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -5045,14 +5434,14 @@ CONTAINS
             !
             IF ( FLOGRR( 7, 5) ) THEN
               IH     = IH + 1
-              IT     = IT0 + 33
+              IT     = IT0 + 43
               CALL MPI_RECV_INIT (TAUBBL(I0,1),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
               WRITE (NDST,9021) IH, 'R T1', IFROM, IT, IRQRS(IH), IERR
 #endif
               IH     = IH + 1
-              IT     = IT0 + 34
+              IT     = IT0 + 44
               CALL MPI_RECV_INIT (TAUBBL(I0,2),1,WW3_FIELD_VEC,&
                    IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 #ifdef W3_MPIT
@@ -5067,7 +5456,7 @@ CONTAINS
       !
       NRQRS  = IH
       IF (OARST) THEN
-        IT0    = IT0 + 34
+        IT0    = IT0 + 44
       ELSE
         IT0    = IT0 + 3
       ENDIF

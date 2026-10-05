@@ -589,6 +589,9 @@ CONTAINS
     USE W3WDATMD, ONLY: TIME
     USE W3ADATMD, ONLY: CX, CY, UA, UD, U10, U10D, AS,          &
          UA0, UAI, UD0, UDI, AS0, ASI
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+#endif
     USE W3IDATMD, ONLY: TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, FLCUR
 #ifdef W3_STAB2
     USE W3WDATMD, ONLY: ASF
@@ -748,8 +751,13 @@ CONTAINS
       !
 #ifdef W3_RWND
       DO ISEA=1, NSEA
+#ifdef W3_CURSP
+        UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CXTH(ISEA,1)
+        UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CYTH(ISEA,1)
+#else
         UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CX(ISEA)
         UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CY(ISEA)
+#endif
         U10 (ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
         U10D(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
       END DO
