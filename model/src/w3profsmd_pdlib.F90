@@ -6610,7 +6610,7 @@ CONTAINS
         END IF
 
         DO IP = 1, npa
-          DTSI(IP) = DBLE(DTMAXGL)/DBLE(ITER(IK))/PDLIB_SI(IP) ! Some precalculations for the time integration.
+          DTSI(IP) = DBLE(DTG)/DBLE(ITER(IK))/PDLIB_SI(IP) ! Some precalculations for the time integration.
         END DO
 
       END IF ! LCALC
