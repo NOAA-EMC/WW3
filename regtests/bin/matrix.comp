@@ -207,7 +207,7 @@ function isbinary {
                     files_dir=`ls $file`
                     for file1 in $files_dir
                     do
-                      files_2="$files_1 $file/$file1"
+                      files_2="$files_2 $file/$file1"
                     done
                   fi
                 else
