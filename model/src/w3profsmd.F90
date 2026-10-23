@@ -141,6 +141,9 @@ CONTAINS
          IOBDP, FSN, FSPSI, FSFCT, FSNIMP, UNGTYPE
 
     USE W3WDATMD, ONLY: TIME
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+#endif
     USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
     USE W3ADATMD, ONLY: CG, CX, CY
     USE W3IDATMD, ONLY: FLCUR
@@ -222,8 +225,13 @@ CONTAINS
         ! Currents are not included on coastal boundaries (IOBP(IXY).EQ.0)
         !
         IF (IOBP(IXY) .EQ. 1) THEN
+#ifdef W3_CURSP
+          VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CXTH(ISEA,IK)/CLATS(ISEA)
+          VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CYTH(ISEA,IK)
+#else
           VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
           VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
+#endif
         END IF
       END DO
     END IF

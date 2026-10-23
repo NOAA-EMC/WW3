@@ -301,6 +301,16 @@ CONTAINS
          PHIOC, TUSX, TUSY, USSX, USSY, TAUICE,      &
          UBA, UBD, PHIBBL, TAUBBL, TAUOCX, TAUOCY,   &
          WNMEAN
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+    USE W3GDATMD, ONLY: NK
+#endif
+    USE W3ADATMD, ONLY: PHIBRKX, PHIBRKY
+    USE W3ADATMD, ONLY: PHICAPX, PHICAPY
+    USE W3ADATMD, ONLY: TAUOSX,  TAUOSY, Z0_WAV, QB
+    USE W3WDATMD, ONLY: WLV
+    USE W3IDATMD, ONLY: FLLEV
+    USE W3GDATMD, ONLY: ZB, MAPSF, NSEA
     !/
     USE W3GDATMD, ONLY: NX, NY, NSEA, NSPEC, MAPSTA, MAPST2, &
          GNAME, FILEXT, GTYPE, UNGTYPE
@@ -362,10 +372,13 @@ CONTAINS
     !
     INTEGER                 :: IGRD, I, J, LRECL, NSIZE, IERR,      &
          NSEAT, MSPEC, TTIME(2), ISEA, JSEA,  &
-         NREC, NPART, IPART, IY, IXL, NPRTX2, NPRTY2, ITMP
+         NREC, NPART, IPART, IX, IY, IXL, NPRTX2, NPRTY2, ITMP
+#ifdef W3_CURSP
+    INTEGER                 :: IK
+#endif
     INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 #ifdef W3_WRST
-    INTEGER                 :: IX, IYL
+    INTEGER                 :: IYL
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -1046,13 +1059,32 @@ CONTAINS
             CALL W3XETA ( IGRD, NDSE, NDST )
 #endif
             !
+            IF ( FLOGRR(1,1) )                                  &
+                 WRITE(NDSR,IOSTAT=IERR) ZB(1:NSEA)
             IF ( FLOGRR(1,2) ) THEN
+#ifdef W3_CURSP
+              DO IK=1,NK
+                WRITE(NDSR,IOSTAT=IERR) CXTH(1:NSEA,IK)
+              END DO
+#else
               WRITE(NDSR,IOSTAT=IERR) CX(1:NSEA)
+#endif
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
                                          ISWRITE=.TRUE.,POS=RPOS)
+#ifdef W3_CURSP
+              DO IK=1,NK
+                WRITE(NDSR,IOSTAT=IERR) CYTH(1:NSEA,IK)
+              END DO
+#else
               WRITE(NDSR,IOSTAT=IERR) CY(1:NSEA)
+#endif
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
                                          ISWRITE=.TRUE.,POS=RPOS)
+            ENDIF
+            IF ( FLOGRR(1,5) ) THEN
+              IF ( FLLEV  ) THEN
+                WRITE(NDSR,IOSTAT=IERR) WLV(1:NSEA)
+              ENDIF
             ENDIF
             IF ( FLOGRR(1,12) )                                 &
                  WRITE(NDSR,IOSTAT=IERR) ICEF(1:NSEA)
@@ -1070,6 +1102,8 @@ CONTAINS
                  WRITE(NDSR,IOSTAT=IERR) THM(1:NSEA)
             IF ( FLOGRR(2,19) )                                 &
                  WRITE(NDSR,IOSTAT=IERR) WNMEAN(1:NSEA)
+            IF ( FLOGRR(2,22) )                                 &
+                 WRITE(NDSR,IOSTAT=IERR) QB(1:NSEA)
             IF ( FLOGRR(5,2) )                                  &
                  WRITE(NDSR,IOSTAT=IERR) CHARN(1:NSEA)
             IF ( FLOGRR(5,5) ) THEN
@@ -1080,6 +1114,8 @@ CONTAINS
             ENDIF
             IF ( FLOGRR(5,11) )                                 &
                  WRITE(NDSR,IOSTAT=IERR) TWS(1:NSEA)
+            IF ( FLOGRR(5,12) )                                 &
+                 WRITE(NDSR,IOSTAT=IERR) Z0_WAV(1:NSEA)
             IF ( FLOGRR(6,2) ) THEN
               WRITE(NDSR,IOSTAT=IERR) TAUOX(1:NSEA)
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
@@ -1113,6 +1149,24 @@ CONTAINS
               IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
                                          ISWRITE=.TRUE.,POS=RPOS)
               WRITE(NDSR,IOSTAT=IERR) TAUOCY(1:NSEA)
+            ENDIF
+            IF ( FLOGRR(6,14) ) THEN
+              WRITE(NDSR,IOSTAT=IERR) TAUOSX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
+                                         ISWRITE=.TRUE.,POS=RPOS)
+              WRITE(NDSR,IOSTAT=IERR) TAUOSY(1:NSEA)
+            ENDIF
+            IF ( FLOGRR(6,15) ) THEN
+              WRITE(NDSR,IOSTAT=IERR) PHIBRKX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
+                                         ISWRITE=.TRUE.,POS=RPOS)
+              WRITE(NDSR,IOSTAT=IERR) PHIBRKY(1:NSEA)
+            ENDIF
+            IF ( FLOGRR(6,16) ) THEN
+              WRITE(NDSR,IOSTAT=IERR) PHICAPX(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',31, &
+                                         ISWRITE=.TRUE.,POS=RPOS)
+              WRITE(NDSR,IOSTAT=IERR) PHICAPY(1:NSEA)
             ENDIF
             IF ( FLOGRR(7,2) ) THEN
               WRITE(NDSR,IOSTAT=IERR) UBA(1:NSEA)
@@ -1248,11 +1302,33 @@ CONTAINS
           IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
         END DO
         IF (OARST) THEN
+          IF ( FLOGOA(1,1) ) THEN
+            READ (NDSR,IOSTAT=IERR) ZB(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+          ENDIF
           IF ( FLOGOA(1,2) ) THEN
+#ifdef W3_CURSP
+            DO IK=1,NK
+              READ (NDSR,IOSTAT=IERR) CXTH(1:NSEA,IK)
+            END DO
+#else
             READ (NDSR,IOSTAT=IERR) CX(1:NSEA)
+#endif
             IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+#ifdef W3_CURSP
+            DO IK=1,NK
+              READ (NDSR,IOSTAT=IERR) CYTH(1:NSEA,IK)
+            END DO
+#else
             READ (NDSR,IOSTAT=IERR) CY(1:NSEA)
+#endif
             IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+          ENDIF
+          IF ( FLOGOA(1,5) ) THEN
+            IF ( FLLEV  ) THEN
+              READ (NDSR,IOSTAT=IERR) WLV(1:NSEA)
+              IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            ENDIF
           ENDIF
           IF ( FLOGOA(1,12) ) THEN
             READ (NDSR,IOSTAT=IERR) ICEF(1:NSEA)
@@ -1314,6 +1390,14 @@ CONTAINS
               IF (J .LE. NSEA) WNMEAN(I) = TMP(J)
             ENDDO
           ENDIF
+          IF ( FLOGOA(2,22) ) THEN
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) QB(I) = TMP(J)
+            ENDDO
+          ENDIF
           IF ( FLOGOA(5,2) ) THEN
             READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
             IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
@@ -1341,6 +1425,14 @@ CONTAINS
             DO I=1, NSEALM
               J = IAPROC + (I-1)*NAPROC
               IF (J .LE. NSEA) TWS(I) = TMP(J)
+            ENDDO
+          ENDIF
+          IF ( FLOGOA(5,12) ) THEN
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) Z0_WAV(I) = TMP(J)
             ENDDO
           ENDIF
           IF ( FLOGOA(6,2) ) THEN
@@ -1424,6 +1516,45 @@ CONTAINS
               ENDIF
             ENDDO
           ENDIF
+          IF ( FLOGOA(6,14) ) THEN
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            READ (NDSR,IOSTAT=IERR) TMP2(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) THEN
+                TAUOSX(I) = TMP(J)
+                TAUOSY(I) = TMP2(J)
+              ENDIF
+            ENDDO
+          ENDIF
+          IF ( FLOGOA(6,15) ) THEN
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            READ (NDSR,IOSTAT=IERR) TMP2(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) THEN
+                PHIBRKX(I) = TMP(J)
+                PHIBRKY(I) = TMP2(J)
+              ENDIF
+            ENDDO
+          ENDIF
+          IF ( FLOGOA(6,16) ) THEN
+            READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            READ (NDSR,IOSTAT=IERR) TMP2(1:NSEA)
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) THEN
+                PHICAPX(I) = TMP(J)
+                PHICAPY(I) = TMP2(J)
+              ENDIF
+            ENDDO
+          ENDIF
           IF ( FLOGOA(7,2) ) THEN
             READ (NDSR,IOSTAT=IERR) TMP(1:NSEA)
             IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IORS','',30)
@@ -1484,8 +1615,13 @@ CONTAINS
 
         ! Initialize coupled fields if no restart is present
         IF (OARST) THEN
+#ifdef W3_CURSP
+          CXTH    = 0.
+          CYTH    = 0.
+#else
           CX      = 0.
           CY      = 0.
+#endif
           ICEF    = 0.
           HS      = 0.
           WLM     = 0.
@@ -1500,6 +1636,12 @@ CONTAINS
           TWS     = 0.
           TAUOX   = 0.
           TAUOY   = 0.
+          TAUOSX  = 0.
+          TAUOSY  = 0.
+          PHIBRKX = 0.
+          PHIBRKY = 0.
+          PHICAPX = 0.
+          PHICAPY = 0.
           BHD     = 0.
           PHIOC   = 0.
           TUSX    = 0.
