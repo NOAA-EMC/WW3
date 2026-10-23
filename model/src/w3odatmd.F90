@@ -784,10 +784,10 @@ CONTAINS
     !
     ! 2) Standard mean wave parameters
     !
-    NOGE(2) = 22
 #ifdef W3_OASOCM
     NOGE(2) = 20
 #endif
+    NOGE(2) = 22
     !
     IDOUT( 2, 1)  = 'Wave height         '
     IDOUT( 2, 2)  = 'Mean wave length    '
