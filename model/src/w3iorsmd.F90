@@ -322,7 +322,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
-    USE mpi_f08 
+    USE mpi_f08
 #endif
     !/
 #if defined(W3_T) || defined(W3_MPI)
@@ -892,6 +892,12 @@ CONTAINS
     IF ( WRITE ) THEN
       !
       IF (TYPE.EQ.'FULL') THEN
+        !
+#ifdef W3_PDLIB
+        ! UST, USTDIR, ASF and FPIS from the owner of each point
+        ! (the IRQRS gather is skipped under PDLIB)
+        IF (LPDLIB) CALL UNST_PDLIB_GATHER_RESTART_FIELDS
+#endif
         !
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
