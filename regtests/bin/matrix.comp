@@ -38,7 +38,7 @@ function isbinary {
 # 1.a Computer/ user dependent set up
 
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
-  then     
+  then
     printf "\n ERROR ABORTING \n"
     printf "\n matrix.comp requires 3 arguments: "
     printf "   1: test type (eg, all or test-name), 2: base directory and 3: reference directory. \n"
@@ -79,7 +79,7 @@ function isbinary {
   echo '**********************************************************************' >> $home_dir/summary.tmp
   echo '******************** summary of comparison ***************************' >> $home_dir/summary.tmp
   echo '********** only results of non-identical cases are listed ************' >> $home_dir/summary.tmp
-  echo '****** if less than 10 files differ for a case, they are listed ******' >> $home_dir/summary.tmp  
+  echo '****** if less than 10 files differ for a case, they are listed ******' >> $home_dir/summary.tmp
   echo '**********************************************************************' >> $home_dir/summary.tmp
 
   echo ' '                                                                      > $home_dir/fulldiff.tmp
@@ -154,7 +154,7 @@ function isbinary {
             else
 
               echo " testing case: $tst; run: $run"
- 
+
               echo ""                                                          >> $home_dir/fulldiff.tmp
               echo "* test case: $tst; test run: $run"                         >> $home_dir/fulldiff.tmp
               echo "*********************************************************" >> $home_dir/fulldiff.tmp
@@ -167,24 +167,24 @@ function isbinary {
               rm -f diff_tempfile
               files_0=`ls`
               files_1=""
-              for file in $files_0 
-              do 
+              for file in $files_0
+              do
                 if [[ -d $file ]]; then
-                  if [[ $file == build* ]] || [[ $file == exe* ]] || 
-                     [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then 
+                  if [[ $file == build* ]] || [[ $file == exe* ]] ||
+                     [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then
                     :   # skip
-                  else 
-                    #add files: 
+                  else
+                    #add files:
                     files_dir=`ls $file`
-                    for file1 in $files_dir 
-                    do 
+                    for file1 in $files_dir
+                    do
                       files_1="$files_1 $file/$file1"
-                    done 
-                  fi 
+                    done
+                  fi
                 else
                   files_1="$files_1 $file"
                 fi
-              done 
+              done
 
               #Generate list of files to skip
               skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt oasis_make.out oasis_clean.out toy_model toy_make.out toy_clean.out build.log"
@@ -203,11 +203,11 @@ function isbinary {
                      [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then
                     :   # skip
                   else
-                    #add files: 
+                    #add files:
                     files_dir=`ls $file`
                     for file1 in $files_dir
                     do
-                      files_2="$files_1 $file/$file1"
+                      files_2="$files_2 $file/$file1"
                     done
                   fi
                 else
@@ -219,7 +219,7 @@ function isbinary {
               echo "  found $nf_2 files in compare directory" >> $home_dir/fulldiff.tmp
 
               cd $return_base ; cd $run
-              
+
 # --------------------------------------------------------------------------- #
 # 5.  Loop over all files in base directory                                   #
 # --------------------------------------------------------------------------- #
@@ -227,14 +227,21 @@ function isbinary {
               for file in $files_1
               do
 # 5.a Check for buddy file, identify file type
-                escapedfilename=`echo ${file/\./\\\.}`
-        
+
                 if [ ! -f $return_comp/$run/$file ]
                 then
                   isIdentical=0; let "numNotInComp += 1"
                   echo "     $file not in compare directory" >> $home_dir/fulldiff.tmp
                 else
-                  files_2=`echo "$files_2" | sed "s#\b$escapedfilename\b##g" | sed "s#  # #g"`
+
+                  remaining_files=""
+                  for comp_file in $files_2
+                  do
+                    if [[ "$comp_file" != "$file" ]]; then
+                      remaining_files="$remaining_files $comp_file"
+                    fi
+                  done
+                  files_2="$remaining_files"
 
                   if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
                   then
@@ -248,7 +255,7 @@ function isbinary {
                   else
                     filetype="file"
                   fi
-                  
+
 # 5.a Assign action based on file type
 
                   case "$filetype" in
@@ -256,7 +263,7 @@ function isbinary {
                     skip   ) form='f' ; do='-' ; drop='-' ;;
                     binary ) form='u' ; do='y' ; drop='-' ;;
                     file   ) form='f' ; do='y' ; drop='-' ;;
-                    *      ) form='f' ; do='-' ; drop='-' ;;                    
+                    *      ) form='f' ; do='-' ; drop='-' ;;
                   esac
 
                   if [ "$drop" = 'y' ]
@@ -303,13 +310,13 @@ function isbinary {
                         cat $file > $output/${basename}_base.txt
                         cat $return_comp/$run/$file > $output/${basename}_comp.txt
                         cat diff_tempfile > $output/${basename}_diff.txt
-                        echo "     $file differ. " >> $home_dir/fulldiff.tmp 
+                        echo "     $file differ. " >> $home_dir/fulldiff.tmp
                         diffFiles=`echo "$diffFiles $file"`
                         isIdentical=0
                         let "numDiff += 1"
                         rm -f diff_tempfile
                       else
-		        echo "     $file are identical$filter" >> $home_dir/fulldiff.tmp 
+		        echo "     $file are identical$filter" >> $home_dir/fulldiff.tmp
                         let "numSame += 1"
                       fi
 
@@ -329,20 +336,20 @@ function isbinary {
                             if [[ $basename == rmp_* ]]; then
                               grep -v "history" $output/${basename}_diff.txt > $output/${basename}_diff.txt
                             fi
-                            size_1=`wc -l $output/${basename}_diff.txt | awk '{ print $1}'` 
+                            size_1=`wc -l $output/${basename}_diff.txt | awk '{ print $1}'`
                             if [ "$size_1" = '0' ]
                             then
                               rm $output/${basename}_diff.txt $output/${basename}_base.txt $output/${basename}_comp.txt
                               echo "     $file are identical (binary)"  >> $home_dir/fulldiff.tmp ; let "numSame += 1"
-                            else 
-                              echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; 
-                              isIdentical=0; 
+                            else
+                              echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ;
+                              isIdentical=0;
                               let "numDiff += 1"
                               diffFiles=`echo "$diffFiles $file (binary)"`
                             fi
-                          else 
-                            echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; 
-                            isIdentical=0; 
+                          else
+                            echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ;
+                            isIdentical=0;
                             let "numDiff += 1"
                             diffFiles=`echo "$diffFiles $file (binary)"`
                           fi ;;
@@ -376,7 +383,7 @@ function isbinary {
             cd ..
             fi
           fi
-          
+
           totBase=$(( $numDiff + $numSame + $numSkipped + $numNotInComp ))
           totComp=$(( $numDiff + $numSame + $numSkipped + $numInCompOnly ))
 
@@ -414,7 +421,7 @@ function isbinary {
             *)
           esac
         done
-      fi	
+      fi
     fi
   done
 
