@@ -652,14 +652,13 @@ CONTAINS
 #endif
     !
     use yowDatapool, only: istatus
-    USE yowNodepool, only: ListNPA, ListIPLG
+    USE yowNodepool, only: np, ListNP, ListNPA, ListIPLG
     USE W3PARALL, ONLY: INIT_GET_ISEA
     USE W3GDATMD, only : NSEA, NSPEC
     USE W3ODATMD, only : NAPROC, NAPRST, IAPROC
     USE W3ADATMD, only : MPI_COMM_WAVE
     USE W3PARALL, only : GET_JSEA_IBELONG
     USE W3WDATMD, ONLY : VA
-    USE W3GDATMD, ONLY: NSEAL
     use mpi_f08
     IMPLICIT NONE
     !/
@@ -707,9 +706,11 @@ CONTAINS
       iFirst= 1 + (iBlock - 1)*BlockSize
       iEnd= MIN(iBlock * BlockSize, NSEA)
       len=iEnd + 1 - iFirst
+      ! Owned points only (local 1:np): each sea point is written once, by its owner.
+      ! Ghost copies (np+1:npa) may be out of date and would overwrite the owner's value.
       IF (IAPROC .eq. NAPRST) THEN
         IF (IAPROC .le. NAPROC) THEN
-          DO JSEA=1,NSEAL
+          DO JSEA=1,np
             CALL INIT_GET_ISEA(ISEA, JSEA)
             IF ((iFirst .le. ISEA).and.(ISEA .le. iEnd)) THEN
               idx = ISEA - iFirst + 1
@@ -719,7 +720,7 @@ CONTAINS
         END IF
         DO iProc=1,NAPROC
           IF (iProc .ne. IAPROC) THEN
-            NPAloc=ListNPA(iProc)
+            NPAloc=ListNP(iProc)
             NbMatch=0
             DO IPloc=1,NPAloc
               IPglob = ListIPLG(ListFirst(iProc) + IPloc)
@@ -755,7 +756,7 @@ CONTAINS
       ELSE
         IF (IAPROC .le. NAPROC) THEN
           NbMatch=0
-          DO IPloc=1,ListNPA(IAPROC)
+          DO IPloc=1,np
             IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
             IF ((iFirst .le. IPglob).and.(IPglob .le. iEnd)) THEN
               NbMatch=NbMatch+1
@@ -764,7 +765,7 @@ CONTAINS
           IF (NbMatch .gt. 0) THEN
             allocate(DATAsend(NSPEC,NbMatch), stat=istat)
             idx=0
-            DO IPloc=1,ListNPA(IAPROC)
+            DO IPloc=1,np
               IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
               IF ((iFirst .le. IPglob).and.(IPglob .le. iEnd)) THEN
                 idx=idx + 1
@@ -778,6 +779,104 @@ CONTAINS
       END IF
     END DO
   END SUBROUTINE UNST_PDLIB_WRITE_TO_FILE
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE UNST_PDLIB_GATHER_RESTART_FIELDS
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Oct-2026 |
+    !/                  +-----------------------------------+
+    !/
+    !/    22-Oct-2026 : Origination.
+    !/
+    !  1. Purpose : Gather the sea-point fields written to a binary restart
+    !               after the spectra (UST, USTDIR, ASF, FPIS) on the restart
+    !               task NAPRST, under PDLIB.
+    !
+    !  2. Method :
+    !     Each task sends the values at its owned points (local 1:np) to
+    !     NAPRST, which stores them by global index. Without this, NAPRST
+    !     wrote its own copies of these global-size arrays, which hold
+    !     computed values only at the points NAPRST itself holds, so the
+    !     restart file depended on the decomposition. This is the PDLIB
+    !     counterpart of the IRQRS gather set up in W3MPIO (W3INITMD) for
+    !     the other grids.
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3IORS    Subr. W3IORSMD Restart file I/O, before the fields
+    !                               are written.
+    !     ----------------------------------------------------------------
+    !
+    !  7. Remarks :
+    !     All mesh nodes are sea points (ISEA = global node index), as in
+    !     UNST_PDLIB_WRITE_TO_FILE.
+    !
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+    !
+    use yowDatapool, only: istatus
+    USE yowNodepool, only: np, ListNP, ListNPA, ListIPLG
+    USE W3ODATMD, only : NAPROC, NAPRST, IAPROC
+    USE W3ADATMD, only : MPI_COMM_WAVE
+    USE W3WDATMD, ONLY : UST, USTDIR, ASF, FPIS
+    use mpi_f08
+    IMPLICIT NONE
+    !/
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+#endif
+    !/
+    INTEGER, PARAMETER :: NFIELD = 4
+    REAL, allocatable :: FieldBuf(:,:)
+    integer ListFirst(NAPROC)
+    integer iProc, IPloc, ISEA, ierr, istat
+#ifdef W3_S
+    CALL STRACE (IENT, 'UNST_PDLIB_GATHER_RESTART_FIELDS')
+#endif
+    ListFirst(1) = 0
+    DO IPROC=2,NAPROC
+      ListFirst(iProc)=ListFirst(iProc-1) + ListNPA(iProc-1)
+    END DO
+    IF (IAPROC .eq. NAPRST) THEN
+      DO iProc=1,NAPROC
+        IF (iProc .ne. IAPROC) THEN
+          allocate(FieldBuf(NFIELD, ListNP(iProc)), stat=istat)
+          CALL MPI_RECV(FieldBuf,NFIELD*ListNP(iProc),MPI_REAL, iProc-1, 103, MPI_COMM_WAVE, istatus, ierr)
+          DO IPloc=1,ListNP(iProc)
+            ISEA = ListIPLG(ListFirst(iProc) + IPloc)
+            UST(ISEA)    = FieldBuf(1,IPloc)
+            USTDIR(ISEA) = FieldBuf(2,IPloc)
+            ASF(ISEA)    = FieldBuf(3,IPloc)
+            FPIS(ISEA)   = FieldBuf(4,IPloc)
+          END DO
+          deallocate(FieldBuf, stat=istat)
+        END IF
+      END DO
+    ELSE IF (IAPROC .le. NAPROC) THEN
+      allocate(FieldBuf(NFIELD, np), stat=istat)
+      DO IPloc=1,np
+        ISEA = ListIPLG(ListFirst(IAPROC) + IPloc)
+        FieldBuf(1,IPloc) = UST(ISEA)
+        FieldBuf(2,IPloc) = USTDIR(ISEA)
+        FieldBuf(3,IPloc) = ASF(ISEA)
+        FieldBuf(4,IPloc) = FPIS(ISEA)
+      END DO
+      CALL MPI_SEND(FieldBuf,NFIELD*np,MPI_REAL, NAPRST-1, 103, MPI_COMM_WAVE, ierr)
+      deallocate(FieldBuf, stat=istat)
+    END IF
+  END SUBROUTINE UNST_PDLIB_GATHER_RESTART_FIELDS
   !/ ------------------------------------------------------------------- /
   SUBROUTINE DO_OUTPUT_EXCHANGES(IMOD)
     !/
@@ -834,6 +933,8 @@ CONTAINS
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
     USE W3PARALL, ONLY: INIT_GET_ISEA
     use yowDatapool, only: istatus
+    use yowNodepool, only: ng
+    USE W3SERVMD, ONLY: EXTCDE
     use mpi_f08
     !/
     IMPLICIT NONE
@@ -853,11 +954,27 @@ CONTAINS
     INTEGER, SAVE           :: IENT
 #endif
     LOGICAL                 :: FLGRDALL(NOGRP,NGRPP)
-    REAL, allocatable       :: ARRexch(:,:), ARRexch_loc(:,:)
+    REAL, allocatable       :: ARRexch(:,:)
     REAL, allocatable       :: ARRtotal(:,:)
-    INTEGER, allocatable    :: ARRpos(:), ARRpos_loc(:)
+    INTEGER, allocatable    :: ARRpos(:)
     INTEGER                 :: eEnt(1), IPROC
-    INTEGER                 :: TheSize, NSEAL_loc
+    INTEGER                 :: TheSize
+    INTEGER                 :: NSEAL_OWN   ! owned points only; ghost nodes np+1:npa are not sent
+    !
+    ! Gather to NAPFLD. The number of owned sea points per rank and their
+    ! global sea indices never change, so they are sent once, at the first
+    ! output, and kept. At every output NAPFLD then posts all data receives
+    ! at once (non-blocking) instead of receiving rank by rank.
+    LOGICAL, SAVE           :: GATHER_SETUP = .FALSE.  ! counts and indices sent/received
+    INTEGER, SAVE           :: SETUP_SIZE              ! TheSize at setup
+    INTEGER, SAVE           :: NRECV_TOT               ! sea points received from other ranks
+    INTEGER, allocatable, SAVE :: RCOUNT(:)            ! NAPFLD: sea points per rank
+    INTEGER, allocatable, SAVE :: ROFFSET(:)           ! NAPFLD: points before this rank in RBUF
+    INTEGER, allocatable, SAVE :: GPOS(:)              ! NAPFLD: global sea index, in RBUF order
+    REAL, allocatable, SAVE, ASYNCHRONOUS :: RBUF(:)   ! NAPFLD: received data, rank order
+    TYPE(MPI_Request), allocatable :: RREQ(:)
+    TYPE(MPI_Status), allocatable  :: RSTAT(:)
+    INTEGER                 :: NREQ, NGOT, IOFF, I1, I2
     INTEGER, SAVE           :: indexOutput
     !/
     !/ ------------------------------------------------------------------- /
@@ -873,9 +990,10 @@ CONTAINS
     IROOT  = NAPFLD - 1
     IF ( FLOUT(1) .OR. FLOUT(7) ) THEN
       CALL GET_ARRAY_SIZE(TheSize)
+      NSEAL_OWN = NSEAL - NG
       IF ( IAPROC .LE. NAPROC ) THEN
-        allocate(ARRexch(TheSize, NSEAL), ARRpos(NSEAL))
-        DO JSEA=1,NSEAL
+        allocate(ARRexch(TheSize, NSEAL_OWN), ARRpos(NSEAL_OWN))
+        DO JSEA=1,NSEAL_OWN
           CALL INIT_GET_ISEA(ISEA, JSEA)
           ARRpos(JSEA)=ISEA
           IH     = 0
@@ -1291,32 +1409,101 @@ CONTAINS
       IF (IAPROC .eq. NAPFLD) THEN
         allocate(ARRtotal(TheSize, NSEA))
         IF (IAPROC .le. NAPROC) THEN
-          DO I=1,NSEAL
+          DO I=1,NSEAL_OWN
             ARRtotal(:,ARRpos(I)) = ARRexch(:,I)
           END DO
         END IF
       END IF
+      !
+      !  Senders: count and global sea indices on the first call only,
+      !  then the data at every output.
+      !
       IF ((IAPROC .le. NAPROC).and.(IAPROC.ne.NAPFLD)) THEN
-        eEnt(1)=NSEAL
-        CALL MPI_SEND(eEnt,1,MPI_INTEGER, NAPFLD-1, 23, MPI_COMM_WAVE, ierr)
-        CALL MPI_SEND(ARRpos,NSEAL,MPI_INTEGER, NAPFLD-1, 29, MPI_COMM_WAVE, ierr)
-        CALL MPI_SEND(ARRexch,NSEAL*TheSize,MPI_REAL, NAPFLD-1, 37, MPI_COMM_WAVE, ierr)
+        IF (.not. GATHER_SETUP) THEN
+          eEnt(1)=NSEAL_OWN
+          CALL MPI_SEND(eEnt,1,MPI_INTEGER, NAPFLD-1, 23, MPI_COMM_WAVE, ierr)
+          CALL MPI_SEND(ARRpos,NSEAL_OWN,MPI_INTEGER, NAPFLD-1, 29, MPI_COMM_WAVE, ierr)
+          GATHER_SETUP = .TRUE.
+        END IF
+        CALL MPI_SEND(ARRexch,NSEAL_OWN*TheSize,MPI_REAL, NAPFLD-1, 37, MPI_COMM_WAVE, ierr)
         deallocate(ARRpos, ARRexch)
       END IF
-      IF (IAPROC .eq. NAPFLD) THEN
+      !
+      !  NAPFLD, first call: receive and keep every rank's count and
+      !  global sea indices, and allocate the receive buffer.
+      !
+      IF (IAPROC .eq. NAPFLD .and. .not. GATHER_SETUP) THEN
+        allocate(RCOUNT(NAPROC), ROFFSET(NAPROC))
+        RCOUNT(:) = 0
         DO IPROC=1,NAPROC
           IF (IPROC .ne. IAPROC) THEN
             CALL MPI_RECV(eEnt,1,MPI_INTEGER, IPROC-1, 23, MPI_COMM_WAVE, istatus, ierr)
-            NSEAL_loc=eEnt(1)
-            allocate(ARRpos_loc(NSEAL_loc), ARRexch_loc(TheSize, NSEAL_loc))
-            CALL MPI_RECV(ARRpos_loc,NSEAL_loc,MPI_INTEGER, IPROC-1, 29, MPI_COMM_WAVE, istatus, ierr)
-            CALL MPI_RECV(ARRexch_loc,NSEAL_loc*TheSize,MPI_INTEGER, IPROC-1, 37, MPI_COMM_WAVE, istatus, ierr)
-            DO I=1,NSEAL_loc
-              ARRtotal(:,ARRpos_loc(I)) = ARRexch_loc(:,I)
-            END DO
-            deallocate(ARRexch_loc, ARRpos_loc)
+            RCOUNT(IPROC) = eEnt(1)
           END IF
         END DO
+        NRECV_TOT = 0
+        DO IPROC=1,NAPROC
+          ROFFSET(IPROC) = NRECV_TOT
+          NRECV_TOT = NRECV_TOT + RCOUNT(IPROC)
+        END DO
+        IF (NRECV_TOT + NSEAL_OWN .gt. NSEA) THEN
+          WRITE (NDSE,1001) NRECV_TOT + NSEAL_OWN, NSEA
+          CALL EXTCDE (1001)
+        END IF
+        allocate(GPOS(NRECV_TOT), RBUF(TheSize*NRECV_TOT))
+        DO IPROC=1,NAPROC
+          IF (IPROC .ne. IAPROC .and. RCOUNT(IPROC) .gt. 0) THEN
+            I1 = ROFFSET(IPROC) + 1
+            I2 = ROFFSET(IPROC) + RCOUNT(IPROC)
+            CALL MPI_RECV(GPOS(I1:I2),RCOUNT(IPROC),MPI_INTEGER, IPROC-1, 29, MPI_COMM_WAVE, istatus, ierr)
+          END IF
+        END DO
+        IF (NRECV_TOT .gt. 0) THEN
+          IF (MINVAL(GPOS) .lt. 1 .or. MAXVAL(GPOS) .gt. NSEA) THEN
+            WRITE (NDSE,1002) MINVAL(GPOS), MAXVAL(GPOS), NSEA
+            CALL EXTCDE (1002)
+          END IF
+        END IF
+        SETUP_SIZE = TheSize
+        GATHER_SETUP = .TRUE.
+      END IF
+      !
+      !  NAPFLD, every call: post all data receives, wait for all of them,
+      !  then place each rank's block at its global sea indices, in rank
+      !  order (as before).
+      !
+      IF (IAPROC .eq. NAPFLD) THEN
+        IF (TheSize .ne. SETUP_SIZE) THEN
+          WRITE (NDSE,1003) TheSize, SETUP_SIZE
+          CALL EXTCDE (1003)
+        END IF
+        allocate(RREQ(NAPROC), RSTAT(NAPROC))
+        NREQ = 0
+        DO IPROC=1,NAPROC
+          IF (IPROC .ne. IAPROC) THEN
+            NREQ = NREQ + 1
+            I1 = ROFFSET(IPROC)*TheSize + 1
+            I2 = (ROFFSET(IPROC) + RCOUNT(IPROC))*TheSize
+            CALL MPI_IRECV(RBUF(I1:I2),RCOUNT(IPROC)*TheSize,MPI_REAL, IPROC-1, 37, MPI_COMM_WAVE, RREQ(NREQ), ierr)
+          END IF
+        END DO
+        CALL MPI_WAITALL(NREQ, RREQ, RSTAT, ierr)
+        NREQ = 0
+        DO IPROC=1,NAPROC
+          IF (IPROC .ne. IAPROC) THEN
+            NREQ = NREQ + 1
+            CALL MPI_GET_COUNT(RSTAT(NREQ), MPI_REAL, NGOT, ierr)
+            IF (NGOT .ne. RCOUNT(IPROC)*TheSize) THEN
+              WRITE (NDSE,1004) IPROC, NGOT, RCOUNT(IPROC)*TheSize
+              CALL EXTCDE (1004)
+            END IF
+            DO I=1,RCOUNT(IPROC)
+              IOFF = (ROFFSET(IPROC) + I - 1)*TheSize
+              ARRtotal(:,GPOS(ROFFSET(IPROC)+I)) = RBUF(IOFF+1:IOFF+TheSize)
+            END DO
+          END IF
+        END DO
+        deallocate(RREQ, RSTAT)
       END IF
       IF ( IAPROC .EQ. NAPFLD ) THEN
         IF (.not. WADATS(IMOD)%AINIT2) CALL W3XDMA ( IMOD, NDSE, NDST, FLGRDALL )
@@ -1728,6 +1915,18 @@ CONTAINS
       END IF
     END IF
     indexOutput=indexOutput+1
+    !
+    ! Formats
+    !
+1001 FORMAT (/' *** WAVEWATCH III ERROR IN DO_OUTPUT_EXCHANGES : '/  &
+         '     OWNED SEA POINTS OVER ALL RANKS (',I10,') EXCEED NSEA (',I10,')'/)
+1002 FORMAT (/' *** WAVEWATCH III ERROR IN DO_OUTPUT_EXCHANGES : '/  &
+         '     RECEIVED SEA INDEX OUT OF RANGE: MIN ',I10,' MAX ',I10,' NSEA ',I10/)
+1003 FORMAT (/' *** WAVEWATCH III ERROR IN DO_OUTPUT_EXCHANGES : '/  &
+         '     VALUES PER SEA POINT CHANGED: ',I6,' (WAS ',I6,' AT FIRST OUTPUT)'/)
+1004 FORMAT (/' *** WAVEWATCH III ERROR IN DO_OUTPUT_EXCHANGES : '/  &
+         '     RANK ',I6,' SENT ',I10,' VALUES, EXPECTED ',I10/)
+    !/
   END SUBROUTINE DO_OUTPUT_EXCHANGES
   !/ ------------------------------------------------------------------- /
 END MODULE PDLIB_FIELD_VEC

@@ -13,15 +13,37 @@ module wav_restart_mod
   use w3wdatmd      , only : ice
   use wav_pio_mod   , only : pio_iotype, pio_ioformat, wav_pio_subsystem
   use wav_pio_mod   , only : handle_err, wav_pio_initdecomp
+  use wav_pio_mod   , only : pio_restart_multi
 #ifdef W3_PDLIB
     use yowNodepool , only : ng
 #endif
   use pio
   use netcdf
+  use iso_c_binding , only : c_int, c_long_long, c_ptr, c_signed_char, c_loc
 
   implicit none
 
   private
+
+  ! PIOc_write_darray_multi (PIO C library): write several variables that share one
+  ! decomposition in one call. PIO's own Fortran wrapper for it declares 7 of the 9
+  ! arguments (no frame, no flushtodisk), so it cannot be used. flushtodisk is a C
+  ! bool; it is passed as a one-byte integer (0 = false).
+  interface
+    integer(c_int) function PIOc_write_darray_multi(ncid, varids, ioid, nvars, arraylen, array, &
+         frame, fillvalue, flushtodisk) bind(C,name="PIOc_write_darray_multi")
+      import :: c_int, c_long_long, c_ptr, c_signed_char
+      integer(c_int),         value :: ncid
+      integer(c_int)                :: varids(*)
+      integer(c_int),         value :: ioid
+      integer(c_int),         value :: nvars
+      integer(c_long_long),   value :: arraylen
+      type(c_ptr),            value :: array
+      integer(c_int)                :: frame(*)
+      type(c_ptr),            value :: fillvalue
+      integer(c_signed_char), value :: flushtodisk
+    end function PIOc_write_darray_multi
+  end interface
 
   type(file_desc_t) :: pioid
   type(var_desc_t)  :: varid
@@ -65,8 +87,12 @@ contains
     integer              :: timid, xtid, ytid
     integer              :: nseal_cpl, nmode
     integer              :: dimid(3)
-    real   , allocatable :: lva(:,:)
+    real   , allocatable, target :: lva(:,:)
     integer, allocatable :: lmap(:)
+    type(var_desc_t), allocatable :: va_desc(:)         ! va variable descriptors, from pio_def_var
+    integer(c_int)  , allocatable :: cvarids(:)         ! C variable ids, for PIOc_write_darray_multi
+    integer(c_int)  , allocatable :: cframes(:)         ! C record numbers (0-based)
+    real            , allocatable, target :: vafill(:)  ! fill value of each va variable
     !-------------------------------------------------------------------------------
 
 #ifdef W3_PDLIB
@@ -76,6 +102,7 @@ contains
 #endif
     allocate(lva(1:nseal_cpl,1:nspec))
     allocate(lmap(1:nseal_cpl))
+    allocate(va_desc(1:nspec))
     lva(:,:) = 0.0
     lmap(:) = 0
 
@@ -120,6 +147,7 @@ contains
        call handle_err(ierr, 'define variable '//trim(vname))
        ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
        call handle_err(ierr, 'define _FillValue '//trim(vname))
+       va_desc(kk) = varid
      end do
 
     vname = 'mapsta'
@@ -196,15 +224,33 @@ contains
       end do
     end do
 
-    do kk = 1,nspec
-      write(cspec,'(i4.4)')kk
-      vname = 'va'//cspec
-      ierr = pio_inq_varid(pioid,  trim(vname), varid)
-      call handle_err(ierr, 'inquire variable '//trim(vname))
-      call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-      call pio_write_darray(pioid, varid, iodesc2d, lva(:,kk), ierr)
-      call handle_err(ierr, 'put variable '//trim(vname))
-    end do
+    if (pio_restart_multi) then
+      ! one call for all va variables. lva(:,kk) holds variable kk, so lva is the
+      ! nspec arrays one after the other, as PIOc_write_darray_multi expects. The
+      ! frame must still be set on each variable: PIO uses it besides the frame
+      ! argument (without it the data are written as zeros).
+      allocate(cvarids(1:nspec), cframes(1:nspec), vafill(1:nspec))
+      do kk = 1,nspec
+        call pio_setframe(pioid, va_desc(kk), int(1,kind=PIO_OFFSET_KIND))
+        cvarids(kk) = va_desc(kk)%varid - 1
+      end do
+      cframes(:) = 0
+      vafill(:) = nf90_fill_float
+      ierr = PIOc_write_darray_multi(pioid%fh, cvarids, iodesc2d%ioid, nspec, int(nseal_cpl,c_long_long), &
+           c_loc(lva), cframes, c_loc(vafill), 0_c_signed_char)
+      call handle_err(ierr, 'put variables va (PIOc_write_darray_multi)')
+      deallocate(cvarids, cframes, vafill)
+    else
+      do kk = 1,nspec
+        write(cspec,'(i4.4)')kk
+        vname = 'va'//cspec
+        ierr = pio_inq_varid(pioid,  trim(vname), varid)
+        call handle_err(ierr, 'inquire variable '//trim(vname))
+        call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+        call pio_write_darray(pioid, varid, iodesc2d, lva(:,kk), ierr)
+        call handle_err(ierr, 'put variable '//trim(vname))
+      end do
+    end if
 
     ! write requested additional global(nsea) fields
     if (addrstflds) then

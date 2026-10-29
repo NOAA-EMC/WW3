@@ -26,11 +26,14 @@ module wav_pio_mod
   integer                        :: pio_iotype
   integer                        :: pio_ioformat
   type(iosystem_desc_t), pointer :: wav_pio_subsystem
+  logical                        :: pio_restart_multi = .false. !< write all restart va variables with
+                                                                 !! one PIOc_write_darray_multi call
 
   public :: wav_pio_init
   public :: pio_iotype
   public :: pio_ioformat
   public :: wav_pio_subsystem
+  public :: pio_restart_multi
   public :: wav_pio_initdecomp
   public :: handle_err
 
@@ -273,6 +276,26 @@ contains
     allocate(wav_pio_subsystem)
     call pio_init(my_task, mpi_comm, pio_numiotasks, master_task, pio_stride, pio_rearranger, &
          wav_pio_subsystem, base=pio_root)
+
+    ! pio_restart_multi: write all restart va variables with one PIOc_write_darray_multi call
+    call NUOPC_CompAttributeGet(gcomp, name='pio_restart_multi', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+      cvalue = ESMF_UtilStringUpperCase(cvalue)
+      if (trim(cvalue) .eq. 'TRUE') then
+        pio_restart_multi = .true.
+      else if (trim(cvalue) .eq. 'FALSE') then
+        pio_restart_multi = .false.
+      else
+        call ESMF_LogWrite(trim(subname)//': need to provide valid option for pio_restart_multi (TRUE|FALSE)', &
+             ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+        return
+      end if
+    else
+      pio_restart_multi = .false.
+    end if
+    if (my_task == 0) write(stdout,*) trim(subname), ' : pio_restart_multi = ', pio_restart_multi
 
     ! PIO debug related options
     ! pio_debug_level
