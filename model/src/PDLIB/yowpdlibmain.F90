@@ -451,6 +451,9 @@ contains
     integer :: i, j, stat, ierr
     type(t_Node), pointer :: node, nodeNeighbor
 
+    ! Optional domain renumbering (see reorderDomains)
+    character(len=16) :: envValue
+    integer :: envStatus, ireorder
     INTEGER :: np_toSend
 
 #ifdef W3_SCOTCH
@@ -721,6 +724,19 @@ contains
     call mpi_allgatherv(part, np, itype, node2domain, np_perProc, np_perProcSum, itype, comm, ierr)
     if(ierr/=MPI_SUCCESS) call parallel_abort('mpi_allgatherv ',ierr)
     !
+    ! Optionally renumber the domains so that neighboring domains get
+    ! consecutive numbers (and therefore consecutive MPI ranks).
+    ! Enabled by setting the environment variable WW3_PDLIB_REORDER=1.
+    ! Task 0 reads the variable and broadcasts it so all tasks agree.
+    ireorder = 0
+    if(myrank == 0) then
+      call get_environment_variable('WW3_PDLIB_REORDER', envValue, status=envStatus)
+      if(envStatus == 0 .and. trim(envValue) == '1') ireorder = 1
+    endif
+    call mpi_bcast(ireorder, 1, itype, 0, comm, ierr)
+    if(ierr/=MPI_SUCCESS) call parallel_abort('mpi_bcast ',ierr)
+    if(ireorder == 1) call reorderDomains(node2domain)
+    !
     do i = 1, np_global
       node => nodes_global(i)
       node%domainID = node2domain(node%id_global)
@@ -753,6 +769,154 @@ contains
     if(allocated(node2domain)) deallocate(node2domain)
     !    Print *, 'runparmetis step 11'
   end subroutine runParmetis
+  !------------------------------------------------------------------------
+  ! Renumber the domains returned by the partitioner
+  !------------------------------------------------------------------------
+  !> Renumber the domains so that domains close together on the globe get
+  !> consecutive numbers. The partitioner returns domain numbers with no
+  !> spatial order, and the domain number becomes the MPI rank
+  !> (rank = domainID - 1). Consecutive ranks are placed on the same compute
+  !> node, so with spatially ordered numbers most halo exchanges between
+  !> neighboring domains stay within a compute node.
+  !>
+  !> Only the numbers change: every domain keeps exactly the same nodes.
+  !>
+  !> Method: compute the center of each domain, then order the centers
+  !> along a Hilbert curve (a path through 2D space that keeps nearby
+  !> points close together in the ordering).
+  !>
+  !> Every task holds the full node2domain array and the global node
+  !> coordinates, so every task computes the same result without
+  !> any communication.
+  !> @param[inout] node2domain domain number (1..nTasks) of each global node
+  subroutine reorderDomains(node2domain)
+    use yowerr,      only: parallel_abort
+    use yowDatapool, only: nTasks, myrank
+    use yowNodepool, only: np_global
+    use w3gdatmd,    only: xgrd, ygrd, flagll
+    integer, intent(inout) :: node2domain(:)
+    ! Number of grid cells per axis used to order the domain centers (2**16)
+    integer, parameter :: ncells = 65536
+    real(rkind), parameter :: deg2rad = acos(-1.0_rkind)/180.0_rkind
+    real(rkind), allocatable :: sumx(:), sumy(:), sumz(:)
+    real(rkind), allocatable :: centerx(:), centery(:)
+    integer, allocatable     :: nodeCount(:), order(:), newID(:)
+    integer(8), allocatable  :: key(:)
+    real(rkind) :: lon, lat, xmin, xmax, ymin, ymax, span
+    integer :: i, j, id, ix, iy, itmp
+    integer(8) :: ktmp
+    allocate(sumx(nTasks), sumy(nTasks), sumz(nTasks), nodeCount(nTasks))
+    allocate(centerx(nTasks), centery(nTasks))
+    allocate(key(nTasks), order(nTasks), newID(nTasks))
+    sumx = 0.0_rkind
+    sumy = 0.0_rkind
+    sumz = 0.0_rkind
+    nodeCount = 0
+    ! 1. Sum the node positions belonging to each domain
+    do i = 1, np_global
+      id = node2domain(i)
+      nodeCount(id) = nodeCount(id) + 1
+      if(flagll) then
+        ! Spherical grid: sum 3D unit vectors, so that domains crossing
+        ! the dateline or near a pole get a correct average position
+        lon = xgrd(1,i)*deg2rad
+        lat = ygrd(1,i)*deg2rad
+        sumx(id) = sumx(id) + cos(lat)*cos(lon)
+        sumy(id) = sumy(id) + cos(lat)*sin(lon)
+        sumz(id) = sumz(id) + sin(lat)
+      else
+        ! Cartesian grid: plain sum of x and y
+        sumx(id) = sumx(id) + xgrd(1,i)
+        sumy(id) = sumy(id) + ygrd(1,i)
+      endif
+    end do
+    ! 2. Center of each domain
+    do id = 1, nTasks
+      if(nodeCount(id) == 0) call parallel_abort('reorderDomains: empty domain')
+      if(flagll) then
+        ! Convert the summed vector back to longitude and latitude (degrees)
+        centerx(id) = atan2(sumy(id), sumx(id))/deg2rad
+        centery(id) = atan2(sumz(id), sqrt(sumx(id)**2 + sumy(id)**2))/deg2rad
+      else
+        centerx(id) = sumx(id)/nodeCount(id)
+        centery(id) = sumy(id)/nodeCount(id)
+      endif
+    end do
+    ! 3. Place each center on an ncells x ncells grid covering all centers,
+    !    and compute its position along the Hilbert curve.
+    !    x and y use the same scale (the larger of the two ranges), so the
+    !    grid cells are square and distances count equally in both directions.
+    xmin = minval(centerx)
+    xmax = maxval(centerx)
+    ymin = minval(centery)
+    ymax = maxval(centery)
+    span = max(xmax - xmin, ymax - ymin)
+    do id = 1, nTasks
+      ix = 0
+      iy = 0
+      if(span > 0.0_rkind) then
+        ix = int((centerx(id) - xmin)/span*real(ncells-1, rkind))
+        iy = int((centery(id) - ymin)/span*real(ncells-1, rkind))
+      endif
+      key(id) = hilbertIndex(ncells, ix, iy)
+    end do
+    ! 4. Sort the domains by their Hilbert position (insertion sort).
+    !    Domains with equal positions keep their original relative order,
+    !    so the result is the same on every task.
+    do id = 1, nTasks
+      order(id) = id
+    end do
+    do i = 2, nTasks
+      itmp = order(i)
+      ktmp = key(itmp)
+      j = i - 1
+      do while(j >= 1)
+        if(key(order(j)) <= ktmp) exit
+        order(j+1) = order(j)
+        j = j - 1
+      end do
+      order(j+1) = itmp
+    end do
+    ! 5. The domain at sorted position j gets the new number j
+    do j = 1, nTasks
+      newID(order(j)) = j
+    end do
+    do i = 1, np_global
+      node2domain(i) = newID(node2domain(i))
+    end do
+    if(myrank == 0) write(*,*) 'reorderDomains: domains renumbered along a Hilbert curve'
+    deallocate(sumx, sumy, sumz, nodeCount, centerx, centery, key, order, newID)
+  end subroutine reorderDomains
+  !> Position of cell (x, y) along a Hilbert curve covering an n x n grid.
+  !> n must be a power of 2; x and y run from 0 to n-1.
+  !> Standard conversion from 2D cell coordinates to the 1D curve position.
+  function hilbertIndex(n, x, y) result(d)
+    integer, intent(in) :: n, x, y
+    integer(8) :: d
+    integer :: s, rx, ry, xx, yy, itmp
+    xx = x
+    yy = y
+    d = 0
+    s = n/2
+    do while(s > 0)
+      rx = 0
+      ry = 0
+      if(iand(xx, s) > 0) rx = 1
+      if(iand(yy, s) > 0) ry = 1
+      d = d + int(s,8)*int(s,8)*int(ieor(3*rx, ry),8)
+      ! Rotate the quadrant so the curve stays continuous
+      if(ry == 0) then
+        if(rx == 1) then
+          xx = n - 1 - xx
+          yy = n - 1 - yy
+        endif
+        itmp = xx
+        xx = yy
+        yy = itmp
+      endif
+      s = s/2
+    end do
+  end function hilbertIndex
 
   !------------------------------------------------------------------------
   ! with the new data from parmetis, recalculate some variables
