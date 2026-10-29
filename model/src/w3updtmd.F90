@@ -252,11 +252,18 @@ CONTAINS
     USE W3WDATMD, ONLY: TIME
     USE W3ADATMD, ONLY: CX, CY, CA0, CAI, CD0, CDI
     USE W3IDATMD, ONLY: TC0, CX0, CY0, TCN, CXN, CYN
+#ifdef W3_CURSP
+    USE W3ADATMD, ONLY: CXTH, CYTH
+    USE W3IDATMD, ONLY: CXTH0, CYTH0, CXTHN, CYTHN
+#endif
 #ifdef W3_TIDE
     USE W3GDATMD, ONLY: YGRD
     USE W3TIMEMD
     USE W3IDATMD, ONLY: FLCURTIDE, CXTIDE, CYTIDE, NTIDE
     USE W3TIDEMD
+#endif
+#ifdef W3_CURSP
+    USE W3GDATMD, ONLY: NK
 #endif
     !
     IMPLICIT NONE
@@ -269,6 +276,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     INTEGER                 :: ISEA, IX, IY
+#ifdef W3_CURSP
+    INTEGER                 :: IZ
+#endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -292,6 +302,9 @@ CONTAINS
     !
     ! 1.  Prepare auxiliary arrays
     !
+#ifdef W3_CURSP
+    DO IZ=1, NK
+#endif
     IF ( FLFRST ) THEN
       DO ISEA=1, NSEA
 #ifdef W3_SMC
@@ -308,15 +321,28 @@ CONTAINS
         ENDIF
 #endif
 
+#ifdef W3_CURSP
+        CA0(ISEA) = SQRT ( CXTH0(IX,IY,IZ)**2 + CYTH0(IX,IY,IZ)**2 )
+        CAI(ISEA) = SQRT ( CXTHN(IX,IY,IZ)**2 + CYTHN(IX,IY,IZ)**2 )
+#else
         CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
         CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
+#endif
         IF ( CA0(ISEA) .GT. 1.E-7) THEN
+#ifdef W3_CURSP
+          D0     = MOD ( TPI+ATAN2(CYTH0(IX,IY,IZ),CXTH0(IX,IY,IZ)) , TPI )
+#else
           D0     = MOD ( TPI+ATAN2(CY0(IX,IY),CX0(IX,IY)) , TPI )
+#endif
         ELSE
           D0     = 0
         END IF
         IF ( CAI(ISEA) .GT. 1.E-7) THEN
+#ifdef W3_CURSP
+          DN     = MOD ( TPI+ATAN2(CYTHN(IX,IY,IZ),CXTHN(IX,IY,IZ)) , TPI )
+#else
           DN     = MOD ( TPI+ATAN2(CYN(IX,IY),CXN(IX,IY)) , TPI )
+#endif
         ELSE
           DN     = D0
         END IF
@@ -449,8 +475,13 @@ CONTAINS
         ENDIF
 #endif
 
+#ifdef W3_CURSP
+        CXTH(ISEA,IZ) = CABS * COS(CDIR)
+        CYTH(ISEA,IZ) = CABS * SIN(CDIR)
+#else
         CX(ISEA) = CABS * COS(CDIR)
         CY(ISEA) = CABS * SIN(CDIR)
+#endif
 #ifdef W3_TIDE
         !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
         !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY
@@ -458,6 +489,9 @@ CONTAINS
 #endif
       !
     END DO
+#ifdef W3_CURSP
+    END DO
+#endif
     !
     RETURN
     !

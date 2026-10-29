@@ -3221,6 +3221,8 @@ CONTAINS
                       IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                            MYYR(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
                       call CHECK_ERR(IRET)
+                      IRET=nf90_sync(NCID)
+                      CALL CHECK_ERR(IRET)
 #ifdef W3_SMC
                     ENDIF
 #endif

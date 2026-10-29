@@ -4597,7 +4597,11 @@ CONTAINS
     !
     IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
       IF (OARST) THEN
+#ifdef W3_CURSP
+        ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS((44 + 2*(NK-1))*NAPROC) )
+#else
         ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(44*NAPROC) )
+#endif
       ELSE
         ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
       ENDIF

@@ -35,6 +35,7 @@ MODULE W3ARRYMD
   !     ----------------------------------------------------------------
   !      INA2R     Subr. Public   Read 2D real array.
   !      INA2I     Subr. Public   Read 2D integer array.
+  !      INA3R     Subr. Public   Read 3D real array.
   !      OUTA2R    Subr. Public   Write 2D real array.
   !      OUTA2I    Subr. Public   Write 2D integer array.
   !      OUTREA    Subr. Public   Print out 1D real array.
@@ -280,6 +281,227 @@ CONTAINS
     !/ End of INA2R  ----------------------------------------------------- /
     !/
   END SUBROUTINE INA2R
+
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE INA3R  (ARRAY, MX, MY, MZ, LX, HX, LY, HY, LZ, HZ,          &
+                     NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         30-Oct-2009 |
+    !/                  +-----------------------------------+
+    !/                                  Based on INAR2D by N.Booij, DUT.
+    !/
+    !/    26-Oct-2026 : JCW Created routine, based on INA2R     ( version X.XX )
+    !/
+    !  1. Purpose :
+    !
+    !     Reads 3-D array of pre-described layout and format.
+    !
+    !  3. Parameter list
+    !     ----------------------------------------------------------------
+    !       ARRAY     R.A.   O   Array to be read.
+    !       MX,MY,MZ  Int.   I   Declared size of array.
+    !       LX,HX     Int.   I   Range of x-counters to be read.
+    !       LY,HY     Int.   I   Range of y-counters to be read.
+    !       LZ,HZ     Int.   I   Range of z-counters to be read.
+	!                             where 'Z' can be Nfreqs or Ndirs, etc.
+    !       NDS       Int.   I   Unit number for dataset with array.
+    !       NDST      Int.   I   Unit number for test output.
+    !       NDSE      Int.   I   Unit number for error messages.
+    !       IDFM      Int.   I   Format indicator.
+    !                             IDFM = 1 : Free format.
+    !                             IDFM = 2 : Fixed format RFORM.
+    !                             IDFM = 3 : Unformatted.
+    !       RFORM     C*(*)  I   Format, if IDFM = 2
+    !       IDLA      Int.   I   Lay out indicator.
+    !                             IDLA = 1 : Read for IY=LY-HY, IX=LX-HX,
+    !                                        IX line by IX line.
+    !                             IDLA = 2 : Idem, one read statement.
+    !                             IDLA = 3 : Read for IY=HY-LY, IX=LX,HX,
+    !                                        IX line by IX line.
+    !                             IDLA = 4 : Idem, one read statement.
+    !       VSC       Real   I   Scaling factor (multiplication).
+    !       VOF       Real   I   Add offset.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     See mudule documentation.
+    !
+    !  5. Called by :
+    !
+    !     Any.
+    !
+    !  6. Error messages :
+    !
+    !     See error escape locations at end of routine.
+    !
+    !  8. Structure :
+    !
+    !     See comments in code.
+    !
+    !  9. Switches :
+    !
+    !     !/S   Enable subroutine tracing.
+    !     !/T   Dump of input parameters in parameter list.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+    USE W3SERVMD, ONLY: EXTIOF
+    !
+    IMPLICIT NONE
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    INTEGER, INTENT(IN)     :: MX, MY, MZ, LX, HX, LY, HY, LZ, HZ,       &
+                               NDS, NDST, NDSE, IDFM, IDLA
+    REAL, INTENT(IN)        :: VSC, VOF
+    CHARACTER, INTENT(IN)   :: RFORM*(*)
+    REAL, INTENT(OUT)       :: ARRAY(MX,MY,MZ)
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    INTEGER                 :: IIDFM, IIDLA, IX, IY, IZ, ISTAT
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+#endif
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/
+#ifdef W3_S
+    CALL STRACE (IENT, 'INA3R')
+#endif
+    !
+#ifdef W3_T
+    WRITE (NDST,9000) MX, MY, MZ, LX, HX, LY, HY, LZ, HZ, NDS, NDST, NDSE, &
+                      IDFM, RFORM, IDLA, VSC, VOF
+#endif
+    !
+    IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
+      IIDFM = 1
+    ELSE
+      IIDFM = IDFM
+    END IF
+    IF (IDLA.LT.1 .OR. IDLA.GT.4) THEN
+      IIDLA = 1
+    ELSE
+      IIDLA = IDLA
+    END IF
+    !
+    ! Free format read :
+    !
+    IF (IIDFM.EQ.1) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IZ=LZ, HZ
+          DO IY=LY, HY
+            READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+          END DO
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,*,IOSTAT=ISTAT)     &
+             ( ((ARRAY(IX,IY,IZ),IX=LX,HX), IY=LY,HY ), IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IZ=LZ, HZ
+          DO IY=HY, LY, -1
+            READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
+          END DO
+        END DO
+      ELSE
+        READ (NDS,*,IOSTAT=ISTAT)     &
+             ( ((ARRAY(IX,IY,IZ),IX=LX,HX), IY=HY,LY,-1), IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
+      END IF
+      !
+      ! Fixed format read :
+      !
+    ELSE IF (IIDFM.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IZ=LZ, HZ
+          DO IY=LY, HY
+            READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+          END DO
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
+             ( ((ARRAY(IX,IY,IZ),IX=LX,HX),IY=LY,HY),IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IZ=LZ, HZ
+          DO IY=HY, LY, -1
+            READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+          END DO
+        END DO
+      ELSE
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
+             ( ((ARRAY(IX,IY,IZ),IX=LX,HX),IY=HY,LY,-1), IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+      END IF
+      !
+      ! Unformat read :
+      !
+    ELSE
+      IF (IIDLA.EQ.1) THEN
+        DO IZ=LZ, HZ
+          DO IY=LY, HY
+            READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+          END DO
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,IOSTAT=ISTAT)       &
+             (((ARRAY(IX,IY,IZ),IX=LX,HX),IY=LY,HY),IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IZ=LZ, HZ
+          DO IY=HY, LY, -1
+            READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY,IZ),IX=LX,HX)
+            IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+          END DO
+        END DO
+      ELSE
+        READ (NDS,IOSTAT=ISTAT)       &
+             (((ARRAY(IX,IY,IZ),IX=LX,HX),IY=HY,LY,-1),IZ=LZ,HZ)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA3R','',ISTAT)
+      END IF
+    END IF
+    !
+    ! Scaling :
+    !
+    DO IZ=LZ, HZ
+      DO IX=LX, HX
+        DO IY=LY, HY
+          ARRAY(IX,IY,IZ) = VSC * ARRAY(IX,IY,IZ) + VOF
+        END DO
+      END DO
+    END DO
+    !
+    RETURN
+    !
+    ! Formats
+    !
+#ifdef W3_T
+9000 FORMAT (' TEST INA3R  : INPUT :'/6X,8I4,2I3,1X,A,I3,2E12.4)
+#endif
+    !/
+    !/ End of INA3R  ----------------------------------------------------- /
+    !/
+  END SUBROUTINE INA3R
+
   !/ ------------------------------------------------------------------- /
   SUBROUTINE INA2I  (ARRAY, MX, MY, LX, HX, LY, HY,              &
        NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
