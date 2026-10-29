@@ -489,7 +489,8 @@ CONTAINS
 #endif
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6 + INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +    &
+         INT(3.0/LRB)) )
     IF (IAPROC .gt. NAPROC) THEN
       RETURN
     END IF
@@ -652,14 +653,13 @@ CONTAINS
 #endif
     !
     use yowDatapool, only: istatus
-    USE yowNodepool, only: ListNPA, ListIPLG
+    USE yowNodepool, only: np, ListNP, ListNPA, ListIPLG
     USE W3PARALL, ONLY: INIT_GET_ISEA
     USE W3GDATMD, only : NSEA, NSPEC
     USE W3ODATMD, only : NAPROC, NAPRST, IAPROC
     USE W3ADATMD, only : MPI_COMM_WAVE
     USE W3PARALL, only : GET_JSEA_IBELONG
     USE W3WDATMD, ONLY : VA
-    USE W3GDATMD, ONLY: NSEAL
     use mpi_f08
     IMPLICIT NONE
     !/
@@ -701,15 +701,18 @@ CONTAINS
     END DO
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6 + INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +    &
+         INT(3.0/LRB)) )
     nbBlock=NSEA / BlockSize + 1
     DO iBlock=1,nbBlock
       iFirst= 1 + (iBlock - 1)*BlockSize
       iEnd= MIN(iBlock * BlockSize, NSEA)
       len=iEnd + 1 - iFirst
+      ! Owned points only (local 1:np): each sea point is written once, by its owner.
+      ! Ghost copies (np+1:npa) may be out of date and would overwrite the owner's value.
       IF (IAPROC .eq. NAPRST) THEN
         IF (IAPROC .le. NAPROC) THEN
-          DO JSEA=1,NSEAL
+          DO JSEA=1,np
             CALL INIT_GET_ISEA(ISEA, JSEA)
             IF ((iFirst .le. ISEA).and.(ISEA .le. iEnd)) THEN
               idx = ISEA - iFirst + 1
@@ -719,7 +722,7 @@ CONTAINS
         END IF
         DO iProc=1,NAPROC
           IF (iProc .ne. IAPROC) THEN
-            NPAloc=ListNPA(iProc)
+            NPAloc=ListNP(iProc)
             NbMatch=0
             DO IPloc=1,NPAloc
               IPglob = ListIPLG(ListFirst(iProc) + IPloc)
@@ -755,7 +758,7 @@ CONTAINS
       ELSE
         IF (IAPROC .le. NAPROC) THEN
           NbMatch=0
-          DO IPloc=1,ListNPA(IAPROC)
+          DO IPloc=1,np
             IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
             IF ((iFirst .le. IPglob).and.(IPglob .le. iEnd)) THEN
               NbMatch=NbMatch+1
@@ -764,7 +767,7 @@ CONTAINS
           IF (NbMatch .gt. 0) THEN
             allocate(DATAsend(NSPEC,NbMatch), stat=istat)
             idx=0
-            DO IPloc=1,ListNPA(IAPROC)
+            DO IPloc=1,np
               IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
               IF ((iFirst .le. IPglob).and.(IPglob .le. iEnd)) THEN
                 idx=idx + 1
@@ -778,6 +781,104 @@ CONTAINS
       END IF
     END DO
   END SUBROUTINE UNST_PDLIB_WRITE_TO_FILE
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE UNST_PDLIB_GATHER_RESTART_FIELDS
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Oct-2026 |
+    !/                  +-----------------------------------+
+    !/
+    !/    22-Oct-2026 : Origination.
+    !/
+    !  1. Purpose : Gather the sea-point fields written to a binary restart
+    !               after the spectra (UST, USTDIR, ASF, FPIS) on the restart
+    !               task NAPRST, under PDLIB.
+    !
+    !  2. Method :
+    !     Each task sends the values at its owned points (local 1:np) to
+    !     NAPRST, which stores them by global index. Without this, NAPRST
+    !     wrote its own copies of these global-size arrays, which hold
+    !     computed values only at the points NAPRST itself holds, so the
+    !     restart file depended on the decomposition. This is the PDLIB
+    !     counterpart of the IRQRS gather set up in W3MPIO (W3INITMD) for
+    !     the other grids.
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3IORS    Subr. W3IORSMD Restart file I/O, before the fields
+    !                               are written.
+    !     ----------------------------------------------------------------
+    !
+    !  7. Remarks :
+    !     All mesh nodes are sea points (ISEA = global node index), as in
+    !     UNST_PDLIB_WRITE_TO_FILE.
+    !
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+    !
+    use yowDatapool, only: istatus
+    USE yowNodepool, only: np, ListNP, ListNPA, ListIPLG
+    USE W3ODATMD, only : NAPROC, NAPRST, IAPROC
+    USE W3ADATMD, only : MPI_COMM_WAVE
+    USE W3WDATMD, ONLY : UST, USTDIR, ASF, FPIS
+    use mpi_f08
+    IMPLICIT NONE
+    !/
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+#endif
+    !/
+    INTEGER, PARAMETER :: NFIELD = 4
+    REAL, allocatable :: FieldBuf(:,:)
+    integer ListFirst(NAPROC)
+    integer iProc, IPloc, ISEA, ierr, istat
+#ifdef W3_S
+    CALL STRACE (IENT, 'UNST_PDLIB_GATHER_RESTART_FIELDS')
+#endif
+    ListFirst(1) = 0
+    DO IPROC=2,NAPROC
+      ListFirst(iProc)=ListFirst(iProc-1) + ListNPA(iProc-1)
+    END DO
+    IF (IAPROC .eq. NAPRST) THEN
+      DO iProc=1,NAPROC
+        IF (iProc .ne. IAPROC) THEN
+          allocate(FieldBuf(NFIELD, ListNP(iProc)), stat=istat)
+          CALL MPI_RECV(FieldBuf,NFIELD*ListNP(iProc),MPI_REAL, iProc-1, 103, MPI_COMM_WAVE, istatus, ierr)
+          DO IPloc=1,ListNP(iProc)
+            ISEA = ListIPLG(ListFirst(iProc) + IPloc)
+            UST(ISEA)    = FieldBuf(1,IPloc)
+            USTDIR(ISEA) = FieldBuf(2,IPloc)
+            ASF(ISEA)    = FieldBuf(3,IPloc)
+            FPIS(ISEA)   = FieldBuf(4,IPloc)
+          END DO
+          deallocate(FieldBuf, stat=istat)
+        END IF
+      END DO
+    ELSE IF (IAPROC .le. NAPROC) THEN
+      allocate(FieldBuf(NFIELD, np), stat=istat)
+      DO IPloc=1,np
+        ISEA = ListIPLG(ListFirst(IAPROC) + IPloc)
+        FieldBuf(1,IPloc) = UST(ISEA)
+        FieldBuf(2,IPloc) = USTDIR(ISEA)
+        FieldBuf(3,IPloc) = ASF(ISEA)
+        FieldBuf(4,IPloc) = FPIS(ISEA)
+      END DO
+      CALL MPI_SEND(FieldBuf,NFIELD*np,MPI_REAL, NAPRST-1, 103, MPI_COMM_WAVE, ierr)
+      deallocate(FieldBuf, stat=istat)
+    END IF
+  END SUBROUTINE UNST_PDLIB_GATHER_RESTART_FIELDS
   !/ ------------------------------------------------------------------- /
   SUBROUTINE DO_OUTPUT_EXCHANGES(IMOD)
     !/

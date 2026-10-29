@@ -537,9 +537,12 @@ CONTAINS
          IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,           &
          IOBPA, FSBCCFL
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS
+    USE W3GDATMD, ONLY: REFPARS
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -783,12 +786,15 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                        &
+    USE W3GDATMD, ONLY: NTH, NTRI, NX, SI,                         &
          IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY :  REFPARS
+    USE W3GDATMD, ONLY:  REFPARS
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -1338,12 +1344,15 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !/
-    USE W3GDATMD, ONLY : NTH, NTRI, NX, SI,                      &
+    USE W3GDATMD, ONLY: NTH, NTRI, NX, SI,                       &
          IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBDP
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY : REFPARS, IOBPA
+    USE W3GDATMD, ONLY: REFPARS, IOBPA
 #endif
-    USE W3ADATMD, ONLY: CG, ITER
+    USE W3ADATMD, ONLY: ITER
+#ifndef W3_PDLIB
+    USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: FLBPI, NBI, ISBPI, BBPI0, BBPIN
     USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S

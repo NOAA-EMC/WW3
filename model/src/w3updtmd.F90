@@ -1436,7 +1436,10 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2
+    USE W3GDATMD, ONLY: NSPEC, SIG2
+#if !defined(W3_PDLIB) || defined(W3_T0)
+    USE W3GDATMD, ONLY: MAPWN
+#endif
 #ifdef W3_RTD
     !!   Use rotation angle and action conversion sub.  JGLi12Jun2012
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD, PoLat
@@ -1445,7 +1448,9 @@ CONTAINS
 #ifdef W3_T0
     USE W3GDATMD, ONLY: DDEN
 #endif
+#ifndef W3_PDLIB
     USE W3ADATMD, ONLY: CG
+#endif
     USE W3ODATMD, ONLY: NBI, ABPI0, ABPIN, ISBPI, IPBPI, RDBPI,     &
          BBPI0, BBPIN
     !/

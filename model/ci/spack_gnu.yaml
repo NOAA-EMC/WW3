@@ -3,6 +3,8 @@ spack:
     all:
       compiler:
       - gcc@10.0:10
+      target:
+      - x86_64_v3
   specs:
   - metis@5.1.0~shared
   - parmetis@4.0.3~shared

@@ -64,6 +64,7 @@ MODULE W3SERVMD
   !     W3ACTURN       turns wave action(k,nth) anti-clockwise by AnglD.
   !     W3LLTOEQ       convert standard into rotated lat/lon, plus AnglD
   !     W3EQTOLL       revers of the LLTOEQ, but AnglD unchanged.
+  !     W3EQTOLL_DBL   double precision version of EQTOLL
   !     W3THTRN        turns direction value anti-clockwise by AnglD
   !     W3XYTRN        turns 2D vectors anti-clockwise by AnglD
   !
@@ -1657,6 +1658,116 @@ CONTAINS
 
     RETURN
   END SUBROUTINE W3EQTOLL
+
+
+  ! Same as W3EQTOLL but working in double precision (D. Brown).
+  SUBROUTINE W3EQTOLL_DBL( PHI_EQ, LAMBDA_EQ, PHI, LAMBDA,   &
+       &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
+
+    INTEGER:: POINTS      !IN  Number of points to be processed
+
+    DOUBLE PRECISION :: PHI_POLE,   & !IN  Latitude of equatorial lat-lon pole
+         &        LAMBDA_POLE   !IN  Longitude of equatorial lat-lon pole
+
+    DOUBLE PRECISION, DIMENSION(POINTS) ::         &
+         &        PHI,       & !OUT Latitude
+         &        LAMBDA,    & !OUT Longitude (0 =< LON < 360)
+         &        ANGLED,    & !OUT turning angle in deg for standard wind
+         &        LAMBDA_EQ, & !IN  Longitude in equatorial lat-lon coords
+         &        PHI_EQ       !IN  Latitude in equatorial lat-lon coords
+
+    ! Local varables:------------------------------------------------------
+    REAL(KIND=8) :: E_LAMBDA, E_PHI, A_LAMBDA, A_PHI,                 &
+         SIN_PHI_POLE, COS_PHI_POLE,                       &
+         TERM1, TERM2, ARG, LAMBDA_ZERO
+    INTEGER :: I
+
+    REAL(KIND=8), PARAMETER :: SMALL=1.0E-6
+
+    ! Double precision versions of values in constants.ftn:
+    REAL(KIND=8), PARAMETER         :: PI = 3.141592653589793
+    REAL(KIND=8), PARAMETER         :: RECIP_PI_OVER_180 = 180. / PI
+    REAL(KIND=8), PARAMETER         :: PI_OVER_180   = PI / 180.
+
+    ! ----------------------------------------------------------------------
+
+    ! 1. Initialise local constants
+
+    ! Latitude of zeroth meridian
+    LAMBDA_ZERO=LAMBDA_POLE+180.D0
+    ! Sine and cosine of latitude of eq pole
+    IF (PHI_POLE >= 0.0) THEN
+      SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
+    ELSE
+      SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
+    ENDIF
+
+    ! 2. Transform from equatorial to standard latitude-longitude
+
+    DO I= 1, POINTS
+
+      ! Scale eq longitude to range -180 to +180 degs
+
+      E_LAMBDA=LAMBDA_EQ(I)
+      IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.D0
+      IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.D0
+
+      ! Convert eq latitude & longitude to radians
+
+      E_LAMBDA=PI_OVER_180*E_LAMBDA
+      E_PHI=PI_OVER_180*PHI_EQ(I)
+
+      ! Compute latitude using equation (4.7)
+
+      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA) + SIN_PHI_POLE*SIN(E_PHI)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      A_PHI=ASIN(ARG)
+      PHI(I)=RECIP_PI_OVER_180*A_PHI
+
+      ! Compute longitude using equation (4.8)
+
+      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA) - SIN(E_PHI)*COS_PHI_POLE
+      TERM2 = COS(A_PHI)
+      IF(TERM2.LT.SMALL) THEN
+        A_LAMBDA=0.D0
+      ELSE
+        ARG=TERM1/TERM2
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
+        A_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
+        A_LAMBDA=SIGN(A_LAMBDA,E_LAMBDA)
+        A_LAMBDA=A_LAMBDA+LAMBDA_ZERO
+      END IF
+
+      ! Scale longitude to range 0 to 360 degs
+
+      IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.D0
+      IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.D0
+      LAMBDA(I)=A_LAMBDA
+
+      !Li  Calculate turning angle for standard wind velocity
+
+      A_LAMBDA=PI_OVER_180*(LAMBDA(I)-LAMBDA_ZERO)
+
+      ! Formulae used are from eqs (4.19) and (4.21)
+
+      TERM2=SIN(E_LAMBDA)
+      ARG=SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE     &
+           &           +COS(A_LAMBDA)*COS(E_LAMBDA)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      TERM1=RECIP_PI_OVER_180*ACOS(ARG)
+      ANGLED(I)=SIGN(TERM1,TERM2)
+      !Li
+
+    ENDDO
+
+    RETURN
+  END SUBROUTINE W3EQTOLL_DBL
+
 
   !Li
   !/ ------------------------------------------------------------------- /

@@ -1902,8 +1902,8 @@
   if [ "$multi09" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
-    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI -w work_MPI -N -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -N -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
   fi
 
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
@@ -2202,12 +2202,14 @@
   fi
   if [ "$ufs" = 'y' ] && [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]; then
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a -g a -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
+  # Namelist test for unstructured grid a
+     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a_nml -g a -N -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >> matrix.body 
  # Domain Decomposition Block Explicit
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_b -g b -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
  # Domain Decomposition Implicit
      echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_c -g c -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
  # Domain Decomposition Implicit with precision truncation to force bit for bit reproducability
-     echo "$rtst -s MPI -s PDLIB_TRNK -i input_unstr -w work_unstr_d -g d -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >>matrix.body  
+     echo "$rtst -s MPI -s PDLIB_TRNK -i input_unstr -w work_unstr_d -g d -f -p $mpi -n $np $ww3 ww3_ufs1.1"  >>matrix.body 
   fi
 
  #Test of UFS applications with ww3_multi_esmf and grib2 output

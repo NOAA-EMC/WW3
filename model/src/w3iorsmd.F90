@@ -332,7 +332,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
          VAAUX
     USE W3ADATMD, ONLY: MPI_COMM_WCMP
-    USE mpi_f08 
+    USE mpi_f08
 #endif
     !/
 #if defined(W3_T) || defined(W3_MPI)
@@ -470,7 +470,8 @@ CONTAINS
     IF ( IAPROC .LE. NAPROC ) VA(:,0) = 0.
     !
     LRECL  = MAX ( LRB*NSPEC ,                                      &
-         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+         LRB*(6+ INT(25.0/LRB) + INT(9.0/LRB) + INT(29.0/LRB) +     &
+         INT(3.0/LRB)) )
     NSIZE  = LRECL / LRB
     !     --- Allocate buffer array with zeros (used to
     !         fill bytes up to size LRECL). ---
@@ -904,6 +905,12 @@ CONTAINS
     IF ( WRITE ) THEN
       !
       IF (TYPE.EQ.'FULL') THEN
+        !
+#ifdef W3_PDLIB
+        ! UST, USTDIR, ASF and FPIS from the owner of each point
+        ! (the IRQRS gather is skipped under PDLIB)
+        IF (LPDLIB) CALL UNST_PDLIB_GATHER_RESTART_FIELDS
+#endif
         !
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
