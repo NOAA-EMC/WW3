@@ -257,6 +257,9 @@ PROGRAM W3SHEL
 #endif
   USE W3GDATMD
   USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3SETW
+#ifdef W3_CURSP
+  USE W3ADATMD, ONLY : CXTH, CYTH
+#endif
 #ifdef W3_OASIS
   USE W3WDATMD, ONLY: TIME00, TIMEEND
 #endif
@@ -344,6 +347,9 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_COU
   INTEGER             :: OFL
+#endif
+#ifdef W3_CURSP
+  INTEGER             :: IK, ISEA, IX, IY
 #endif
   INTEGER             :: CLKDT1(8), CLKDT2(8)
   INTEGER             :: IERR_MPI
@@ -2321,14 +2327,17 @@ PROGRAM W3SHEL
 #ifdef W3_OASOCM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
-                CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
-                     NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                     TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
-                     IERR, FLAGSC(J)                            &
-#ifdef W3_OASOCM
-                     , MPICOMM                                  &
+                  CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                       NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                       TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
+                       IERR, FLAGSC(J)                            &
+#ifdef W3_CURSP
+                       , CXTH0, CYTH0, CXTHN, CYTHN               &
 #endif
-                     )
+#ifdef W3_OASOCM
+                       , MPICOMM                                  &
+#endif
+                       )
 #ifdef W3_TIDE
               END IF
 #endif
