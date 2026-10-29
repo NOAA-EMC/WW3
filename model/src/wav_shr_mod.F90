@@ -74,6 +74,10 @@ module wav_shr_mod
   ! Only used by ufs
   logical            , public :: merge_import  = .false.  !< @public logical to specify whether import fields will
                                                           !! be merged with a field provided from a file
+  logical            , public :: import_local  = .false.  !< @public logical to specify whether the wind, air-sea
+                                                          !! temperature and current imports are filled on owned and
+                                                          !! ghost points only (plus the output tasks), instead of
+                                                          !! on all points of every task by a global allreduce
   interface ymd2date
     module procedure ymd2date_int
     module procedure ymd2date_long
