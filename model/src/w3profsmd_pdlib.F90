@@ -6506,6 +6506,13 @@ CONTAINS
     LOGICAL, ALLOCATABLE, SAVE :: STORED_IK(:)   ! module arrays hold valid coefficients for IK
     LOGICAL           :: KEEP_ALL_IK
     !
+    ! CFL limit for all frequencies, reduced over ranks with one MPI_ALLREDUCE
+    ! per call instead of one per frequency. CGSIG_ALL keeps the group velocity
+    ! per frequency from the first pass, so WAVNU3 is called once per IK.
+    REAL, ALLOCATABLE, SAVE :: CGSIG_ALL(:,:)
+    REAL              :: DTMAXOUT_ALL(NK), DTMAXGL_ALL(NK)
+    REAL*8            :: KPOS(3)
+    !
     ! 1.b Initialize arrays
     !
     ! 2.  Calculate velocities ---------------- *
@@ -6516,34 +6523,75 @@ CONTAINS
       ALLOCATE(KELEM1_IK(NTH,NE), KELEM2_IK(NTH,NE), KELEM3_IK(NTH,NE))
       ALLOCATE(FLALL1_IK(NTH,NE), FLALL2_IK(NTH,NE), FLALL3_IK(NTH,NE))
       ALLOCATE(NM_IK(NTH,NE), STORED_IK(NK))
+      ALLOCATE(CGSIG_ALL(NPA,NK))
       STORED_IK = .FALSE.
     END IF
     KEEP_ALL_IK = .NOT. FLCUR
 
+    !
+    ! 2b. First pass (LCALC only): local CFL limit DTMAXOUT for every IK.
+    !     Uses the same expressions, types and summation order as the
+    !     coefficient loop below, so the limits are identical to before.
+    !
+    IF (LCALC) THEN
+      DO IK = 1, NK
+
+        DO IP = 1, NPA
+          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG_ALL(IP,IK))
+        ENDDO
+        CGSIG(:) = CGSIG_ALL(:,IK)
+        CALL SET_CXX_CYY()
+
+        KKSUM = ZERO
+        DO IE = 1, NE
+          NI  = INE(:,IE)
+          I1  = NI(1)
+          I2  = NI(2)
+          I3  = NI(3)
+          DO ITH = 1, NTH
+            LAMBDAX(ITH) = ONESIXTH *(CXX(ITH,I1)+CXX(ITH,I2)+CXX(ITH,I3))
+            LAMBDAY(ITH) = ONESIXTH *(CYY(ITH,I1)+CYY(ITH,I2)+CYY(ITH,I3))
+            KPOS(1) = LAMBDAX(ITH) * PDLIB_IEN(1,IE) + LAMBDAY(ITH) * PDLIB_IEN(2,IE)
+            KPOS(2) = LAMBDAX(ITH) * PDLIB_IEN(3,IE) + LAMBDAY(ITH) * PDLIB_IEN(4,IE)
+            KPOS(3) = LAMBDAX(ITH) * PDLIB_IEN(5,IE) + LAMBDAY(ITH) * PDLIB_IEN(6,IE)
+            KTMP(1) = KPOS(1)
+            KTMP(2) = KPOS(2)
+            KTMP(3) = KPOS(3)
+            KPOS(1) = MAX(ZERO,KTMP(1))
+            KPOS(2) = MAX(ZERO,KTMP(2))
+            KPOS(3) = MAX(ZERO,KTMP(3))
+            KKSUM(ITH,I1) = KKSUM(ITH,I1) + KPOS(1)
+            KKSUM(ITH,I2) = KKSUM(ITH,I2) + KPOS(2)
+            KKSUM(ITH,I3) = KKSUM(ITH,I3) + KPOS(3)
+          ENDDO
+        ENDDO
+
+        DTMAXEXP = 1.E10
+        DTMAX    = 1.E10
+        DO IP = 1, npa
+          IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
+            DO ITH = 1, NTH
+              DTMAXEXP(ITH) = PDLIB_SI(IP)/MAX(THR,KKSUM(ITH,IP)*IOBDP_LOC(IP))
+              DTMAX(ITH)    = MIN(DTMAX(ITH),DTMAXEXP(ITH))
+            ENDDO
+            DTMAXOUT = MINVAL(DTMAX)
+          ENDIF
+        END DO
+        DTMAXOUT_ALL(IK) = DTMAXOUT
+
+      ENDDO ! IK
+
+      CALL MPI_ALLREDUCE(DTMAXOUT_ALL,DTMAXGL_ALL,NK,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
+    END IF ! LCALC
+    !
+    ! 2c. Second pass: coefficients and propagation, one IK at a time
+    !
     DO IK = 1, NK
 
       IF (LCALC) THEN
 
-        DO IP = 1, NPA
-          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP))
-        ENDDO
-
-        DO IP = 1, NPA
-          DO ITH = 1, NTH
-            ISEA = IPLG(IP)
-            CXX(ITH,IP) = CGSIG(IP) * FACX * ECOS(ITH) / CLATS(ISEA)
-            CYY(ITH,IP) = CGSIG(IP) * FACY * ESIN(ITH)
-          ENDDO ! ith
-          IF (FLCUR) THEN
-            DO ITH = 1, NTH
-              ISEA = IPLG(IP)
-              IF (IOBP_LOC(IP) .GT. 0) THEN
-                CXX(ITH,IP) = CXX(ITH,IP) + FACX * CX(ISEA)/CLATS(ISEA)
-                CYY(ITH,IP) = CYY(ITH,IP) + FACY * CY(ISEA)
-              ENDIF
-            ENDDO !ith
-          ENDIF
-        ENDDO
+        CGSIG(:) = CGSIG_ALL(:,IK)
+        CALL SET_CXX_CYY()
 
         DO IE = 1, NE
 
@@ -6600,30 +6648,7 @@ CONTAINS
           STORED_IK(IK)  = .TRUE.
         END IF
 
-        KKSUM = ZERO
-        DO IE = 1, NE
-          NI = INE(:,IE)
-          DO ITH = 1, NTH
-            KKSUM(ITH,NI(1)) = KKSUM(ITH,NI(1)) + KELEM1_IK(ITH,IE)
-            KKSUM(ITH,NI(2)) = KKSUM(ITH,NI(2)) + KELEM2_IK(ITH,IE)
-            KKSUM(ITH,NI(3)) = KKSUM(ITH,NI(3)) + KELEM3_IK(ITH,IE)
-          ENDDO
-        END DO
-
-        DTMAXEXP = 1.E10
-        DTMAX    = 1.E10
-        DO IP = 1, npa
-          IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
-            DO ITH = 1, NTH
-              DTMAXEXP(ITH) = PDLIB_SI(IP)/MAX(THR,KKSUM(ITH,IP)*IOBDP_LOC(IP))
-              DTMAX(ITH)    = MIN(DTMAX(ITH),DTMAXEXP(ITH))
-            ENDDO
-            DTMAXOUT = MINVAL(DTMAX)
-          ENDIF
-        END DO
-        FIN(1) = DTMAXOUT
-        CALL MPI_ALLREDUCE(FIN,FOUT,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
-        DTMAXGL = FOUT(1)
+        DTMAXGL = DTMAXGL_ALL(IK)
 
         CFLXY = DBLE(DTG)/DTMAXGL
         REST  = ABS(MOD(CFLXY,1.0d0))
@@ -6721,6 +6746,29 @@ CONTAINS
 
     ENDDO ! IK
 
+  CONTAINS
+    !
+    ! Advection velocities CXX, CYY for the current IK from CGSIG
+    ! (unchanged code, moved here because both passes need it)
+    !
+    SUBROUTINE SET_CXX_CYY()
+      DO IP = 1, NPA
+        DO ITH = 1, NTH
+          ISEA = IPLG(IP)
+          CXX(ITH,IP) = CGSIG(IP) * FACX * ECOS(ITH) / CLATS(ISEA)
+          CYY(ITH,IP) = CGSIG(IP) * FACY * ESIN(ITH)
+        ENDDO ! ith
+        IF (FLCUR) THEN
+          DO ITH = 1, NTH
+            ISEA = IPLG(IP)
+            IF (IOBP_LOC(IP) .GT. 0) THEN
+              CXX(ITH,IP) = CXX(ITH,IP) + FACX * CX(ISEA)/CLATS(ISEA)
+              CYY(ITH,IP) = CYY(ITH,IP) + FACY * CY(ISEA)
+            ENDIF
+          ENDDO !ith
+        ENDIF
+      ENDDO
+    END SUBROUTINE SET_CXX_CYY
   END SUBROUTINE PDLIB_EXPLICIT_BLOCK
   !/ ------------------------------------------------------------------- /
   SUBROUTINE BLOCK_SOLVER_EXPLICIT_INIT()
