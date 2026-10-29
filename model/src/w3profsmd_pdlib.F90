@@ -3367,7 +3367,7 @@ CONTAINS
          PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NPA,            &
          PDLIB_POSI, iplg
 #ifdef W3_DEBUGSRC
-    USE YOWNODEPOOL,    only: PDLIB_I_DIAG 
+    USE YOWNODEPOOL,    only: PDLIB_I_DIAG
 #endif
     USE W3ODATMD, only : IAPROC
     USE W3PARALL, only : ZERO
@@ -6453,6 +6453,8 @@ CONTAINS
     USE W3IDATMD, ONLY: FLCUR
     USE W3WDATMD, ONLY: VA
     USE W3DISPMD, ONLY: WAVNU3
+    USE W3ODATMD, ONLY: NDSE
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_PDLIB
     USE yowElementpool, only: ne, ine
     USE yowNodepool, only: npa, pdlib_ien, pdlib_si, iplg
@@ -6464,6 +6466,7 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
+    use w3adatmd, only : cg
 
     IMPLICIT NONE
 
@@ -6491,12 +6494,31 @@ CONTAINS
 
     INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB, ISEA
     !
+    ! Coefficients for the frequency IK being propagated. They are computed
+    ! (LCALC) and used within the same IK, so the same (NTH,NE) arrays are
+    ! reused for every IK and stay in cache, instead of writing a new slice
+    ! of the (NTH,NE,NK) module arrays KELEM1-3, FLALL1-3, NM for each IK.
+    ! The module arrays are only filled when a later call with LCALC false
+    ! may need them (no currents; with currents LCALC is true on every call).
+    REAL*8, ALLOCATABLE, SAVE :: KELEM1_IK(:,:), KELEM2_IK(:,:), KELEM3_IK(:,:)
+    REAL*8, ALLOCATABLE, SAVE :: FLALL1_IK(:,:), FLALL2_IK(:,:), FLALL3_IK(:,:)
+    REAL*8, ALLOCATABLE, SAVE :: NM_IK(:,:)
+    LOGICAL, ALLOCATABLE, SAVE :: STORED_IK(:)   ! module arrays hold valid coefficients for IK
+    LOGICAL           :: KEEP_ALL_IK
+    !
     ! 1.b Initialize arrays
     !
     ! 2.  Calculate velocities ---------------- *
     !
     !   2a. Vectorized for all points looping over each wave number (maybe do a dirty save will be nice!)
     !
+    IF (.NOT. ALLOCATED(KELEM1_IK)) THEN
+      ALLOCATE(KELEM1_IK(NTH,NE), KELEM2_IK(NTH,NE), KELEM3_IK(NTH,NE))
+      ALLOCATE(FLALL1_IK(NTH,NE), FLALL2_IK(NTH,NE), FLALL3_IK(NTH,NE))
+      ALLOCATE(NM_IK(NTH,NE), STORED_IK(NK))
+      STORED_IK = .FALSE.
+    END IF
+    KEEP_ALL_IK = .NOT. FLCUR
 
     DO IK = 1, NK
 
@@ -6534,16 +6556,16 @@ CONTAINS
           DO ITH = 1, NTH
             LAMBDAX(ITH) = ONESIXTH *(CXX(ITH,I1)+CXX(ITH,I2)+CXX(ITH,I3)) ! Linearized advection speed in X and Y direction
             LAMBDAY(ITH) = ONESIXTH *(CYY(ITH,I1)+CYY(ITH,I2)+CYY(ITH,I3))
-            KELEM1(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(1,IE) + LAMBDAY(ITH) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
-            KELEM2(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(3,IE) + LAMBDAY(ITH) * PDLIB_IEN(4,IE)
-            KELEM3(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(5,IE) + LAMBDAY(ITH) * PDLIB_IEN(6,IE)
-            KTMP(1)           = KELEM1(ITH,IE,IK) ! Extract
-            KTMP(2)           = KELEM2(ITH,IE,IK)
-            KTMP(3)           = KELEM3(ITH,IE,IK)
-            NM(ITH,IE,IK)     = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
-            KELEM1(ITH,IE,IK) = MAX(ZERO,KTMP(1))
-            KELEM2(ITH,IE,IK) = MAX(ZERO,KTMP(2))
-            KELEM3(ITH,IE,IK) = MAX(ZERO,KTMP(3))
+            KELEM1_IK(ITH,IE) = LAMBDAX(ITH) * PDLIB_IEN(1,IE) + LAMBDAY(ITH) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
+            KELEM2_IK(ITH,IE) = LAMBDAX(ITH) * PDLIB_IEN(3,IE) + LAMBDAY(ITH) * PDLIB_IEN(4,IE)
+            KELEM3_IK(ITH,IE) = LAMBDAX(ITH) * PDLIB_IEN(5,IE) + LAMBDAY(ITH) * PDLIB_IEN(6,IE)
+            KTMP(1)           = KELEM1_IK(ITH,IE) ! Extract
+            KTMP(2)           = KELEM2_IK(ITH,IE)
+            KTMP(3)           = KELEM3_IK(ITH,IE)
+            NM_IK(ITH,IE)     = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
+            KELEM1_IK(ITH,IE) = MAX(ZERO,KTMP(1))
+            KELEM2_IK(ITH,IE) = MAX(ZERO,KTMP(2))
+            KELEM3_IK(ITH,IE) = MAX(ZERO,KTMP(3))
           ENDDO
 
           FL11  = CXX(:,I2) * PDLIB_IEN(1,IE) + CYY(:,I2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
@@ -6560,19 +6582,31 @@ CONTAINS
           FL311 = 2.d0 * FL31 + FL32
           FL312 = 2.d0 * FL32 + FL31
 
-          FLALL1(:,IE,IK) = (FL311 + FL212) * ONESIXTH + KELEM1(:,IE,IK)
-          FLALL2(:,IE,IK) = (FL111 + FL312) * ONESIXTH + KELEM2(:,IE,IK)
-          FLALL3(:,IE,IK) = (FL211 + FL112) * ONESIXTH + KELEM3(:,IE,IK)
+          FLALL1_IK(:,IE) = (FL311 + FL212) * ONESIXTH + KELEM1_IK(:,IE)
+          FLALL2_IK(:,IE) = (FL111 + FL312) * ONESIXTH + KELEM2_IK(:,IE)
+          FLALL3_IK(:,IE) = (FL211 + FL112) * ONESIXTH + KELEM3_IK(:,IE)
 
         ENDDO  ! IE
+
+        ! Keep a copy for later calls with LCALC false (not needed with currents)
+        IF (KEEP_ALL_IK) THEN
+          KELEM1(:,:,IK) = KELEM1_IK
+          KELEM2(:,:,IK) = KELEM2_IK
+          KELEM3(:,:,IK) = KELEM3_IK
+          FLALL1(:,:,IK) = FLALL1_IK
+          FLALL2(:,:,IK) = FLALL2_IK
+          FLALL3(:,:,IK) = FLALL3_IK
+          NM(:,:,IK)     = NM_IK
+          STORED_IK(IK)  = .TRUE.
+        END IF
 
         KKSUM = ZERO
         DO IE = 1, NE
           NI = INE(:,IE)
           DO ITH = 1, NTH
-            KKSUM(ITH,NI(1)) = KKSUM(ITH,NI(1)) + KELEM1(ITH,IE,IK)
-            KKSUM(ITH,NI(2)) = KKSUM(ITH,NI(2)) + KELEM2(ITH,IE,IK)
-            KKSUM(ITH,NI(3)) = KKSUM(ITH,NI(3)) + KELEM3(ITH,IE,IK)
+            KKSUM(ITH,NI(1)) = KKSUM(ITH,NI(1)) + KELEM1_IK(ITH,IE)
+            KKSUM(ITH,NI(2)) = KKSUM(ITH,NI(2)) + KELEM2_IK(ITH,IE)
+            KKSUM(ITH,NI(3)) = KKSUM(ITH,NI(3)) + KELEM3_IK(ITH,IE)
           ENDDO
         END DO
 
@@ -6587,7 +6621,6 @@ CONTAINS
             DTMAXOUT = MINVAL(DTMAX)
           ENDIF
         END DO
-
         FIN(1) = DTMAXOUT
         CALL MPI_ALLREDUCE(FIN,FOUT,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
         DTMAXGL = FOUT(1)
@@ -6606,6 +6639,19 @@ CONTAINS
           DTSI(IP) = DBLE(DTMAXGL)/DBLE(ITER(IK))/PDLIB_SI(IP) ! Some precalculations for the time integration.
         END DO
 
+      ELSE
+        ! Reuse coefficients stored by an earlier call with LCALC true
+        IF (.NOT. STORED_IK(IK)) THEN
+          WRITE (NDSE,*) 'PDLIB_EXPLICIT_BLOCK: LCALC false but no stored coefficients for IK =', IK
+          CALL EXTCDE ( 1 )
+        END IF
+        KELEM1_IK = KELEM1(:,:,IK)
+        KELEM2_IK = KELEM2(:,:,IK)
+        KELEM3_IK = KELEM3(:,:,IK)
+        FLALL1_IK = FLALL1(:,:,IK)
+        FLALL2_IK = FLALL2(:,:,IK)
+        FLALL3_IK = FLALL3(:,:,IK)
+        NM_IK     = NM(:,:,IK)
       END IF ! LCALC
 
       ! Exact and convert Wave Action - should be some subroutine function or whatever
@@ -6623,10 +6669,10 @@ CONTAINS
         DO IE = 1, NE
           NI  = INE(:,IE)
           DO ITH = 1, NTH
-            UTILDE(ITH)   = NM(ITH,IE,IK) * (FLALL1(ITH,IE,IK)*U(ITH,NI(1)) + FLALL2(ITH,IE,IK)*U(ITH,NI(2)) + FLALL3(ITH,IE,IK)*U(ITH,NI(3)))
-            ST(ITH,NI(1)) = ST(ITH,NI(1)) + KELEM1(ITH,IE,IK) * (U(ITH,NI(1)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
-            ST(ITH,NI(2)) = ST(ITH,NI(2)) + KELEM2(ITH,IE,IK) * (U(ITH,NI(2)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
-            ST(ITH,NI(3)) = ST(ITH,NI(3)) + KELEM3(ITH,IE,IK) * (U(ITH,NI(3)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+            UTILDE(ITH)   = NM_IK(ITH,IE) * (FLALL1_IK(ITH,IE)*U(ITH,NI(1)) + FLALL2_IK(ITH,IE)*U(ITH,NI(2)) + FLALL3_IK(ITH,IE)*U(ITH,NI(3)))
+            ST(ITH,NI(1)) = ST(ITH,NI(1)) + KELEM1_IK(ITH,IE) * (U(ITH,NI(1)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+            ST(ITH,NI(2)) = ST(ITH,NI(2)) + KELEM2_IK(ITH,IE) * (U(ITH,NI(2)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+            ST(ITH,NI(3)) = ST(ITH,NI(3)) + KELEM3_IK(ITH,IE) * (U(ITH,NI(3)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
           ENDDO
         END DO ! IE
         DO IP = 1, NPA
@@ -7117,7 +7163,7 @@ CONTAINS
     USE CONSTANTS
     !
     !
-    USE W3GDATMD, only: NTH, ECOS, ESIN 
+    USE W3GDATMD, only: NTH, ECOS, ESIN
 #ifdef W3_REF1
     USE W3GDATMD, only: NX, REFPARS, REFLC, REFLD, MAPSTA, MAPFS, IOBP, IOBPD, DTH
 #endif
