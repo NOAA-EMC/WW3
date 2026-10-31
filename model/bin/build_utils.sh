@@ -933,7 +933,7 @@ create_file_list()
                prop=
             sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $igcode $uostmd"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3nmloutpmd" ;;
       ww3_ounp)
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"

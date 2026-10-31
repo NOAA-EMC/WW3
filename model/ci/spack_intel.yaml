@@ -2,8 +2,11 @@ spack:
   packages:
     all:
       compiler: [intel]
+      target: [x86_64_v3]
       providers:
         mpi: [intel-oneapi-mpi]
+    python:
+      require: "@3.11"
   specs:
   - netcdf-c@4.9.2~dap
   - netcdf-fortran@4.6.1
