@@ -55,7 +55,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   set(compile_flags_release -O3)
   # SHELL: prefix fixes CMake attempting to de-duplicate the repeated uses of 'all' in -warn, -debug, -check
   # See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
-  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -fp-stack-check -heap-arrays -traceback -fpe0)
+  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -heap-arrays -traceback -fpe0)
 
   if(APPLE)
     # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
@@ -70,7 +70,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(IntelLLVM)$")
   set(compile_flags_release -O3)
   # SHELL: prefix fixes CMake attempting to de-duplicate the repeated uses of 'all' in -warn, -debug, -check
   # See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
-  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -fp-stack-check -heap-arrays -traceback -fpe0)
+  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -heap-arrays -traceback -fpe0)
 
   if(APPLE)
     # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
