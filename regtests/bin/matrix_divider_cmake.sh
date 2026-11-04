@@ -154,6 +154,7 @@ count=0
   if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
   cat before >> matrix${countf}
   sed -i 's/'n\ 24'/'n\ 140'/gI' matrix${countf}
+  sed -i 's/'n\ 12'/'n\ 140'/gI' matrix${countf}
   cat list_ufs >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
   sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix${countf}
