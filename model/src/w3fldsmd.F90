@@ -935,6 +935,9 @@ CONTAINS
   SUBROUTINE W3FLDG (INXOUT, IDFLD, NDS, NDST, NDSE, MX, MY,      &
        NX, NY, T0, TN, TF0, FX0, FY0, FA0,          &
        TFN, FXN, FYN, FAN, IERR, FLAGSC             &
+#ifdef W3_CURSP
+       , FX03, FY03, FXN3, FYN3                     &
+#endif
 #ifdef W3_OASIS
        , COUPL_COMM                                 &
 #endif
@@ -1068,6 +1071,10 @@ CONTAINS
     USE W3ODATMD, ONLY: DTOUT
     use mpi_f08,  ONLY: MPI_COMM
 #endif
+#ifdef W3_CURSP
+    USE W3GDATMD, ONLY: NK
+#endif
+
     IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
@@ -1083,6 +1090,10 @@ CONTAINS
     CHARACTER, INTENT(IN)        :: INXOUT*(*)
     CHARACTER(LEN=3), INTENT(IN) :: IDFLD
     LOGICAL, INTENT(INOUT), OPTIONAL        :: FLAGSC
+#ifdef W3_CURSP
+    REAL, INTENT(INOUT), OPTIONAL :: FX03(MX,MY,NK), FY03(MX,MY,NK),&
+                                     FXN3(MX,MY,NK), FYN3(MX,MY,NK)
+#endif
 #ifdef W3_OASIS
     type(MPI_COMM), INTENT(IN), OPTIONAL :: COUPL_COMM
 #endif
@@ -1092,6 +1103,9 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: IX, IY, J, ISTAT
+#ifdef W3_CURSP
+    INTEGER                 :: IZ
+#endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1179,17 +1193,32 @@ CONTAINS
         ! unless TFN has been changed in the do loop, the following line is essentally
         !       "if not.flfrst"
         IF ( TFN(1) .NE. -1 ) THEN
-          DO IX=1, NX
-            DO IY=1, NY
-              FX0(IX,IY) = FXN(IX,IY)
-              IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
-            END DO
-            IF( FLST .OR. .NOT.FL2D ) THEN
-              DO IY=1, NY
-                FA0(IX,IY) = FAN(IX,IY)
+#ifdef W3_CURSP
+          IF (IDFLD.EQ.'CUR') THEN
+            DO IZ=1, NK
+              DO IX=1, NX
+                DO IY=1, NY
+                  FX03(IX,IY,IZ) = FXN3(IX,IY,IZ)
+                  IF (FL2D) FY03(IX,IY,IZ) = FYN3(IX,IY,IZ)
+                END DO
               END DO
-            END IF
-          END DO
+            END DO
+          ELSE
+#endif
+            DO IX=1, NX
+              DO IY=1, NY
+                FX0(IX,IY) = FXN(IX,IY)
+                IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
+              END DO
+              IF( FLST .OR. .NOT.FL2D ) THEN
+                DO IY=1, NY
+                  FA0(IX,IY) = FAN(IX,IY)
+                END DO
+              END IF
+            END DO
+#ifdef W3_CURSP
+          END IF
+#endif
 #ifdef W3_T
         ELSE
           WRITE (NDST,9021)
@@ -1222,14 +1251,22 @@ CONTAINS
           END IF
         ELSE
           J      = 1
+#ifdef W3_CURSP
+          WRITE (NDS,IOSTAT=ISTAT) (((FX03(IX,IY,IZ),IX=1,NX),IY=1,NY),IZ=1,NK)
+#else
           WRITE (NDS,IOSTAT=ISTAT) ((FX0(IX,IY),IX=1,NX),IY=1,NY)
+#endif
           IF (IERR.NE.0) THEN
             IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
             IERR   = 4
             RETURN
           END IF
           J      = 2
+#ifdef W3_CURSP
+          WRITE (NDS,IOSTAT=ISTAT) (((FY03(IX,IY,IZ),IX=1,NX),IY=1,NY),IZ=1,NK)
+#else
           WRITE (NDS,IOSTAT=ISTAT) ((FY0(IX,IY),IX=1,NX),IY=1,NY)
+#endif
           IF (IERR.NE.0) THEN
             IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
             IERR   = 4
@@ -1324,7 +1361,15 @@ CONTAINS
             END IF
           ELSE
             J      = 1
-            READ (NDS,IOSTAT=ISTAT) ((FXN(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_CURSP
+            IF (IDFLD.EQ.'CUR') THEN
+             READ (NDS,IOSTAT=ISTAT) (((FXN3(IX,IY,IZ),IX=1,NX),IY=1,NY),IZ=1,NK)
+            ELSE
+#endif
+              READ (NDS,IOSTAT=ISTAT) ((FXN(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_CURSP
+            END IF
+#endif
             IF (ISTAT.LT.0) THEN
               IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
               IERR   = 6
@@ -1335,7 +1380,15 @@ CONTAINS
               RETURN
             END IF
             J      = 2
-            READ (NDS,IOSTAT=ISTAT) ((FYN(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_CURSP
+            IF (IDFLD.EQ.'CUR') THEN
+              READ (NDS,IOSTAT=ISTAT) (((FYN3(IX,IY,IZ),IX=1,NX),IY=1,NY),IZ=1,NK)
+            ELSE
+#endif
+              READ (NDS,IOSTAT=ISTAT) ((FYN(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_CURSP
+            END IF
+#endif
             IF (ISTAT.LT.0) THEN
               IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
               IERR   = 6
@@ -1345,9 +1398,7 @@ CONTAINS
               IERR   = 7
               RETURN
             END IF
-
             ! this was added for ISI files to store ICE in FAN and BERG in FYN
-
             IF (FLBE) FAN(:,:) = FXN(:,:)
 
             ! this was added for WNS files to store WND in FXN & FYN and AST in FAN
@@ -1398,17 +1449,32 @@ CONTAINS
       TF0(1) = T0(1)
       TF0(2) = T0(2)
       !
-      DO IX=1, NX
-        DO IY=1, NY
-          FX0(IX,IY) = FXN(IX,IY)
-          IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
-        END DO
-        IF( FLST .OR. .NOT.FL2D ) THEN
-          DO IY=1, NY
-            FA0(IX,IY) = FAN(IX,IY)
+#ifdef W3_CURSP
+      IF (IDFLD.EQ.'CUR') THEN
+        DO IZ=1, NK
+          DO IX=1, NX
+            DO IY=1, NY
+              FX03(IX,IY,IZ) = FXN3(IX,IY,IZ)
+              IF (FL2D) FY03(IX,IY,IZ) = FYN3(IX,IY,IZ)
+            END DO
           END DO
-        END IF
-      END DO
+        END DO
+      ELSE
+#endif
+        DO IX=1, NX
+          DO IY=1, NY
+            FX0(IX,IY) = FXN(IX,IY)
+            IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
+          END DO
+          IF( FLST .OR. .NOT.FL2D ) THEN
+            DO IY=1, NY
+              FA0(IX,IY) = FAN(IX,IY)
+            END DO
+          END IF
+        END DO
+#ifdef W3_CURSP
+      END IF
+#endif
       !
     END IF
     !

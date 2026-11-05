@@ -2984,6 +2984,28 @@ CONTAINS
     META(1)%VARNG=''
     META(1)%VMIN = 0
     META(1)%VMAX = 32
+    ! IFI=2, IFJ=21
+    META => GROUP(2)%FIELD(21)%META
+    META(1)%FSC    = 0.001
+    META(1)%UNITS  = 'm'
+    META(1)%ENAME  = '.lp'
+    META(1)%VARNM='lp'
+    META(1)%VARNL='peak wave length'
+    META(1)%VARNS=''
+    META(1)%VARNG=''
+    META(1)%VMIN = 0
+    META(1)%VMAX = 400
+    ! IFI=2, IFJ=22
+    META => GROUP(2)%FIELD(22)%META
+    META(1)%FSC    = 0.001
+    META(1)%UNITS  = '%'
+    META(1)%ENAME  = '.qb'
+    META(1)%VARNM='qb'
+    META(1)%VARNL='percent wave breaking'
+    META(1)%VARNS=''
+    META(1)%VARNG=''
+    META(1)%VMIN = 0
+    META(1)%VMAX = 100
     !
     !---------- GROUP 3 ----------------
     !
@@ -3469,6 +3491,19 @@ CONTAINS
     META(1)%VARND=''
     META(1)%VMIN = 0
     META(1)%VMAX = 64
+    ! IFI=5, IFJ=12, Z0_WAV
+    META => GROUP(5)%FIELD(12)%META
+    META(1)%FSC    = 0.002
+    META(1)%UNITS  = 'm'
+    META(1)%ENAME  = '.z0a'
+    META(1)%VARNM='z0a'
+    META(1)%VARNL='Surface_roughness'
+    META(1)%VARNS='sea_surface_rougnesss_from_source_term'
+    META(1)%VARNG='sea_surface_roughenss'
+    META(1)%VARNC=''
+    META(1)%VARND=''
+    META(1)%VMIN = 0
+    META(1)%VMAX = 5
     !
     !---------- GROUP 6 ----------------
     !
@@ -3756,6 +3791,78 @@ CONTAINS
     META(2)%VARNS=''
     META(2)%VARNG=''
     META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
+    ! IFI=6, IFJ=14
+    META => GROUP(6)%FIELD(14)%META
+    META(1)%UNITS  = 'Pa'
+    META(1)%FSC    = 0.01
+    META(1)%ENAME  = '.soc'
+    META(1)%VMIN   = -320
+    META(1)%VMAX   =  320
+    META(1)%VARND  = DIRCOM
+
+    ! First component
+    META(1)%VARNM='usoc'
+    META(1)%VARNL='eastward total wave to ocean stres'
+    META(1)%VARNS=''
+    META(1)%VARNG=''
+    META(1)%VARNC='soc=sqrt(usoc**2+vsoc**2)'
+
+    ! Second component
+    META(2) = META(1)
+    META(2)%VARNM='vsoc'
+    META(2)%VARNL='northward total wave to ocean stres'
+    META(2)%VARNS=''
+    META(2)%VARNG=''
+    META(2)%VARNC='soc=sqrt(usoc**2+vsoc**2)'
+
+    ! IFI=6, IFJ=15
+    META => GROUP(6)%FIELD(15)%META
+    META(1)%UNITS  = 'W m-2'
+    META(1)%FSC    = 0.01
+    META(1)%ENAME  = '.fdb'
+    META(1)%VMIN   = -320
+    META(1)%VMAX   =  320
+    META(1)%VARND  = DIRCOM
+
+    ! First component
+    META(1)%VARNM='fdbx'
+    META(1)%VARNL='eastward dissipation from depth limited breaking'
+    META(1)%VARNS=''
+    META(1)%VARNG=''
+    META(1)%VARNC='fdb=sqrt(fdbx**2+fdby**2)'
+
+    ! Second component
+    META(2) = META(1)
+    META(2)%VARNM='fdby'
+    META(2)%VARNL='northward dissipation from depth limited breaking'
+    META(2)%VARNS=''
+    META(2)%VARNG=''
+    META(2)%VARNC='fdb=sqrt(fdbx**2+fdby**2)'
+
+    ! IFI=6, IFJ=16
+    META => GROUP(6)%FIELD(16)%META
+    META(1)%UNITS  = 'W m-2'
+    META(1)%FSC    = 0.01
+    META(1)%ENAME  = '.fdw'
+    META(1)%VMIN   = -320
+    META(1)%VMAX   =  320
+    META(1)%VARND  = DIRCOM
+
+    ! First component
+    META(1)%VARNM='fdwx'
+    META(1)%VARNL='eastward whitecapping dissipation'
+    META(1)%VARNS=''
+    META(1)%VARNG=''
+    META(1)%VARNC='fdw=sqrt(fdwx**2+fdwy**2)'
+
+    ! Second component
+    META(2) = META(1)
+    META(2)%VARNM='fdwy'
+    META(2)%VARNL='northward whitecapping dissipation'
+    META(2)%VARNS=''
+    META(2)%VARNG=''
+    META(2)%VARNC='fdw=sqrt(fdwx**2+fdwy**2)'
+
     !
     !---------- GROUP 7 ----------------
     !

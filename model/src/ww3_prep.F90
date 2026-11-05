@@ -216,7 +216,7 @@ PROGRAM W3PREP
   USE W3SERVMD, ONLY : STRACE
 #endif
   USE W3TIMEMD, ONLY : STME21
-  USE W3ARRYMD, ONLY : INA2R, INA2I
+  USE W3ARRYMD, ONLY : INA2R, INA2I, INA3R
 #ifdef W3_T2
   USE W3ARRYMD, ONLY : PRTBLK
 #endif
@@ -240,10 +240,14 @@ PROGRAM W3PREP
        TIME(2), NXI, NYI, NXJ(2), NYJ(2),   &
        NDSLL, IDLALL, IDFMLL, NDSF(2),      &
        IDLAF(2), IDFMF(2), TIME2(2),        &
-       MXM, MYM, DATTYP, RECLDT, IDAT,      &
+       MXM, MYM, MZM, DATTYP, RECLDT, IDAT, &
        NDAT, JJ, IS(4), JS(4)
   INTEGER                 :: NXT, NYT
   INTEGER                 :: ILAND = -999
+#ifdef W3_CURSP
+  INTEGER                 :: IK
+  LOGICAL                 :: TOCOUPLE
+#endif
 #ifdef W3_O15
   INTEGER                 :: NDSTIME
 #endif
@@ -274,6 +278,9 @@ PROGRAM W3PREP
        A1(:,:), A2(:,:), A3(:,:)
   REAL, POINTER           :: ALA(:,:), ALO(:,:)
   REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
+#ifdef W3_CURSP
+  REAL, ALLOCATABLE       :: XC3(:,:,:), YC3(:,:,:)
+#endif
   LOGICAL                 :: INGRID
   LOGICAL                 :: FLSTAB, FLBERG, CLO(2), FLTIME, FLHDR
   INTEGER                 :: ICLO
@@ -1066,6 +1073,12 @@ PROGRAM W3PREP
     XC = 0.
     YC = 0.
     AC = 0.
+#ifdef W3_CURSP
+    MZM=NK
+    ALLOCATE ( XC3(MXM,MYM,MZM), YC3(MXM,MYM,MZM) )
+    XC3 = 0.
+    YC3 = 0.
+#endif
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1142,8 +1155,18 @@ PROGRAM W3PREP
     !
     !  read in array from ww3_prep.inp
     IF ( ITYPE .LE. 4 ) THEN
-      CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
-           NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
+#ifdef W3_CURSP
+      IF ( IFLD .EQ. 4 ) THEN
+        CALL INA3R (XC3, MXM, MYM, MZM, 1, NXJ(1), 1, NYJ(1), 1, NK,      &
+             NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
+      ELSE
+#endif
+        CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
+             NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
+#ifdef W3_CURSP
+      END IF
+#endif
+
       !
 #ifdef W3_T2
       WRITE (NDST,9060) 1
@@ -1162,9 +1185,19 @@ PROGRAM W3PREP
 #endif
       !
       IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
-        CALL INA2R (YC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),       &
-             NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),  &
+#ifdef W3_CURSP
+      IF ( IFLD .EQ. 4 ) THEN
+        CALL INA3R (YC3, MXM, MYM, MZM, 1, NXJ(2), 1, NYJ(2), &
+             1, NK, NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),  &
              IDLAF(2), 1., 0.)
+      ELSE
+#endif
+        CALL INA2R (YC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),       &
+             NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),         &
+             IDLAF(2), 1., 0.)
+#ifdef W3_CURSP
+      END IF
+#endif
         !
 #ifdef W3_T2
         WRITE (NDST,9060) 2
@@ -1249,6 +1282,9 @@ PROGRAM W3PREP
       !
     END IF
     !
+#ifdef W3_CURSP
+    DO IK=1,NK
+#endif
     ! 6.b Interpolate fields
     ! ... No interpolation, type AI (should not use array syntax !!!)
     !
@@ -1263,8 +1299,13 @@ PROGRAM W3PREP
       ELSE
         DO IY=1, NY
           DO IX=1, NX
+#ifdef W3_CURSP
+            FX(IX,IY) = XC3(IX,IY,IK)
+            FY(IX,IY) = YC3(IX,IY,IK)
+#else
             FX(IX,IY) = XC(IX,IY)
             FY(IX,IY) = YC(IX,IY)
+#endif
             FA(IX,IY) = AC(IX,IY)
           END DO
         END DO
@@ -1440,6 +1481,18 @@ PROGRAM W3PREP
       END IF
       !
     END IF
+#ifdef W3_CURSP
+    !  Replace contents of XC3 and YC3 with the processed FX and FY.
+        DO IY=1, NY
+          DO IX=1, NX
+            XC3(IX,IY,IK)=FX(IX,IY)
+            YC3(IX,IY,IK)=FY(IX,IY)
+          END DO
+        END DO
+#endif
+#ifdef W3_CURSP
+    END DO
+#endif
     !
     ! ... Test output
     !
@@ -1511,9 +1564,16 @@ PROGRAM W3PREP
 #ifdef W3_O3
       WRITE (NDSO,977)
 #endif
+#ifdef W3_CURSP
+      TOCOUPLE=.FALSE.
+#endif
       CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
-           NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
-           FX, FY, FA, IERR)
+           NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,          &
+           FX, FY, FA, IERR                                     &
+#ifdef W3_CURSP
+           , TOCOUPLE, XC3, YC3, XC3, YC3                       &
+#endif
+           )
     ELSE IF ( ITYPE .EQ. 5 ) THEN
       IF ( NDAT .EQ. 0 ) THEN
 #ifdef W3_O3

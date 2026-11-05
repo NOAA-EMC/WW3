@@ -201,7 +201,11 @@ CONTAINS
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
        TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
        D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
-       PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF)
+       PHICE, TAUOCX, TAUOCY, WNMEAN,              &
+       PHIBRKX, PHIBRKY, QB,                       &
+       PHICAPX, PHICAPY,                           &
+       TAUOSX, TAUOSY, Z0_WAV,                     &
+       DAIR, COEF)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -508,6 +512,7 @@ CONTAINS
 #if defined(W3_NL5) || defined(W3_NNT)
     USE W3WDATMD, ONLY: TIME
 #endif
+    USE W3GDATMD, ONLY: RSTYPE
 #if defined(W3_T) || defined(W3_ST1) || defined(W3_ST2) || defined(W3_ST3) || defined(W3_ST6)
     USE W3ODATMD, ONLY: NDST
 #endif
@@ -689,6 +694,9 @@ CONTAINS
          TAUBBL(2), TAUICE(2), WHITECAP(4),   &
          TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
          ICEF, TAUOCX, TAUOCY, WNMEAN
+    REAL, INTENT(INOUT)     :: PHIBRKX, PHIBRKY, QB
+    REAL, INTENT(INOUT)     :: PHICAPX, PHICAPY
+    REAL, INTENT(INOUT)     :: TAUOSX,  TAUOSY, Z0_WAV
     REAL, INTENT(OUT)       :: DTDYN, FCUT
     REAL, INTENT(IN)        :: COEF
     !/
@@ -820,6 +828,14 @@ CONTAINS
     REAL :: VSUO(NSPEC), VDUO(NSPEC)
 #endif
 
+    REAL :: oDTG
+    REAL :: E3BAND, DIFF3, EFINISH3,                          &
+            MWXFINISH3, MWYFINISH3,                           &
+            A3BAND, B3BAND, TAUOX3, TAUOY3
+    REAL :: cff1, cff2, ALPHAC
+    REAL :: A2BAND, B2BAND, Hmax_r
+    REAL :: SPEC3(NSPEC), VS3(NSPEC), VD3(NSPEC)
+
 #ifdef W3_ST1
     REAL :: FH1, FH2
 #endif
@@ -945,6 +961,11 @@ CONTAINS
 #if defined(W3_ST4)
     ZWND = ZZWND
 #endif
+
+    oDTG   = 1.0/DTG
+    SPEC3  = 0.
+    VS3    = 0.
+    VD3    = 0.
     !
     ! 1.  Preparations --------------------------------------------------- *
     !
@@ -1002,7 +1023,17 @@ CONTAINS
     TAUOCX = 0.
     TAUOCY = 0.
     WNMEAN = 0.
-
+    !  if a 'HOT' rst, then dont overwrite these vals for first time step.
+    IF (((RSTYPE.NE.2).AND.(IT.eq.0)).OR.(IT.gt.0)) THEN
+      PHIBRKX = 0.
+      PHIBRKY = 0.
+      QB      = 0.
+      PHICAPX = 0.
+      PHICAPY = 0.
+      TAUOSX = 0.
+      TAUOSY = 0.
+      Z0_WAV = 0.0
+    END IF
     !
     ! TIME is updated in W3WAVEMD prior to the call of W3SCRE, we should
     ! move 'TIME' one time step backward (QL)
@@ -1758,6 +1789,29 @@ CONTAINS
       !
       ! 5.  Increment spectrum --------------------------------------------- *
       !
+      SPEC3 = SPEC     ! Manzella: SPEC accumulates all the spectrum changes.
+                       ! SPEC3 accumulates spectrum changes but does not 
+                       ! include the dissipation effects. At the bottom, we use 
+                       ! SPEC3 to compute spectrum changes only from Source terms
+                       ! to derive ocean surface stress TAUOSX/Y.
+      DO IS=IS1, NSPECH
+        VS3(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)
+        VD3(IS) = VDIN(IS) + VDNL(IS)  
+      END DO
+        IF ( SHAVE ) THEN
+          DO IS=IS1, NSPECH
+            eInc1 = VS3(IS) * DT / MAX ( 1. , (1.-HDT*VD3(IS)))
+            eInc2 = SIGN ( MIN (DAM(IS),ABS(eInc1)) , eInc1 )
+            SPEC3(IS) = MAX ( 0. , SPEC3(IS)+eInc2 )
+          END DO
+        ELSE
+           !
+          DO IS=IS1, NSPECH
+            eInc1 = VS3(IS) * DT / MAX ( 1. , (1.-HDT*VD3(IS)))
+            SPEC3(IS) = MAX ( 0. , SPEC3(IS)+eInc1 )
+          END DO
+        END IF
+
       IF (srce_call .eq. srce_direct) THEN
         IF ( SHAVE ) THEN
           DO IS=IS1, NSPECH
@@ -1820,6 +1874,10 @@ CONTAINS
 
         ! Wave direction is "direction to"
         ! therefore there is a PLUS sign for the stress
+        A1BAND = 0.
+        B1BAND = 0.
+        A2BAND = 0.
+        B2BAND = 0.
         DO ITH=1, NTH
           IS   = (IK-1)*NTH + ITH
           COSI(1)=ECOS(IS)
@@ -1841,7 +1899,30 @@ CONTAINS
           ENDIF
           IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
           HSTOT = HSTOT + SPEC(IS) * FACTOR
+# ifdef W3_DB1
+! subtract VSDB bc it is negative, want to make positive
+          A1BAND=A1BAND - VSDB(IS) * DT * FACTOR * ECOS(ITH)       &
+               / MAX ( 1. , (1.-HDT*VDDB(IS)))
+          B1BAND=B1BAND - VSDB(IS) * DT * FACTOR * ESIN(ITH)       &
+               / MAX ( 1. , (1.-HDT*VDDB(IS)))
+# endif
+! subtract VSDS bc it is negative, want to make positive
+          A2BAND=A2BAND - VSDS(IS) * DT * FACTOR * ECOS(ITH)       &
+               / MAX ( 1. , (1.-HDT*VDDS(IS)))
+          B2BAND=B2BAND - VSDS(IS) * DT * FACTOR * ESIN(ITH)       &
+               / MAX ( 1. , (1.-HDT*VDDS(IS)))
         END DO
+        IF (((RSTYPE.NE.2).AND.(IT.eq.0)).OR.(IT.gt.0)) THEN
+!  if a 'HOT' rst, then dont overwrite these vals for first time step.
+# ifdef W3_DB1
+!  Compute depth limited breaking stresses in X- and Y-, W/m2
+          PHIBRKX = PHIBRKX + A1BAND
+          PHIBRKY = PHIBRKY + B1BAND
+# endif
+!  Compute whitecapping stresses in X- and Y-, W/m2
+          PHICAPX = PHICAPX + A2BAND
+          PHICAPY = PHICAPY + B2BAND
+        END IF
       END DO
       WHITECAP(3) = 4. * SQRT(WHITECAP(3))
       HSTOT =4.*SQRT(HSTOT)
@@ -1993,6 +2074,11 @@ CONTAINS
                * FACDIA + FACPAR * SPEC(ITH+(IK-1)*NTH)            &
 #endif
                + 0.
+          SPEC3(ITH+(IK-1)*NTH) = SPEC3(ITH+(IK-2)*NTH) * FACHFA         &
+# ifdef W3_ST2
+               * FACDIA + FACPAR * SPEC3(ITH+(IK-1)*NTH)            &
+# endif
+               + 0.
         END DO
       END DO
       !
@@ -2060,19 +2146,38 @@ CONTAINS
       WRITE(740+IAPROC,*) '2 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
+    EFINISH3  = 0.
+    MWXFINISH3  = 0.
+    MWYFINISH3  = 0.
     EFINISH  = 0.
     MWXFINISH  = 0.
     MWYFINISH  = 0.
     DO IK=1, NK
+      E3BAND = 0.
+      A3BAND = 0.
+      B3BAND = 0.
       EBAND = 0.
       A1BAND = 0.
       B1BAND = 0.
       DO ITH=1, NTH
+!  SPEC3
+        DIFF3 = SPECINIT(ITH+(IK-1)*NTH)-SPEC3(ITH+(IK-1)*NTH)
+        E3BAND = E3BAND + DIFF3
+        A3BAND = A3BAND + DIFF3*ECOS(ITH)
+        B3BAND = B3BAND + DIFF3*ESIN(ITH)
+!  SPEC
         DIFF = SPECINIT(ITH+(IK-1)*NTH)-SPEC(ITH+(IK-1)*NTH)
         EBAND = EBAND + DIFF
         A1BAND = A1BAND + DIFF*ECOS(ITH)
         B1BAND = B1BAND + DIFF*ESIN(ITH)
       END DO
+!  SPEC3
+      EFINISH3  = EFINISH3  + E3BAND * DDEN(IK) / CG1(IK)
+      MWXFINISH3  = MWXFINISH3  + A3BAND * DDEN(IK) / CG1(IK)      &
+           * WN1(IK)/SIG(IK)
+      MWYFINISH3  = MWYFINISH3  + B3BAND * DDEN(IK) / CG1(IK)      &
+           * WN1(IK)/SIG(IK)
+!  SPEC
       EFINISH  = EFINISH  + EBAND * DDEN(IK) / CG1(IK)
       MWXFINISH  = MWXFINISH  + A1BAND * DDEN(IK) / CG1(IK)        &
            * WN1(IK)/SIG(IK)
@@ -2081,9 +2186,12 @@ CONTAINS
     END DO
     !
     ! Transformation in momentum flux in m^2 / s^2
-    !
-    TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1))/DTG
-    TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2))/DTG
+!  SPEC3
+    TAUOX3=(GRAV*MWXFINISH3+TAUWIX-TAUBBL(1))*oDTG
+    TAUOY3=(GRAV*MWYFINISH3+TAUWIY-TAUBBL(2))*oDTG
+!  SPEC
+    TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1))*oDTG
+    TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2))*oDTG
     IF (IC_NUMERICS) THEN
 #if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
         TAUICE(:)=TAUICE(:)/DTG
@@ -2091,20 +2199,45 @@ CONTAINS
         TAUOY = TAUOY - TAUICE(2)
 #endif
     ENDIF
-    TAUWIX=TAUWIX/DTG
-    TAUWIY=TAUWIY/DTG
-    TAUWNX=TAUWNX/DTG
-    TAUWNY=TAUWNY/DTG
-    TAUBBL(:)=TAUBBL(:)/DTG
+    TAUWIX=TAUWIX*oDTG     
+    TAUWIY=TAUWIY*oDTG
+    TAUWNX=TAUWNX*oDTG
+    TAUWNY=TAUWNY*oDTG
+    TAUBBL(:)=TAUBBL(:)*oDTG
+!  SPEC
     TAUOCX=DAIR*COEF*COEF*USTAR*USTAR*COS(USTDIR) + DWAT*(TAUOX-TAUWIX)
     TAUOCY=DAIR*COEF*COEF*USTAR*USTAR*SIN(USTDIR) + DWAT*(TAUOY-TAUWIY)
+    IF (((RSTYPE.NE.2).AND.(IT.eq.0)).OR.(IT.gt.0)) THEN
+!   If a 'HOT' rst, then dont overwrite these vals for first time step.
+!  SPEC3
+      TAUOSX=DAIR*COEF*COEF*USTAR*USTAR*COS(USTDIR) + DWAT*(TAUOX3-TAUWIX)
+      TAUOSY=DAIR*COEF*COEF*USTAR*USTAR*SIN(USTDIR) + DWAT*(TAUOY3-TAUWIY)
+!
+!  Compute Z0_WAV roughness to send to ATM model
+!
+      cff1=SQRT(TAUWIX**2+TAUWIY**2+0.000001)*DWAT
+      cff2=DAIR*COEF*COEF*USTAR*USTAR+0.000001
+      ALPHAC=0.0095/SQRT(MAX(1.0-cff1/cff2,0.001))
+      Z0_WAV=ALPHAC*USTAR*USTAR/GRAV
+    ENDIF
     !
     ! Transformation in wave energy flux in W/m^2=kg / s^3
     !
-    PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)/DTG
-    PHIAW =DWAT*GRAV*PHIAW /DTG
-    PHINL =DWAT*GRAV*PHINL /DTG
-    PHIBBL=DWAT*GRAV*PHIBBL/DTG
+    PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)*oDTG
+    PHIAW =DWAT*GRAV*PHIAW *oDTG
+    PHINL =DWAT*GRAV*PHINL *oDTG
+    PHIBBL=DWAT*GRAV*PHIBBL*oDTG
+    IF (((RSTYPE.NE.2).AND.(IT.eq.0)).OR.(IT.gt.0)) THEN
+      PHIBRKX=DWAT*GRAV*PHIBRKX*oDTG
+      PHIBRKY=DWAT*GRAV*PHIBRKY*oDTG
+      PHICAPX=DWAT*GRAV*PHICAPX*oDTG
+      PHICAPY=DWAT*GRAV*PHICAPY*oDTG
+    END IF
+# ifdef W3_DB1
+!  depth limited breaking. recompute QB
+      Hmax_r=0.45*(MAX(DEPTH,0.01))
+      QB=MIN(1.0,1.0-EXP(-(HSTOT/SQRT(2.)/Hmax_r)**15.0))
+# endif
     IF (IC_NUMERICS) THEN
 #if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
        PHICE =-1.*DWAT*GRAV*PHICE/DTG

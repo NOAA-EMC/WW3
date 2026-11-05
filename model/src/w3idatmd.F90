@@ -194,6 +194,12 @@ MODULE W3IDATMD
     REAL, POINTER         :: CY0(:,:)
     REAL, POINTER         :: CXN(:,:)
     REAL, POINTER         :: CYN(:,:)
+#ifdef W3_CURSP
+    REAL, POINTER         :: CXTH0(:,:,:)
+    REAL, POINTER         :: CYTH0(:,:,:)
+    REAL, POINTER         :: CXTHN(:,:,:)
+    REAL, POINTER         :: CYTHN(:,:,:)
+#endif
     REAL, POINTER         :: WLEV(:,:)
     REAL, POINTER         :: ICEI(:,:)
     REAL, POINTER         :: UX0(:,:)
@@ -246,7 +252,12 @@ MODULE W3IDATMD
        WXNwrst(:,:),WYNwrst(:,:),           &
 #endif
        CX0(:,:), CY0(:,:), CXN(:,:),        &
-       CYN(:,:), WLEV(:,:), ICEI(:,:),      &
+       CYN(:,:),                            &
+#ifdef W3_CURSP
+       CXTH0(:,:,:), CYTH0(:,:,:),          &
+       CXTHN(:,:,:), CYTHN(:,:,:),          &
+#endif
+       WLEV(:,:), ICEI(:,:),                &
        UX0(:,:), UY0(:,:), UXN(:,:),        &
        UYN(:,:), RH0(:,:), RHN(:,:),        &
        BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
@@ -499,6 +510,9 @@ CONTAINS
 #ifdef W3_SMC
     USE W3GDATMD,  ONLY: FSWND, NSEA
 #endif
+#ifdef W3_CURSP
+    USE W3GDATMD, ONLY: NK
+#endif
     USE W3SERVMD,  ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD,  ONLY: STRACE
@@ -632,18 +646,24 @@ CONTAINS
     IF ( FLCUR  ) THEN
 #ifdef W3_SMC
       IF( FSWND ) THEN
-        ALLOCATE ( INPUTS(IMOD)%CX0(NSEA,1) ,              &
+        ALLOCATE ( INPUTS(IMOD)%CX0(NSEA,1) ,        &
              INPUTS(IMOD)%CY0(NSEA,1) ,              &
              INPUTS(IMOD)%CXN(NSEA,1) ,              &
              INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
+        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,        &
              INPUTS(IMOD)%CY0(NX,NY) ,              &
              INPUTS(IMOD)%CXN(NX,NY) ,              &
              INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
+#endif
+#ifdef W3_CURSP
+        ALLOCATE ( INPUTS(IMOD)%CXTH0(NX,NY,NK) ,       &
+             INPUTS(IMOD)%CYTH0(NX,NY,NK) ,             &
+             INPUTS(IMOD)%CXTHN(NX,NY,NK) ,             &
+             INPUTS(IMOD)%CYTHN(NX,NY,NK) , STAT=ISTAT )
 #endif
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
@@ -1020,6 +1040,12 @@ CONTAINS
         CY0    => INPUTS(IMOD)%CY0
         CXN    => INPUTS(IMOD)%CXN
         CYN    => INPUTS(IMOD)%CYN
+#ifdef W3_CURSP
+        CXTH0    => INPUTS(IMOD)%CXTH0
+        CYTH0    => INPUTS(IMOD)%CYTH0
+        CXTHN    => INPUTS(IMOD)%CXTHN
+        CYTHN    => INPUTS(IMOD)%CYTHN
+#endif
       END IF
 #ifdef W3_TIDE
       IF ( FLLEVTIDE ) THEN
