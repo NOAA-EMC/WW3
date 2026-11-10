@@ -1,0 +1,26 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        UID: "${HOST_UID:-1000}"
+        GID: "${HOST_GID:-1000}"
+    # Keep in sync with IMAGE_NAME in tools/dev.py.
+    image: sim-ww3-dev:local
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    tty: true
+    stdin_open: true
+    init: true
+    # MPICH passes intra-node messages through /dev/shm; Docker's 64MB default
+    # is too small for multi-rank runs.
+    shm_size: 2gb
+    # Same as `ulimit -s unlimited` in the regtest matrix scripts: OpenMP builds
+    # (OMPG/OMPH) put automatic arrays on the stack.
+    ulimits:
+      stack:
+        soft: -1
+        hard: -1

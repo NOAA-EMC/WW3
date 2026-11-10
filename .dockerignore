@@ -1,0 +1,9 @@
+# Allowlist: the image build only needs the files below (docker/Dockerfile
+# COPYs them). Add a path here together with its COPY.
+*
+!docker/entrypoint.sh
+!model/ci/spack_gnu.yaml
+!cmake/FindNetCDF.cmake
+!regtests/ww3_tp2.14/input/oasis3-mct/
+# Filled by model/bin/ww3_from_ftp.sh; not needed to build OASIS.
+regtests/ww3_tp2.14/input/oasis3-mct/doc

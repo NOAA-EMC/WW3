@@ -176,3 +176,7 @@ model/bin/wwatch3.env
 .DS_Store
 build
 install
+# Docker dev environment (./dev): local compose overrides, Python caches of tools/
+compose.override.yaml
+compose.override.yml
+__pycache__/

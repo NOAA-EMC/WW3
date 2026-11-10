@@ -21,11 +21,24 @@ model/tools/bash/      .inp → .nml 変換スクリプト
 regtests/              回帰テスト: <case>/ (info + input*/) と bin/ (実行・比較ドライバ)
 manual/                LaTeX のユーザーマニュアル (支配方程式・数値解法・入力仕様)
 docs/                  Doxygen 設定 / smc_docs/ SMC 格子生成ツール
+docker/ compose.yaml   開発コンテナの定義 (Dockerfile・entrypoint) と compose。使い方は README.md
+tools/dev.py           ./dev の実体 (ホストの python3 で動く): イメージのビルド、コンテナ内での WW3 ビルドと regtest
 ```
 
 ---
 
 ## 2. ビルド (CMake。1 ビルドディレクトリ = 1 switch 構成)
+
+ホストに Fortran / MPI / NetCDF が無ければ、Docker コンテナ内でビルドする (`./dev`。手順は README.md):
+
+- `./dev build [--type Debug] <switch> [-- <cmake 引数>]` が、下の cmake 手順を `build/<name>/`
+  (Release 以外は `build/<name>-<type>/`) で実行する。任意のコマンドは `./dev docker run -- <cmd>`、対話シェルは `./dev docker shell`。
+- イメージ (`docker/Dockerfile`) は CI と同じ Spack 環境 (`model/ci/spack_gnu.yaml` + mpich 3.4.2、`/opt/spack`) と
+  OASIS3-MCT (`/opt/oasis3-mct`) を持ち、`CC=mpicc FC=mpif90`・`OASISDIR`・`ESMFMKFILE` を設定済み。CI の全 switch をビルドできる。
+- コンテナは `LD_LIBRARY_PATH` を張らない (Spack の view にある OpenSSL・zlib などを、システムのツールが読み込まないように)。
+  実行ファイルは RPATH でライブラリを見つけるので、コンテナ内で cmake を直接呼んで install するなら env `CMAKE_OPTIONS`
+  (`-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON`) を付ける。`./dev build` と `run_cmake_test` は付けている。
+- `spack_gnu.yaml` を変えると、次の `./dev docker build` は Spack 環境から作り直しになる (32 コアで約 30 分)。
 
 ```bash
 mkdir build && cd build                 # build/ と install/ は .gitignore 済み
@@ -179,6 +192,8 @@ cd regtests                     # ここから実行する (ケース名は cwd 
 - 引数は `../model` (model dir) とケース名。`-s X` → `<case>/input/switch_X` (省略時は `input/switch`)、`-w` 作業 dir
   (既定 `work`)、`-i` 入力 dir、`-g x` → `ww3_grid_x.inp`、`-N` .nml 入力、`-m <grid_set>` ww3_multi で実行、
   `-f` 前後処理を SHRD (非 MPI) でビルド、`-p` / `-n` MPI 実行、`-o native|netcdf|both|grib|all` 後処理の形式。全オプションは `-h`。
+- コンテナでは `./dev regtest <オプション> <case>` が上と同じ (`cd regtests` と `../model` を補う)。env `CMAKE_OPTIONS` には
+  RPATH 用の値が入っている (§2) ので、cmake への引数を足すときは置き換えずに追記する。
 - ケースごとの `<case>/info` に目的・必要な switch・実行例が書いてある。系統: `ww3_tp1.*` / `ww3_tp2.*` 伝播 (非構造・SMC・
   結合なども含む)、`ww3_ts*` 源項、`ww3_tic*` 海氷、`ww3_tbt*` 泥底、`ww3_tig*` 長周期波、`ww3_ufs*` UFS 構成、
   `mww3_test_*` ww3_multi など。
@@ -225,6 +240,7 @@ cd regtests                     # ここから実行する (ケース名は cwd 
 
 ## 8. 一次資料
 
+- `README.md` — Docker 開発環境 (イメージの中身、`./dev` のコマンド、Docker のインストール手順)
 - `model/README.md` — CMake の詳細 (ライブラリ探索、`EXCLUDE_FIND`、FAQ)
 - `model/bin/README.md` — 各センター (NCEP / Ifremer / NRL / UKMO / Univ. of Melbourne) の switch と namelist の設定例
 - `manual/` — ユーザーマニュアル (`make` で PDF。latex / bibtex / dvipdf が必要)。式は `eqs/`、数値解法は `num/`、実行は `run/`
