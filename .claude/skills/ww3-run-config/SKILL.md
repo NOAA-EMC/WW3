@@ -51,16 +51,19 @@ WW3 の実行は、プログラムを順に動かし、決まった名前のフ�
 
    ```
    runs/<case>/
-     README.md   目的、データの取得元と作り方、実行の手順
-     run.sh      実行のスクリプト (下の手順 5)
-     input/      git で追跡: switch_<case>、*.nml / *.inp、points.list、spec.list、地形データ
-     work/       ignore (runs/*/work*/): 実行と出力。run.sh が毎回作り直す
+     SPEC.md          仕様書 (目的・設定・ポスト処理・検証。skill ww3-sim-spec のテンプレートから書く)
+     run.sh           実行のスクリプト (下の手順 5)
+     postprocess.sh   ポスト処理 (図)。仕様書 10.2 節どおり (skill ww3-postprocess)
+     input/           git で追跡: switch_<case>、*.nml / *.inp、points.list、spec.list、地形データ
+     work/            ignore (runs/*/work*/): 実行と出力。run.sh が毎回作り直す
    ```
+
+   - 先に仕様書 (`SPEC.md`) を書き、その表どおりに設定ファイルを書く (skill `ww3-sim-spec`)。
 
    - テンプレートの入力を `input/` にコピーし、データは `../input/<file>` で参照する。
    - `input/` に置く制御ファイルは、ww3_grid・ww3_strt・ww3_bounc・ww3_shel などは 1 つずつ。ww3_prnc・ww3_prep・ww3_ounf・ww3_ounp は
      種類ごとに `<prog>_<name>.nml` (`.inp`) と複数置ける。テンプレートの別の版 (`ww3_grid_36dirs.nml` など) はコピーしない。
-   - `*.nc` は .gitignore で除外されるので、NetCDF の強制場やスペクトルは commit されない。取得元と作り方を `README.md` に書く。
+   - `*.nc` は .gitignore で除外されるので、NetCDF の強制場やスペクトルは commit されない。取得元と作り方を `SPEC.md` に書く。
 3. **switch を決めてビルドする**:
 
    ```bash
@@ -192,6 +195,8 @@ ww3_shel の `DOMAIN%START` を restart の時刻に合わせる ([boundary.md](
 
 ## 使わない場面
 
+- ケースの仕様書を書く・レビューする → skill `ww3-sim-spec`
+- 結果を図にする・NetCDF の変数を調べる → skill `ww3-postprocess`
 - Fortran ソースを変える (物理項の追加など) → LLM.md §4・§6
 - regtest を実行・比較する → LLM.md §5 (`./dev regtest`)
 - 開発イメージ・コンテナの環境 → README.md

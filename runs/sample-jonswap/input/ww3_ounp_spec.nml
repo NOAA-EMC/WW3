@@ -1,0 +1,20 @@
+&POINT_NML
+  POINT%TIMESTART        =  '20200101 000000'
+  POINT%TIMESTRIDE       =  '3600'
+  POINT%TIMECOUNT        =  '25'
+  POINT%TIMESPLIT        =  0
+  POINT%LIST             =  'all'
+  POINT%SAMEFILE         =  T
+  POINT%TYPE             =  1
+/
+&FILE_NML
+  FILE%NETCDF        = 4
+/
+&SPECTRA_NML
+  SPECTRA%OUTPUT     = 3
+  SPECTRA%TYPE       = 4
+/
+&PARAM_NML
+/
+&SOURCE_NML
+/

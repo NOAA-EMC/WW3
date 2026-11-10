@@ -6,9 +6,9 @@
 # regtests/ww3_tp2.14/input/oasis3-mct.
 #
 # Layer order keeps the slow Spack layers (~30 min on 32 cores) cached: a tool
-# added to step 6 or a different HOST_UID/GID only rebuilds the layers after
-# it. RUN stays on /bin/sh: in bash, UID is a read-only shell variable and
-# step 7 would break.
+# added to step 6 or 7 or a different HOST_UID/GID only rebuilds the layers
+# after it. RUN stays on /bin/sh: in bash, UID is a read-only shell variable and
+# step 8 would break.
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -127,10 +127,26 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
         gdb valgrind doxygen bc wget sudo tzdata procps less
 
+# ---------------------------------------------------------------------------
+# 7. Python for post-processing (tools/viz, tools/prep; `./dev tools`): a venv
+#    on the system python3 with numpy, matplotlib and netCDF4 (its wheel
+#    bundles its own HDF5/netCDF, independent of the Spack ones). Its bin goes
+#    first in PATH, so `python3` in the container is this venv rather than the
+#    Spack view's python.
+# ---------------------------------------------------------------------------
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3-venv && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir \
+        numpy==2.2.6 matplotlib==3.10.9 netCDF4==1.7.2 && \
+    echo 'export PATH=/opt/venv/bin:$PATH' >> /opt/ww3-env.sh
+
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/ww3-entrypoint
 
 # ---------------------------------------------------------------------------
-# 7. Non-root developer user matching host UID/GID. The ARGs are declared here
+# 8. Non-root developer user matching host UID/GID. The ARGs are declared here
 #    so that a different UID/GID only rebuilds this layer.
 # ---------------------------------------------------------------------------
 ARG UID=1000

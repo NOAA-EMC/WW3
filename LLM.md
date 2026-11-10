@@ -22,8 +22,9 @@ regtests/              回帰テスト: <case>/ (info + input*/) と bin/ (実�
 manual/                LaTeX のユーザーマニュアル (支配方程式・数値解法・入力仕様)
 docs/                  Doxygen 設定 / smc_docs/ SMC 格子生成ツール
 docker/ compose.yaml   開発コンテナの定義 (Dockerfile・entrypoint) と compose。使い方は README.md
-tools/dev.py           ./dev の実体 (ホストの python3 で動く): イメージのビルド、コンテナ内での WW3 ビルドと regtest
-runs/                  シミュレーションのケース (runs/<case>/input は git で追跡、work*/ は ignore)。書き方は Skill ww3-run-config
+tools/dev.py           ./dev の実体 (ホストの python3 で動く): イメージのビルド、コンテナ内での WW3 ビルド・regtest・tools の実行
+tools/viz/ tools/prep/ ポスト処理の描画と前処理の Python (./dev tools <name> でコンテナ内の venv で動く)
+runs/                  シミュレーションのケース: SPEC.md (仕様書)・run.sh・postprocess.sh・input/ を追跡、work*/ は ignore
 .claude/skills/        Skill (§9)。.agents/skills はその symlink (Codex 用)
 ```
 
@@ -255,6 +256,9 @@ cd regtests                     # ここから実行する (ケース名は cwd 
 
 `.claude/skills/<name>/SKILL.md` に置く。Codex からは symlink `.agents/skills/` で同じものが見える。
 
-- **シミュレーションの設定** (新しく始める・設定を変える。地形・うねり・風などの境界条件と強制場、物理 namelist、時間刻み、出力、
-  `runs/<case>/` の作り方と実行の手順) → `ww3-run-config`
+- **シミュレーションの仕様書** (新しいケースを始める・設定を変える・レビューする。`runs/<case>/SPEC.md` のテンプレートと進め方)
+  → `ww3-sim-spec`
+- **シミュレーションの設定** (地形・うねり・風などの境界条件と強制場、物理 namelist、時間刻み、出力の設定ファイル、
+  `runs/<case>/` の作り方と実行の手順 `run.sh`) → `ww3-run-config`
+- **ポスト処理** (ww3_ounf・ww3_ounp の NetCDF、`tools/viz` の図、`postprocess.sh`) → `ww3-postprocess`
 - Skill を使っていて不足や誤りに気づいたら、その作業の中で Skill を直す (根拠はソースの file:line か実行結果)。

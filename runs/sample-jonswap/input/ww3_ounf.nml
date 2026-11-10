@@ -1,0 +1,12 @@
+&FIELD_NML
+  FIELD%TIMESTART        =  '20200101 000000'
+  FIELD%TIMESTRIDE       =  '3600'
+  FIELD%TIMECOUNT        =  '25'
+  FIELD%TIMESPLIT        =  0
+  FIELD%LIST             =  'HS T02 T0M1 FP DIR SPR DP WND'
+  FIELD%PARTITION        =  '0'
+  FIELD%TYPE             =  4
+/
+&FILE_NML
+  FILE%NETCDF        = 4
+/

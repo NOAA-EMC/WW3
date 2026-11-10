@@ -69,13 +69,18 @@
 | ITYPE | 初期スペクトル | 追加の行 |
 |---|---|---|
 | 1 | 周波数と空間はガウス分布、方向は cos^n | `fp σf θm n Xm σx Ym σy Hmax` |
-| 2 | JONSWAP | `α fp θm γ σA σB Xm σx Ym σy` (regtest `ww3_tp2.5`) |
+| 2 | JONSWAP。方向分布は cos^n ではなく Hasselmann ほか (1980) の cos^{2s}((θm−θ)/2) (s = 9.77·(f/fp)^β、`model/src/ww3_strt.F90:693-716`)。Hs は直接指定できず、α で決まる | `α fp θm γ σA σB Xm σx Ym σy` (regtest `ww3_tp2.5`) |
 | 3 | 開始時刻の局所の風から fetch-limited な JONSWAP | 無し。ww3_shel が風から作るので、風の強制場が要る |
-| 4 | 任意のスペクトル | 倍率と NK×NTH の値 |
+| 4 | 任意のスペクトル F(f,θ) [m² Hz⁻¹ rad⁻¹]。全海点に同じ値が入る | 倍率の行 (0 以下なら 1) と NK×NTH の値。周波数の添字が速く回る (方向 1 の NK 個、方向 2 の NK 個 …)。方向は Cartesian の向かう方向 θ_j = (j−1+THOFF)·Δθ。値の途中にコメント行を入れない (`:789-799`) |
 | 5 | 静穏 (calm) | 無し |
 | 6 | 3 と同じで、fetch を m で指定 | fetch |
 
 - ITYPE は 1〜6 以外だと止まる (`model/src/ww3_strt.F90:382-387`)。
+- ITYPE 1・2 の空間分布: σx が負だと一様ではなく、中心からの距離を σy で割ったガウス分布 (円形) になる
+  (ITYPE 1 は `:414-418`・`:575-576`、ITYPE 2 は `:615-618`・`:760-761`)。全域で一様にしたいときは σx・σy をとても大きくする (例 `1.E12`)。
+- JONSWAP × cos^n を Hs・Tp で指定したいときは、`./dev tools jonswap_strt` で ITYPE 4 の `ww3_strt.inp` を作る
+  (`tools/prep/jonswap_strt.py`)。Hs は WW3 の出力と同じ定義 (帯の幅 DSII と尾部込み) で合わせるので、t=0 の `hs` が指定値になる。
+  スペクトル格子のオプションは `SPECTRUM_NML` と同じ値にする。例: `runs/sample-jonswap` (風上の境界点にも同じスペクトルが保たれる)。
 - 平均方向 θm は**来る方向、北から時計回り** (630 − θ で内部の向きに変換。`model/src/ww3_strt.F90:470`)。
   テンプレートの "oceanographic" という説明は誤り。
 - 実際の風で回すなら 3 か 5 が扱いやすい。3 は検証で確認済み (`log.ww3` に `Restart file read; cold start (wind).` と出る)。

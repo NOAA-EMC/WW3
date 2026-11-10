@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import getopt
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -54,6 +55,14 @@ Build / regression tests (run inside the container):
                                   ./bin/run_cmake_test <options> ../model <case>.
                                   `regtest -h` prints the run_cmake_test
                                   options; no argument lists the test cases.
+
+Tools (Python scripts in tools/<group>/, run inside the container):
+  tools <name> [args...]          Run tools/<group>/<name>.py with the image's
+                                  python3 (numpy, matplotlib, netCDF4), e.g.
+                                  ./dev tools plot_fields runs/<case>/work.
+                                  Paths are relative to the repo root.
+                                  `tools <name> --help` shows its options; no
+                                  argument lists the tools.
 
 Misc:
   help                            Show this help.
@@ -357,12 +366,71 @@ def cmd_regtest(args: list[str]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# tools (Python scripts in tools/<group>/, run inside the container)
+
+TOOLS_DIR = Path("tools")
+
+
+MAIN_GUARD = re.compile(r"""^if __name__ == ["']__main__["']:""", re.MULTILINE)
+
+
+def list_tools() -> list[Path]:
+    # Runnable scripts in tools/<group>/ (tools/viz, tools/prep, ...): files
+    # with an `if __name__ == "__main__":` block. Shared modules (e.g.
+    # tools/viz/ww3nc.py) and tools/dev.py itself are not tools.
+    return sorted(
+        p
+        for p in TOOLS_DIR.glob("*/*.py")
+        if MAIN_GUARD.search(p.read_text(encoding="utf-8", errors="replace"))
+    )
+
+
+def print_tools(stream) -> None:
+    print("tools (./dev tools <name> --help shows the options):", file=stream)
+    for p in list_tools():
+        print(f"  {p.stem:<18} {p.as_posix()}", file=stream)
+
+
+def resolve_tool(name: str) -> Path:
+    # A bare name (plot_fields) matches any group; with a slash
+    # (viz/plot_fields, tools/viz/plot_fields.py) the path must match too.
+    want = name[:-3] if name.endswith(".py") else name
+    if "/" in want:
+        matches = [
+            p for p in list_tools()
+            if p.with_suffix("").as_posix() == want
+            or p.with_suffix("").as_posix().endswith("/" + want)
+        ]
+    else:
+        matches = [p for p in list_tools() if p.stem == want]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        die(f"ambiguous tool name {name!r}: "
+            + ", ".join(p.as_posix() for p in matches))
+    print(f"error: unknown tool: {name!r}", file=sys.stderr)
+    print_tools(sys.stderr)
+    sys.exit(1)
+
+
+def cmd_tools(args: list[str]) -> None:
+    if not args or args[0] in {"-h", "--help"}:
+        stream = sys.stdout if args else sys.stderr  # asked for help: stdout
+        print("usage: ./dev tools <name> [args...]", file=stream)
+        print_tools(stream)
+        sys.exit(0 if args else 1)
+    path = resolve_tool(args[0])
+    run_in_container(["python3", path.as_posix(), *args[1:]])
+
+
+# ---------------------------------------------------------------------------
 # main
 
 GROUPS = {
     "docker": dispatch_docker,
     "build": cmd_build,
     "regtest": cmd_regtest,
+    "tools": cmd_tools,
 }
 
 

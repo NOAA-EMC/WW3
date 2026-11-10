@@ -112,7 +112,20 @@ sudo service docker start
 |---|---|
 | `./dev build [--type Release\|Debug\|RelWithDebInfo\|MinSizeRel] <switch> [-- <cmake 引数>]` | CMake で configure + ビルド。`<switch>` は `model/bin` の名前 (`NCEP_st4` = `model/bin/switch_NCEP_st4`) か、repo 内の switch ファイルのパス。build dir は `build/<name>` (Release、既定) か `build/<name>-<type>` で、実行ファイルはその `bin/`。引数なしで switch 一覧。 |
 | `./dev regtest [run_cmake_test のオプション] <case>` | `cd regtests && ./bin/run_cmake_test <オプション> ../model <case>` を実行。`-h` で run_cmake_test のオプション一覧、引数なしでケース一覧。 |
+| `./dev tools <name> [引数]` | `tools/<group>/<name>.py` (描画の `tools/viz`、前処理の `tools/prep`) をコンテナ内の `python3` で実行。パスは repo root から。`<name> --help` でオプション、引数なしでツール一覧。 |
 | `./dev help` | ヘルプ表示。 |
+
+シミュレーションのケースは `runs/<case>/` に置き、仕様書 `SPEC.md`・`run.sh`・`postprocess.sh` で動かす ([`runs/README.md`](./runs/README.md))。
+例 (`runs/sample-jonswap`):
+
+```bash
+./dev build runs/sample-jonswap/input/switch_sample-jonswap     # WW3 をビルド (build/sample-jonswap/)
+./dev docker run -- bash runs/sample-jonswap/run.sh             # 実行 (約 5 分)
+./dev docker run -- bash runs/sample-jonswap/postprocess.sh     # 図 (runs/sample-jonswap/work/figs/)
+```
+
+`./dev tools` やポスト処理が `ModuleNotFoundError: No module named 'numpy'` などで止まるときは、イメージが描画用の Python
+(`/opt/venv`) を足す前のもの。`./dev docker build` で作り直す (Spack の層はキャッシュが効くので数分)。
 
 `HOST_UID` / `HOST_GID` は通常 `id -u` / `id -g` から自動取得されるが、必要なら環境変数で上書き可。
 CMake への追加オプションは `--` の後に渡す。例: ESMF 用ライブラリは `./dev build multi_esmf -- -DMULTI_ESMF=ON`、
@@ -131,6 +144,7 @@ NetCDF を使わないなら `-- -DNETCDF=OFF`。
   (NetCDF-C/Fortran、HDF5、METIS/ParMETIS、SCOTCH、g2/bacio/w3emc、PIO、ESMF)。Spack は `/opt/spack`
 - **OASIS3-MCT**: `regtests/ww3_tp2.14/input/oasis3-mct` を CI と同じ手順でビルドし、`/opt/oasis3-mct` に置く
 - **ツール**: CMake (Ubuntu の apt 版を Spack の external として使う)、gdb、valgrind、doxygen
+- **Python (ポスト処理)**: `/opt/venv` (Ubuntu の python3 3.12) に numpy・matplotlib・netCDF4。`./dev tools` が使う
 
 これで CI の build matrix にある全構成 (`Ifremer1` `NCEP_st2` `NCEP_st4` `ite_pdlib` `NCEP_st4sbs` `NCEP_glwu` `OASACM` `UKMO`
 と `MULTI_ESMF`) をビルドできる。
@@ -148,7 +162,7 @@ NetCDF を使わないなら `-- -DNETCDF=OFF`。
 view には Spack 版の OpenSSL・zlib・ncurses なども入っているので、`LD_LIBRARY_PATH` に view を足すと git などのシステムのツールまで
 それを読み込む。そこでコンテナでは `LD_LIBRARY_PATH` を設定せず、実行ファイルは RPATH でライブラリを見つける。
 コンテナ内で cmake を直接呼んで install するときは `$CMAKE_OPTIONS` を付ける。
-また `PATH` の先頭は view の `bin` なので、`python3` (3.13) や `tar` などは Spack 版が使われる。
+`PATH` の先頭は `/opt/venv/bin`、その次が view の `bin` なので、`python3` はポスト処理用の venv、`tar` などは Spack 版が使われる。
 
 [`compose.yaml`](./compose.yaml) (service `dev`) の要点:
 
