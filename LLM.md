@@ -23,6 +23,8 @@ manual/                LaTeX のユーザーマニュアル (支配方程式・�
 docs/                  Doxygen 設定 / smc_docs/ SMC 格子生成ツール
 docker/ compose.yaml   開発コンテナの定義 (Dockerfile・entrypoint) と compose。使い方は README.md
 tools/dev.py           ./dev の実体 (ホストの python3 で動く): イメージのビルド、コンテナ内での WW3 ビルドと regtest
+runs/                  シミュレーションのケース (runs/<case>/input は git で追跡、work*/ は ignore)。書き方は Skill ww3-run-config
+.claude/skills/        Skill (§9)。.agents/skills はその symlink (Codex 用)
 ```
 
 ---
@@ -243,5 +245,16 @@ cd regtests                     # ここから実行する (ケース名は cwd 
 - `README.md` — Docker 開発環境 (イメージの中身、`./dev` のコマンド、Docker のインストール手順)
 - `model/README.md` — CMake の詳細 (ライブラリ探索、`EXCLUDE_FIND`、FAQ)
 - `model/bin/README.md` — 各センター (NCEP / Ifremer / NRL / UKMO / Univ. of Melbourne) の switch と namelist の設定例
+  (そのまま写すと ww3_grid が止まる例がある。Skill `ww3-run-config` の `references/physics.md`)
 - `manual/` — ユーザーマニュアル (`make` で PDF。latex / bibtex / dvipdf が必要)。式は `eqs/`、数値解法は `num/`、実行は `run/`
 - Doxygen HTML: https://noaa-emc.github.io/WW3 ・ Wiki: https://github.com/NOAA-EMC/WW3/wiki (Quick Start、Code Management、matrix.comp の使い方)
+
+---
+
+## 9. Skill
+
+`.claude/skills/<name>/SKILL.md` に置く。Codex からは symlink `.agents/skills/` で同じものが見える。
+
+- **シミュレーションの設定** (新しく始める・設定を変える。地形・うねり・風などの境界条件と強制場、物理 namelist、時間刻み、出力、
+  `runs/<case>/` の作り方と実行の手順) → `ww3-run-config`
+- Skill を使っていて不足や誤りに気づいたら、その作業の中で Skill を直す (根拠はソースの file:line か実行結果)。

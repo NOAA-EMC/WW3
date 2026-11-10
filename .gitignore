@@ -180,3 +180,5 @@ install
 compose.override.yaml
 compose.override.yml
 __pycache__/
+# Simulation cases (runs/<case>/): input/ is tracked, run directories are not
+runs/*/work*/
