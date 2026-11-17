@@ -175,3 +175,4 @@ model/bin/wwatch3.env
 */*/*/.*.swp
 .DS_Store
 build
+install

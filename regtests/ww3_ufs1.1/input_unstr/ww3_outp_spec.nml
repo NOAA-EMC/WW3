@@ -1,0 +1,220 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_outp.nml - Point output post -processor          !
+! -------------------------------------------------------------------- !
+
+!----------------------------------------------------------------------!
+! Define the output to post process from via OUTP_NML namelist
+!
+! POINT
+! * namelist must be terminated with /
+! * definitions & defaults:
+!   POINT%TIMESTART	= '19000101 000000' ! Start time for the output(yyyymmdd hhmmss)
+!   POINT%TIMESTRIDE 	= '0'		    ! Time stride, increment of output (s)
+!   POINT%TIMECOUNT	= '1000000'	    ! Number of output times 
+!   POINT%TIMESPLIT	= 0		    ! Split output into multiple files for each time
+					    ! step or one file (0=one file, 1=separate files)
+!   POINT%PREFIX        = 'wave'	    ! Prefix for output files
+!   POINT%LIST          = 'all'             ! List of points index ['all'|'1 2 3']
+!   POINT%ITYPE          = 0                 ! [0=inventory | 1=spectra | 2=mean param | 3=source terms]
+
+&POINT_NML
+ POINT%TIMESTART	= '20210401 000000'
+ POINT%TIMESTRIDE	= '3600'
+ POINT%TIMECOUNT	= '25'
+ POINT%TIMESPLIT	= 1
+ POINT%PREFIX		= 'gfswave'
+ POINT%LIST		    = 'all'
+ POINT%ITYPE		= 1                     ! No additional inputs for type 0, inventory output. For other types, see below.
+/
+
+! Additional Variables Depending on ITYPE
+
+!  ITYPE=1: Spectra Output
+! -------------------------------------------------------------------- !
+! * definitions & defaults:
+!     SPECTRA%OUTPUT                = 3        ! 1: Print plots
+!                                              ! 2: Table of 1-D spectra
+!                                              ! 3: Transfer file
+!     SPECTRA%SCALE_FAC             = 1        ! Scale factor (-1=disabled)
+!     SPECTRA%OUTPUT_FAC            = 0        ! Output factor (0=normalized)
+!     SPECTRA%ITYPE		    = 0
+!     SPECTRA%UNIT_NUM_TRANS        = 33       ! Unit number for transfer file, also used in table file name
+!     SPECTRA%FLAG_UNFORMAT_TRANS   = .FALSE.        ! Flag for unformatted transfer file (.TRUE. or .FALSE.).
+
+! The transfer file contains records with the following contents.
+! - File ID in quotes, number of frequencies, directions and points.
+!   grid name in quotes (for unformatted file C*21,3I,C*30).
+! - Bin frequencies in Hz for all bins.
+! - Bin directions in radians for all bins (Oceanographic conv.).
+!                                                         -+
+! - Time in yyyymmdd hhmmss format                         | loop
+!                                             -+           |
+! - Point name (C*40), lat, lon, d, U10 and    |  loop     | over
+!   direction, current speed and direction     |   over    |
+! - E(f,theta)                                 |  points   | times
+!                                             -+          -+
+!
+! The formatted file is readable using free format throughout.
+! This data set can be used as input for the bulletin generator
+! w3split.
+&SPECTRA_NML
+    SPECTRA%OUTPUT                = 3
+    SPECTRA%SCALE_FAC             = 1  ! Scale factor (-1=disabled)
+    SPECTRA%OUTPUT_FAC            = 0  ! Output factor (0=normalized)
+    SPECTRA%UNIT_NUM_TRANS        = 33 
+    SPECTRA%FLAG_UNFORMAT_TRANS   = .FALSE.
+/
+
+!  ITYPE=2: Mean Parameters Output
+! -------------------------------------------------------------------- !
+!     PARAM%OUTPUT      = 4       ! 1: Forcing parameters
+!                                 ! 2: Mean wave parameters
+!                                 ! 3: Nondimensional pars. (U*)
+!                                 ! 4: Nondimensional pars. (U10)
+!                                 ! 5: Validation table
+!                                 ! 6: WMO standard output
+!
+!     PARAM%UNIT_NUM_TABLE = 66   ! Unit number for table file
+
+! Forcing parameters content :
+! - dpt, wnd, wnddir, cur, curdir
+!
+! Mean wave parameters content :
+! - hs, lm, tr, th1p, sth1p, fp, th1m, sth1m
+!
+! Nondimensional parameters (U*) content :
+! - ust, efst, fpst, cd, alpha
+!
+! Nondimensional parameters (U10) content :
+! - wnd, efst, fpst, cd, alpha
+!
+! Validation table content :
+! - wnd, wnddir, hs, hsst, cpu, cmu, ast
+!
+! WMO stantdard output content :
+! - wnd, wnddir, hs, tp
+!
+! If output for one point is requested, a time series table is made,
+! otherwise the file contains a separate tables for each output time.
+&PARAM_NML
+    PARAM%OUTPUT = 4
+    PARAM%UNIT_NUM_TABLE = 66
+/
+
+!  ITYPE=3: Source Terms Output
+! -------------------------------------------------------------------- !
+! * definitions & defaults:
+!     SOURCE%OUTPUT         = 4            ! 1: Print plots
+!                                          ! 2: Table of 1-D S(f)
+!                                          ! 3: Table of 1-D inverse time scales (1/T = S/F)
+!                                          ! 4: Transfer file
+!     SOURCE%SCALE_FAC     = 0             ! Scale factor (-1=disabled)
+!     SOURCE%OUTPUT_FAC    = 0             ! Output factor (0=normalized)
+!     SOURCE%TABLE_FAC     = 0             ! Table factor
+!                                                          0 : Dimensional.
+!                                                          1 : Nondimensional in terms of U10
+!                                                          2 : Nondimensional in terms of U*
+!                                                          3-5: like 0-2 with f normalized with fp.
+!     SOURCE%SPECTRUM      = T             ! [T|F]
+!     SOURCE%INPUT         = T             ! [T|F]
+!     SOURCE%INTERACTIONS  = T             ! [T|F]
+!     SOURCE%DISSIPATION   = T             ! [T|F]
+!     SOURCE%BOTTOM        = T             ! [T|F]
+!     SOURCE%ICE           = T             ! [T|F]
+!     SOURCE%TOTAL         = T             ! [T|F]
+!
+! Table of 1-D S(f) content :
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency
+!   - ef(frequency)   : 1D spectral density
+!   - Sin(frequency)  : input source term
+!   - Snl(frequency)  : non linear interactions source term
+!   - Sds(frequency)  : dissipation source term
+!   - Sbt(frequency)  : bottom source term
+!   - Sice(frequency) : ice source term
+!   - Stot(frequency) : total source term
+!   - dpt, ust, wnd : mean parameters
+!
+! Table of 1-D inverse time scales (1/T = S/F) content :
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency
+!   - ef(frequency)   : 1D spectral density
+!   - tini(frequency)  : input inverse time scales source term
+!   - tnli(frequency)  : non linear interactions inverse time scales source term
+!   - tdsi(frequency)  : dissipation inverse time scales source term
+!   - tbti(frequency)  : bottom inverse time scales source term
+!   - ticei(frequency) : ice inverse time scales source term
+!   - ttoti(frequency) : total inverse time scales source term
+!   - dpt, ust, wnd : mean parameters
+!
+! Transfer file content :
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
+!   - frequency1 : unit Hz, lower band frequency
+!   - frequency2 : unit Hz, upper band frequency
+!   - direction : unit degree, convention to, origin East, trigonometric order
+!   - efth(frequency,direction) : 2D spectral density
+!   - Sin(frequency,direction)  : input source term
+!   - Snl(frequency,direction)  : non linear interactions source term
+!   - Sds(frequency,direction)  : dissipation source term
+!   - Sbt(frequency,direction)  : bottom source term
+!   - Sice(frequency,direction) : ice source term
+!   - Stot(frequency,direction) : total source term
+!   - dpt, wnd, wnddir, cur, curdir, ust : mean parameters
+! -------------------------------------------------------------------- !
+&SOURCE_NML
+     SOURCE%OUTPUT         = 4            ! 1: Print plots
+                                          ! 2: Table of 1-D S(f)
+                                          ! 3: Table of 1-D inverse time scales (1/T = S/F)
+                                          ! 4: Transfer file
+     SOURCE%SCALE_FAC     = 0             ! Scale factor (-1=disabled)
+     SOURCE%OUTPUT_FAC    = 0             ! Output factor (0=normalized)
+     SOURCE%TABLE_FAC     = 0             ! Table factor
+                                                          !0 : Dimensional.
+                                                          !1 : Nondimensional in terms of U10
+                                                          !2 : Nondimensional in terms of U*
+                                                          !3-5: like 0-2 with f normalized with fp.
+     SOURCE%SPECTRUM      = T             ! [T|F]
+     SOURCE%INPUT         = T             ! [T|F]
+     SOURCE%INTERACTIONS  = T             ! [T|F]
+     SOURCE%DISSIPATION   = T             ! [T|F]
+     SOURCE%BOTTOM        = T             ! [T|F]
+     SOURCE%ICE           = T             ! [T|F]
+     SOURCE%TOTAL         = T             ! [T|F]
+/
+
+!  ITYPE=4: Spectral partitions and bulletins
+! -------------------------------------------------------------------- !
+! * definitions & defaults:
+!  - Sub-type OTYPE :  1 : Spectral partitions
+!                      2 : Bulletins ASCII format
+!                      3 : Bulletins CSV format
+!                      4 : Bulletins ASCII and CSV formats
+! - Unit number for transfer file, also used in table file name.
+! - Reference date/time in YYYYMMDD HHMMSS format, used for
+!             including in bulletin legend, and computing forecast time
+!             in CSV type output (if the first field is negative, the
+!             reference time becomes the first simulation time slice)
+! - Three-character code indicating time zone (UTC, EST etc)
+! The transfer file contains records with the following contents.
+!
+! - File ID in quotes, number of frequencies, directions and points.
+!   grid name in quotes (for unformatted file C*21,3I,C*30).
+! - Bin frequencies in Hz for all bins.
+! - Bin directions in radians for all bins (Oceanographic conv.).
+!                                                         -+
+! - Time in yyyymmdd hhmmss format                         | loop
+!                                             -+           |
+! - Point name (C*40), lat, lon, d, U10 and    |  loop     | over
+!   direction, current speed and direction     |   over    |
+! - E(f,theta)                                 |  points   | times
+!                                             -+          -+
+&PART_NML
+    PART%OTYPE = 1
+    PART%UNIT_NUM_TRANS = 2
+    PART%REF_DATE = '19680606 060000'
+    PART%TIME_ZONE = 'UTC'
+/
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
