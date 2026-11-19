@@ -19,7 +19,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: checkout-ww3
@@ -70,7 +70,7 @@ jobs:
 
   regtest_gnu:
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: install-dependencies
@@ -126,5 +126,5 @@ jobs:
         id: cache-data
         uses: actions/cache@v3
         with:
-          path: ww3/ww3_from_ftp.v7.14.1.tar.gz
-          key: ww3_from_ftp.v7.14.1
+          path: ww3/ww3_from_ftp.v7.14.2.tar.gz
+          key: ww3_from_ftp.v7.14.2
