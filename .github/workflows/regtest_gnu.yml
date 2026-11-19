@@ -19,7 +19,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: checkout-ww3
@@ -70,7 +70,7 @@ jobs:
 
   regtest_gnu:
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: install-dependencies
