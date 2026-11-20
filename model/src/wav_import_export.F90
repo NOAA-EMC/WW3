@@ -20,6 +20,7 @@ module wav_import_export
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
   use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, unstr_mesh
+  use wav_shr_mod  , only : import_local
   use constants    , only : grav, tpi, dwat, dair
   use w3parall     , only : init_get_isea
 
@@ -31,12 +32,16 @@ module wav_import_export
   public  :: import_fields        !< @public fill WW3 fields using values in the import state
   public  :: export_fields        !< @public fill values in the export state using WW3 fields
   public  :: CalcRoughl           !< @public calculate the roughness length
+  public  :: SetGatherTasks       !< @public set the output tasks the import_local gather sends to
 
   private :: fldlist_add          !< @private add a field name to a list of field names
   private :: fldlist_realize      !< @private realize a field in a list of field names
   private :: set_importmask       !< @private set the import mask when merge_import is true
   private :: check_globaldata     !< @private write values in a field to a netCDF file for debugging
   private :: readfromfile         !< @private read values from a file
+  private :: SetLocalInput        !< @private fill an import on owned and ghost points (import_local)
+  private :: GatherToTask         !< @private gather owned import values to an output task (import_local)
+  private :: AddGatherTask        !< @private add a task to the list of import_local receiving tasks
 
   interface FillGlobalInput
     module procedure fillglobal_with_import
@@ -65,6 +70,15 @@ module wav_import_export
 #endif
   integer, public    :: nseal_cpl                   !< the number of local sea points on a processor, exclusive
                                                     !! of the ghost points. For non-PDLIB cases, this is nseal
+  integer              :: gather_ntask = -1         !< the number of receiving tasks of the import_local gather
+                                                    !! (-1 until SetGatherTasks has run)
+  integer              :: gather_task(5) = 0        !< the receiving tasks (1-based), one per output that needs
+                                                    !! the complete fields (see SetGatherTasks)
+  logical              :: gather_ready(5) = .false. !< the counts and global indices are set up for that task
+  integer, allocatable :: gather_counts(:)          !< on the receiving task: the number of owned points (nseal_cpl)
+                                                    !! of each task, i.e. how many values MPI_Gatherv receives from it
+  integer, allocatable :: gather_displs(:)          !< start of each task's values in the gathered list
+  integer, allocatable :: gather_isea(:)            !< global sea index of each gathered value
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
 
@@ -359,7 +373,7 @@ contains
       CX0(:,:) = def_value   ! ocn u current
       CXN(:,:) = def_value
       if (state_fldchk(importState, 'So_u')) then
-        call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
+        call SetGlobalInput(importState, 'So_u', vm, global_data, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         if(trim(casename) == 'ufs.hafs') then
@@ -375,7 +389,7 @@ contains
       CY0(:,:) = def_value   ! ocn v current
       CYN(:,:) = def_value
       if (state_fldchk(importState, 'So_v')) then
-        call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
+        call SetGlobalInput(importState, 'So_v', vm, global_data, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         if(trim(casename) == 'ufs.hafs') then
           do isea = 1,nsea
@@ -419,7 +433,7 @@ contains
       WX0(:,:) = def_value
       WXN(:,:) = def_value
       if (state_fldchk(importState, trim(uwnd))) then
-        call SetGlobalInput(importState, trim(uwnd), vm, global_data, rc)
+        call SetGlobalInput(importState, trim(uwnd), vm, global_data, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         if (merge_import) then
           call FillGlobalInput(global_data, import_mask, wxdata, WX0)
@@ -437,7 +451,7 @@ contains
       WYN(:,:) = def_value
       if (state_fldchk(importState, trim(vwnd))) then
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        call SetGlobalInput(importState, trim(vwnd), vm, global_data, rc)
+        call SetGlobalInput(importState, trim(vwnd), vm, global_data, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         if (merge_import) then
           call FillGlobalInput(global_data, import_mask, wydata, WY0)
@@ -455,9 +469,9 @@ contains
       DTN(:,:) = def_value
       if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
         allocate(global_data2(nsea))
-        call SetGlobalInput(importState, 'Sa_tbot', vm, global_data, rc)
+        call SetGlobalInput(importState, 'Sa_tbot', vm, global_data, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        call SetGlobalInput(importState, 'So_t', vm, global_data2, rc)
+        call SetGlobalInput(importState, 'So_t', vm, global_data2, rc, localfill=import_local)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         ! So_tbot - So_t
@@ -1670,17 +1684,27 @@ contains
   !> Create a global field across all PEs
   !!
   !> @details Distributes the global values of the named import state field to all PEs
-  !! using a global reduce across all PEs.
+  !! using a global reduce across all PEs. With localfill true (the caller passes
+  !! import_local), the field is instead filled on owned and ghost points only, and on
+  !! all points of the output tasks that need it (see SetLocalInput, SetGatherTasks).
+  !!
+  !! localfill is passed for the winds, Sa_tbot, So_t and the currents. Faxa_taux/tauy
+  !! and So_bldepth could use it too, but do not yet: they are not imported in the
+  !! current configurations, so it has not been tested. The ice fields and So_h must
+  !! stay global: W3UICE and W3ULEV change MAPSTA (and W3ULEV the depth DW) at every
+  !! sea point.
   !!
   !! @param[in]    importstate        the import state
   !! @param[in]    fldname            the field name
   !! @param[in]    vm                 the ESMF VM object
   !! @param[out]   global_output      the global nsea values
   !! @param[out]   rc                 a return code
+  !! @param[in]    localfill          optional, true: fill on owned and ghost points (and
+  !!                                  on the output tasks) only, instead of the allreduce
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 01-05-2022
-  subroutine SetGlobalInput(importState, fldname, vm, global_output, rc)
+  subroutine SetGlobalInput(importState, fldname, vm, global_output, rc, localfill)
 
     use w3gdatmd, only: nsea
 
@@ -1690,6 +1714,7 @@ contains
     type(ESMF_VM)    , intent(in)  :: vm
     real(r4)         , intent(out) :: global_output(nsea)
     integer          , intent(out) :: rc
+    logical, optional, intent(in)  :: localfill
 
     ! local variables
     integer           :: jsea, isea
@@ -1704,6 +1729,15 @@ contains
 
     call state_getfldptr(importState, trim(fldname), dataptr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! fill on owned and ghost points (and on the output tasks) only, if asked
+    if (present(localfill)) then
+      if (localfill) then
+        call SetLocalInput(dataptr, global_output, rc)
+        return
+      end if
+    end if
+
     global_output(:) = 0._r4
     global_input(:) = 0._r4
     do jsea = 1, nseal_cpl
@@ -1714,6 +1748,272 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine SetGlobalInput
+
+  !====================================================================================
+  !> Set the output tasks that need the complete import_local fields
+  !!
+  !> @details With import_local, the winds, Sa_tbot, So_t and the currents are complete
+  !! (on every sea point) only on the tasks in this list; elsewhere they are correct on
+  !! each task's owned and ghost points only. A task is listed only if an output that is
+  !! switched on reads these fields (or the winds and currents derived from them: U10,
+  !! U10D, UA, UD, CX, CY) from its global arrays:
+  !!
+  !! - gridded output, NAPFLD: W3IOGO writes WND, CUR, ... from the global arrays. With
+  !!   netCDF history (use_historync) the gridded output is written from each task's own
+  !!   points and the gather to NAPFLD is not needed; it is done anyway, for now.
+  !! - point output, NAPPNT: W3IOPE interpolates the winds and currents at the output
+  !!   locations.
+  !! - track output, NAPTRK: W3IOTR writes the wind and current at each track point.
+  !! - partitioned output, NAPPRT: W3IOSF writes the wind and current at every point.
+  !! - binary restart with the current among the extra fields (FLOGRR(1,2)), NAPRST:
+  !!   W3IORS writes CX, CY at every point. Not used with netCDF restarts.
+  !!
+  !! Boundary output (NAPBPT) writes spectra only and is not listed. Several outputs may
+  !! share a task; each task is listed once. Called once, after the wave model is
+  !! initialized; the list is written to the WW3 log.
+  !!
+  !! @param[in]    logunit            the WW3 log unit
+  !! @param[in]    root_task          true on the task that writes the log
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-15-2026
+  subroutine SetGatherTasks(logunit, root_task)
+
+    use w3odatmd , only: napfld, nappnt, naptrk, napprt, naprst, flout, flogrr
+    use w3odatmd , only: use_restartnc
+
+    ! input/output variables
+    integer , intent(in) :: logunit
+    logical , intent(in) :: root_task
+
+    ! local variables
+    integer           :: k
+    character(len=CL) :: msgString
+    !---------------------------------------------------------------------------
+
+    gather_ntask = 0
+    gather_task(:) = 0
+    gather_ready(:) = .false.
+    if (flout(1)) call AddGatherTask(napfld)        ! gridded output
+    if (flout(2)) call AddGatherTask(nappnt)        ! point output
+    if (flout(3)) call AddGatherTask(naptrk)        ! track output
+    if (flout(6)) call AddGatherTask(napprt)        ! partitioned output
+    if ((flout(4) .or. flout(8)) .and. .not. use_restartnc) then
+      if (flogrr(1,2)) call AddGatherTask(naprst)   ! binary restart with currents
+    end if
+
+    if (root_task) then
+      write(msgString,'(a,i0,a,5(1x,i0))') ' Wave import_local gathers to ', gather_ntask, &
+           ' output task(s):', (gather_task(k), k = 1, gather_ntask)
+      write(logunit,'(a)') trim(msgString)
+    end if
+
+  end subroutine SetGatherTasks
+
+  !====================================================================================
+  !> Add a task to the list of import_local receiving tasks, unless it is listed already
+  !!
+  !! @param[in]    itask              the task (1-based)
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-15-2026
+  subroutine AddGatherTask(itask)
+
+    integer , intent(in) :: itask
+
+    if (any(gather_task(1:gather_ntask) == itask)) return
+    gather_ntask = gather_ntask + 1
+    gather_task(gather_ntask) = itask
+
+  end subroutine AddGatherTask
+
+  !====================================================================================
+  !> Fill a global field on owned and ghost points, and on all points of the output tasks
+  !!
+  !> @details Used instead of the global allreduce in SetGlobalInput when import_local
+  !! is set (PDLIB only). Every task places its owned values at their global sea index
+  !! and gets the values of its ghost points from their owners with the PDLIB halo
+  !! exchange. The output tasks that read these fields from their global arrays (the
+  !! list is set once by SetGatherTasks) also receive every task's owned values with a
+  !! gather, so their output sees the same values as with the allreduce. Everywhere else
+  !! global_output is zero.
+  !! A zero is stored as +0.0 on every task, as the sum in the allreduce does, so the
+  !! values used are the same bit for bit.
+  !!
+  !! @param[in]    dataptr            the import values on owned points
+  !! @param[out]   global_output      the global nsea values (owned, ghost, output tasks)
+  !! @param[out]   rc                 a return code
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-14-2026
+  subroutine SetLocalInput(dataptr, global_output, rc)
+
+    use w3gdatmd          , only: nsea
+    use w3odatmd          , only: naproc
+    use yownodepool       , only: np, npa, iplg
+    use yowdatapool       , only: rkind
+    use yowexchangeModule , only: PDLIB_exchange1Dreal
+
+    ! input/output variables
+    real(r8), pointer , intent(in)  :: dataptr(:)
+    real(r4)          , intent(out) :: global_output(nsea)
+    integer           , intent(out) :: rc
+
+    ! local variables
+    integer           :: jsea, isea, ip, k
+    real(r4)          :: owned(max(1,nseal_cpl))
+    real(rkind)       :: u(npa)
+    character(len=*), parameter :: subname = '(wav_import_export:SetLocalInput)'
+    !---------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    if (gather_ntask < 0) then
+      call ESMF_LogWrite(trim(subname)//': SetGatherTasks has not been called', ESMF_LOGMSG_ERROR)
+      rc = ESMF_FAILURE
+      return
+    end if
+    if (nseal_cpl /= np) then
+      call ESMF_LogWrite(trim(subname)//': nseal_cpl differs from the number of owned PDLIB points', &
+           ESMF_LOGMSG_ERROR)
+      rc = ESMF_FAILURE
+      return
+    end if
+
+    ! owned points
+    global_output(:) = 0._r4
+    do jsea = 1, nseal_cpl
+      owned(jsea) = real(dataptr(jsea),4)
+      ! a zero is stored as +0.0, as the sum in the allreduce does when there is more than one task
+      if (naproc > 1 .and. owned(jsea) == 0._r4) owned(jsea) = 0._r4
+      call init_get_isea(isea, jsea)
+      global_output(isea) = owned(jsea)
+      u(jsea) = real(owned(jsea), rkind)
+    end do
+
+    ! ghost points, from their owners
+    u(np+1:npa) = 0._rkind
+    call PDLIB_exchange1Dreal(u)
+    do ip = np+1, npa
+      global_output(iplg(ip)) = real(u(ip),4)
+    end do
+
+    ! all points on each output task that reads these fields from its global arrays
+    ! (the list and the reason for each task are in SetGatherTasks)
+    do k = 1, gather_ntask
+      call GatherToTask(k, owned, global_output, rc)
+      if (rc /= ESMF_SUCCESS) return
+    end do
+
+  end subroutine SetLocalInput
+
+  !====================================================================================
+  !> Gather every task's owned values to one task and place them at their global index
+  !!
+  !> @details On the first call for a receiving task, the number of owned points and
+  !! their global sea indices are gathered once and kept on that task, and checked:
+  !! every sea point must be owned by exactly one task. After that only the values
+  !! are gathered.
+  !!
+  !! @param[in]    k                  the receiving task is gather_task(k) (1-based, as NAPFLD)
+  !! @param[in]    owned              this task's values on its owned points
+  !! @param[inout] global_output      the global nsea values, filled on the receiving task
+  !! @param[out]   rc                 a return code
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-14-2026
+  subroutine GatherToTask(k, owned, global_output, rc)
+
+    use mpi_f08
+    use w3gdatmd , only: nsea
+    use w3odatmd , only: naproc, iaproc
+    use w3adatmd , only: mpi_comm_wave
+
+    ! input/output variables
+    integer  , intent(in)    :: k
+    real(r4) , intent(in)    :: owned(:)
+    real(r4) , intent(inout) :: global_output(nsea)
+    integer  , intent(out)   :: rc
+
+    ! local variables
+    integer               :: n, jsea, ierr, nbad, itask
+    integer               :: myisea(max(1,nseal_cpl))
+    real(r4), allocatable :: rbuf(:)
+    integer, allocatable  :: seen(:)
+    character(len=CL)     :: msgString
+    character(len=*), parameter :: subname = '(wav_import_export:GatherToTask)'
+    !---------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    itask = gather_task(k)
+
+    ! first call for this receiving task: gather the counts and global indices once
+    ! (each task is in the list once, so a task receives for at most one entry)
+    if (.not. gather_ready(k)) then
+      gather_ready(k) = .true.
+      if (iaproc == itask) then
+        ! replaces the placeholders this task got while another task was set up
+        if (allocated(gather_counts)) deallocate(gather_counts, gather_displs)
+        allocate(gather_counts(naproc), gather_displs(naproc))
+      else if (.not. allocated(gather_counts)) then
+        allocate(gather_counts(1), gather_displs(1))
+      end if
+      call MPI_Gather(nseal_cpl, 1, MPI_INTEGER, gather_counts, 1, MPI_INTEGER, itask-1, mpi_comm_wave, ierr)
+      if (iaproc == itask) then
+        gather_displs(1) = 0
+        do n = 2, naproc
+          gather_displs(n) = gather_displs(n-1) + gather_counts(n-1)
+        end do
+        if (allocated(gather_isea)) deallocate(gather_isea)
+        allocate(gather_isea(max(1,sum(gather_counts))))
+      else if (.not. allocated(gather_isea)) then
+        allocate(gather_isea(1))
+      end if
+      do jsea = 1, nseal_cpl
+        call init_get_isea(myisea(jsea), jsea)
+      end do
+      call MPI_Gatherv(myisea, nseal_cpl, MPI_INTEGER, gather_isea, gather_counts, gather_displs, &
+           MPI_INTEGER, itask-1, mpi_comm_wave, ierr)
+      ! every sea point owned by exactly one task
+      if (iaproc == itask) then
+        nbad = 0
+        if (sum(gather_counts) /= nsea) nbad = 1
+        allocate(seen(nsea))
+        seen = 0
+        do n = 1, sum(gather_counts)
+          if (gather_isea(n) < 1 .or. gather_isea(n) > nsea) then
+            nbad = nbad + 1
+          else
+            seen(gather_isea(n)) = seen(gather_isea(n)) + 1
+          end if
+        end do
+        nbad = nbad + count(seen /= 1)
+        deallocate(seen)
+        if (nbad /= 0) then
+          write(msgString,'(a,i0,a,i0,a)') trim(subname)//': ', sum(gather_counts), &
+               ' owned points gathered for ', nsea, ' sea points; not every point owned exactly once'
+          call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+        end if
+      end if
+    end if
+    if (rc /= ESMF_SUCCESS) return
+
+    ! the values, placed at their global index on the receiving task
+    if (iaproc == itask) then
+      allocate(rbuf(max(1,sum(gather_counts))))
+    else
+      allocate(rbuf(1))
+    end if
+    call MPI_Gatherv(owned, nseal_cpl, MPI_REAL, rbuf, gather_counts, gather_displs, &
+         MPI_REAL, itask-1, mpi_comm_wave, ierr)
+    if (iaproc == itask) then
+      do n = 1, sum(gather_counts)
+        global_output(gather_isea(n)) = rbuf(n)
+      end do
+    end if
+    deallocate(rbuf)
+
+  end subroutine GatherToTask
 
   !====================================================================================
   !> Fill a global field with import state values at nsea points

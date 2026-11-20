@@ -38,11 +38,11 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
-  use wav_import_export     , only : advertise_fields, realize_fields, nseal_cpl
+  use wav_import_export     , only : advertise_fields, realize_fields, nseal_cpl, SetGatherTasks
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : wav_coupling_to_cice, nwav_elev_spectrum
-  use wav_shr_mod           , only : merge_import, dbug_flag
+  use wav_shr_mod           , only : merge_import, import_local, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
   use w3odatmd              , only : runtype, user_histfname, user_restfname, verboselog
   use w3odatmd              , only : use_historync, use_restartnc, restart_from_binary, logfile_is_assigned
@@ -353,6 +353,32 @@ contains
       end if
     end if
 
+    ! fill the wind, air-sea temperature and current imports on owned and ghost points
+    ! (and on the output tasks) instead of on all points by a global allreduce
+    call NUOPC_CompAttributeGet(gcomp, name="import_local", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+      cvalue = ESMF_UtilStringUpperCase(cvalue)
+      if (trim(cvalue) == 'TRUE' .or. trim(cvalue) == '.TRUE.') then
+        import_local = .true.
+      else if (trim(cvalue) == 'FALSE' .or. trim(cvalue) == '.FALSE.') then
+        import_local = .false.
+      else
+        call ESMF_LogWrite(trim(subname)//': need to provide valid option for import_local (TRUE|FALSE)', &
+             ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+        return
+      end if
+    end if
+    if (import_local) then
+      if (.not. w3_pdlib_flag) then
+        call ESMF_LogWrite('import_local is only valid with PDLIB', ESMF_LOGMSG_INFO)
+        call ESMF_Finalize(endflag=ESMF_END_ABORT)
+      end if
+    end if
+    write(logmsg,'(A,l2)') trim(subname)//': Wave cap import_local is ',import_local
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
     call NUOPC_CompAttributeGet(gcomp, name='dbug_flag', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
@@ -477,6 +503,7 @@ contains
       write(stdout,'(a)')'==============================================='
       write(stdout,'(/)')
       write(stdout,'(a,l)')' Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
+      write(stdout,'(a,l)')' Wave import_local setting is ',import_local
     end if
 
     !--------------------------------------------------------------------
@@ -772,6 +799,13 @@ contains
     else
       unstr_mesh = .false.
     end if
+    if (import_local .and. .not. unstr_mesh) then
+      call ESMF_LogWrite('import_local is only valid with an unstructured mesh', ESMF_LOGMSG_INFO)
+      call ESMF_Finalize(endflag=ESMF_END_ABORT)
+    end if
+    ! the output tasks that need the complete import_local fields (after the wave model
+    ! is initialized, so the output settings are known)
+    if (import_local) call SetGatherTasks(stdout, root_task)
 
     ! Create a  global index array for sea points.
     !
