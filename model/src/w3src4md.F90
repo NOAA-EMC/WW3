@@ -2126,7 +2126,8 @@ CONTAINS
 #ifdef W3_IG1
     USE W3GDATMD, ONLY: IGPARS
 #endif
-    USE W3ODATMD, ONLY: FLOGRD
+    USE W3ODATMD, ONLY: FLOGRD, NDSE
+    USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -2187,6 +2188,10 @@ CONTAINS
     REAL                    :: TSTR, TMAX, DT, T, MFT, DIRFORCUM
     REAL                    :: PB(NSPEC), PB2(NSPEC), BRM12(NK), BTOVER
     REAL                    :: KO, LMODULATION(NTH)
+    ! Compact copy of CUMULW for the cumulative effect, built on first use.
+    ! Index order: (ITH2-ITH, IK2, IK). Assumes a single ST4 grid (IMOD).
+    REAL, ALLOCATABLE, SAVE :: CUMULWC(:,:,:)
+    INTEGER                 :: ITH2, NMISMATCH
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -2527,6 +2532,43 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !
     !
+    ! CUMULW(IS2,IS) depends only on IK, IK2 and ITH2-ITH (see INSIN4).
+    ! On first use, copy it into CUMULWC(ITH2-ITH,IK2,IK). For a given IS,
+    ! the slice CUMULWC(1-ITH:NTH-ITH,IK2,IK) then holds the same values, in
+    ! the same order, as CUMULW(IS2+1:IS2+NTH,IS), but the whole table is
+    ! ~0.7 MB instead of NSPEC*NSPEC. Values are copied, not recomputed,
+    ! and checked against CUMULW, so results are unchanged.
+    !
+    IF (SSDSC(3).LT.0 .AND. .NOT. ALLOCATED(CUMULWC)) THEN
+      ALLOCATE(CUMULWC(1-NTH:NTH-1,NK,NK))
+      CUMULWC = 0.
+      DO IK=1,NK
+        DO IK2=1,NK
+          DO ITH=1,NTH
+            DO ITH2=1,NTH
+              CUMULWC(ITH2-ITH,IK2,IK) = CUMULW(ITH2+(IK2-1)*NTH,ITH+(IK-1)*NTH)
+            END DO
+          END DO
+        END DO
+      END DO
+      ! Check that every CUMULW entry is reproduced by the compact table
+      NMISMATCH = 0
+      DO IK=1,NK
+        DO IK2=1,NK
+          DO ITH=1,NTH
+            DO ITH2=1,NTH
+              IF (CUMULWC(ITH2-ITH,IK2,IK) .NE. CUMULW(ITH2+(IK2-1)*NTH,ITH+(IK-1)*NTH)) &
+                   NMISMATCH = NMISMATCH + 1
+            END DO
+          END DO
+        END DO
+      END DO
+      IF (NMISMATCH .GT. 0) THEN
+        WRITE (NDSE,*) 'W3SDS4: CUMULW is not a function of ITH2-ITH only, mismatches = ', NMISMATCH
+        CALL EXTCDE ( 1 )
+      END IF
+    END IF
+    !
     ! loop over spectrum
     !
     IF ( (SSDSC(3).NE.0.) .OR. (SSDSC(5).NE.0.) .OR. (SSDSC(21).NE.0.) ) THEN
@@ -2557,7 +2599,7 @@ CONTAINS
             DO IK2=IK1,IK-DIKCUMUL
               IF (BTH0(IK2).GT.SSDSBR) THEN
                 IS2=(IK2-1)*NTH
-                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),BRLAMBDA(IS2+1:IS2+NTH))
+                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULWC(1-ITH:NTH-ITH,IK2,IK),BRLAMBDA(IS2+1:IS2+NTH))
               END IF
             END DO
           END IF

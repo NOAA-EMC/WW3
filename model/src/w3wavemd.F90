@@ -509,7 +509,7 @@ CONTAINS
     USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
     USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
-    USE yowNodepool, only: np
+    USE yowNodepool, only: np, ng
     USE W3WDATMD,  ONLY : VAOLD, VSTOT, VDTOT, SHAVETOT
     USE W3GDATMD,  ONLY : FSSOURCE, FSTOTALEXP
     USE W3GDATMD,  ONLY : IOBP_LOC, IOBPA_LOC, IOBDP_LOC
@@ -621,6 +621,7 @@ CONTAINS
     type(MPI_STATUS), ALLOCATABLE    :: STATCO(:), STATIO(:)
 #endif
     INTEGER                 :: IXrel
+    INTEGER                 :: NSEAL_OWN   ! local sea points this rank owns (excludes PDLIB ghost nodes)
     REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
                                DTL0, DTI0, DTI10, DTGA, DTG, DTRES, &
                                FAC, VGX, VGY, FACK, FACTH,          &
@@ -1126,6 +1127,16 @@ CONTAINS
       ! 3.  Loop over time steps
       !
       DTRES  = 0.
+      !
+      ! Per-point work that is only needed on owned points (source terms,
+      ! intra-spectral propagation) loops to NSEAL_OWN. Under PDLIB the ghost
+      ! nodes np+1:npa are refreshed from their owners by the halo exchange at
+      ! the start of the next propagation call, so their values are not used.
+      !
+      NSEAL_OWN = NSEAL
+#ifdef W3_PDLIB
+      IF ( LPDLIB .AND. GTYPE .EQ. UNGTYPE ) NSEAL_OWN = NSEAL - NG
+#endif
 
       !
       DO IT = IT0, NT
@@ -1808,7 +1819,7 @@ CONTAINS
                 !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
                 !
-                DO JSEA=1, NSEAL
+                DO JSEA=1, NSEAL_OWN
                   CALL INIT_GET_ISEA(ISEA, JSEA)
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
@@ -2132,7 +2143,7 @@ CONTAINS
                 !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
                 !
-                DO JSEA = 1, NSEAL
+                DO JSEA = 1, NSEAL_OWN
 
                   CALL INIT_GET_ISEA(ISEA, JSEA)
                   IX     = MAPSF(ISEA,1)
@@ -2252,7 +2263,7 @@ CONTAINS
               !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
               !
-              DO JSEA=1, NSEAL
+              DO JSEA=1, NSEAL_OWN
                 CALL INIT_GET_ISEA(ISEA, JSEA)
 
                 IX     = MAPSF(ISEA,1)
